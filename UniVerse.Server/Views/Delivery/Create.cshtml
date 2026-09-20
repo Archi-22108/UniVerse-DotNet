@@ -1,0 +1,94 @@
+@model UniVerse.Server.Models.ViewModels.DeliveryCreateViewModel
+@{
+    ViewData["Title"] = "New Delivery Request";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="bi bi-box-seam-fill text-success fs-2"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-1">Request Campus Delivery</h2>
+                <p class="text-secondary small">A nearby student runner will purchase and deliver to your room</p>
+            </div>
+
+            <div class="universe-card p-4 p-md-5">
+                <form asp-controller="Delivery" asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <!-- Pickup Spot -->
+                    <div class="mb-3">
+                        <label asp-for="PickupLocation" class="form-label text-secondary small fw-semibold"></label>
+                        <select asp-for="PickupLocation" class="form-select">
+                            <option value="Marwadi Central Canteen">Marwadi Central Canteen (Snacks, Beverages, Meals)</option>
+                            <option value="Amul Food Court (Ground Floor)">Amul Food Court (Ground Floor - Shakes & Dairy)</option>
+                            <option value="Campus Stationery & Book Depot">Campus Stationery & Book Depot (Sheets, Drafters, Prints)</option>
+                            <option value="Main University Gate (Swiggy / Zomato Dropoff)">Main University Gate (Food parcel pickup)</option>
+                            <option value="Hostel Night Canteen">Hostel Night Canteen</option>
+                        </select>
+                        <span asp-validation-for="PickupLocation" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Items Description -->
+                    <div class="mb-3">
+                        <label asp-for="ItemNames" class="form-label text-secondary small fw-semibold"></label>
+                        <input asp-for="ItemNames" class="form-control" placeholder="e.g. 2x Samosa, 1x Cold Bournvita Frappe" />
+                        <span asp-validation-for="ItemNames" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Quantity and Price -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label asp-for="Quantity" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="Quantity" class="form-control" type="number" min="1" max="20" />
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="EstimatedAmount" class="form-label text-secondary small fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">₹</span>
+                                <input asp-for="EstimatedAmount" class="form-control" type="number" step="10" />
+                            </div>
+                            <span asp-validation-for="EstimatedAmount" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Dropoff Room -->
+                    <div class="mb-3">
+                        <label asp-for="DropoffLocation" class="form-label text-secondary small fw-semibold"></label>
+                        <input asp-for="DropoffLocation" class="form-control" placeholder="Hostel D, Room 304" />
+                        <span asp-validation-for="DropoffLocation" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Delivery Tip -->
+                    <div class="mb-3">
+                        <label asp-for="DeliveryFee" class="form-label text-secondary small fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-success font-bold">₹</span>
+                            <input asp-for="DeliveryFee" class="form-control" type="number" min="10" step="5" />
+                        </div>
+                        <small class="text-muted" style="font-size: 0.75rem;">100% of this tip is earned directly by the campus student runner.</small>
+                        <span asp-validation-for="DeliveryFee" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Special Notes -->
+                    <div class="mb-4">
+                        <label asp-for="Instructions" class="form-label text-secondary small fw-semibold"></label>
+                        <textarea asp-for="Instructions" class="form-control" rows="2" placeholder="e.g. Call when entering hostel gate, please bring extra ketchup packets."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mb-2">
+                        Post Delivery Request to Runners
+                    </button>
+                    <a asp-action="Index" class="btn btn-glass w-100 py-2 text-decoration-none">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

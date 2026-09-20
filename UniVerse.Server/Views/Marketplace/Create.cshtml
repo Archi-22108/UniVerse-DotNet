@@ -1,0 +1,101 @@
+@model UniVerse.Server.Models.ViewModels.MarketplaceCreateViewModel
+@{
+    ViewData["Title"] = "Post Used Campus Item";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="bi bi-tag-fill text-success fs-2"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-1">Sell Used Item</h2>
+                <p class="text-secondary small">List textbooks, drafters, or components for fellow Marwadi students</p>
+            </div>
+
+            <div class="universe-card p-4 p-md-5">
+                <form asp-controller="Marketplace" asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label text-secondary small fw-semibold"></label>
+                        <input asp-for="Title" class="form-control" placeholder="e.g. Data Structures & Algorithms (CLRS 4th Ed.)" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Category & Condition -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label asp-for="Category" class="form-label text-secondary small fw-semibold"></label>
+                            <select asp-for="Category" class="form-select">
+                                <option value="Books">Books & Notes</option>
+                                <option value="Electronics">Electronics & IoT</option>
+                                <option value="Lab Equipment">Lab Equipment</option>
+                                <option value="Hostel Essentials">Hostel Essentials</option>
+                                <option value="Cycles">Cycles & Rides</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Condition" class="form-label text-secondary small fw-semibold"></label>
+                            <select asp-for="Condition" class="form-select">
+                                <option value="Brand New">Brand New</option>
+                                <option value="Like New">Like New</option>
+                                <option value="Good" selected>Good Condition</option>
+                                <option value="Fair">Fair / Usable</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pricing -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label asp-for="Price" class="form-label text-secondary small fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary border-opacity-25 text-success fw-bold">₹</span>
+                                <input asp-for="Price" class="form-control" type="number" step="10" placeholder="500" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="OriginalPrice" class="form-label text-secondary small fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">₹</span>
+                                <input asp-for="OriginalPrice" class="form-control" type="number" step="10" placeholder="Optional MRP" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Negotiable Toggle -->
+                    <div class="form-check mb-3">
+                        <input asp-for="Negotiable" class="form-check-input bg-dark border-secondary" />
+                        <label asp-for="Negotiable" class="form-check-label text-secondary small"></label>
+                    </div>
+
+                    <!-- Pickup Spot -->
+                    <div class="mb-3">
+                        <label asp-for="PickupLocation" class="form-label text-secondary small fw-semibold"></label>
+                        <input asp-for="PickupLocation" class="form-control" placeholder="e.g. Central Library Entrance, Hostel D Reception, or Lab 301" />
+                        <span asp-validation-for="PickupLocation" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label text-secondary small fw-semibold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Highlight edition, included accessories, or reasons for selling..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mb-2">
+                        Post Listing on Campus Marketplace
+                    </button>
+                    <a asp-action="Index" class="btn btn-glass w-100 py-2 text-decoration-none">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

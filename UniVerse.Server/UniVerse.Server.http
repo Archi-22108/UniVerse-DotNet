@@ -1,0 +1,6 @@
+@UniVerse.Server_HostAddress = http://localhost:5277
+
+GET {{UniVerse.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,189 @@
+@model UniVerse.Server.Models.DeliveryRequestDetailDto
+@{
+    ViewData["Title"] = "Order Details #" + Model.Id.Substring(0, 8);
+    bool isRequester = ViewBag.IsRequester ?? false;
+    bool isAssignedRunner = ViewBag.IsAssignedRunner ?? false;
+
+    int progressPercent = Model.Status switch
+    {
+        "pending" => 20,
+        "accepted" => 40,
+        "picked_up" => 65,
+        "in_transit" => 85,
+        "delivered" => 100,
+        _ => 0
+    };
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <a asp-action="Index" class="btn btn-glass btn-sm">
+                    &larr; Back to Delivery Feed
+                </a>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
+                    STATUS: @Model.Status.Replace("_", " ")
+                </span>
+            </div>
+
+            <!-- Main Order Card -->
+            <div class="universe-card p-4 p-md-5 mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                    <div>
+                        <h2 class="fw-bold text-white mb-1">@Model.PickupLocation</h2>
+                        <div class="text-secondary small">
+                            <i class="bi bi-clock me-1"></i> Requested: @DateTime.Parse(Model.CreatedAt).ToLocalTime().ToString("f")
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="fs-3 fw-bold text-success">₹@Model.TotalEstimatedAmount.ToString("F2")</span>
+                        <small class="text-muted d-block">+ ₹@Model.DeliveryFee.ToString("F2") Runner Fee</small>
+                    </div>
+                </div>
+
+                <!-- Status Progress Bar -->
+                <div class="my-4">
+                    <div class="d-flex justify-content-between text-secondary small fw-semibold mb-2">
+                        <span class="@(progressPercent >= 20 ? "text-success fw-bold" : "")">Pending</span>
+                        <span class="@(progressPercent >= 40 ? "text-success fw-bold" : "")">Accepted</span>
+                        <span class="@(progressPercent >= 65 ? "text-success fw-bold" : "")">Picked Up</span>
+                        <span class="@(progressPercent >= 85 ? "text-success fw-bold" : "")">In Transit</span>
+                        <span class="@(progressPercent >= 100 ? "text-success fw-bold" : "")">Delivered</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 10px;">
+                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: @progressPercent%"></div>
+                    </div>
+                </div>
+
+                <!-- Delivery OTP Banner (Visible to Requester and Runner) -->
+                @if (!string.IsNullOrEmpty(Model.DeliveryOtp))
+                {
+                    <div class="p-3 rounded-3 mb-4 text-center border border-warning border-opacity-50" style="background: rgba(245, 158, 11, 0.1);">
+                        <small class="text-warning text-uppercase fw-bold d-block mb-1">
+                            <i class="bi bi-shield-check me-1"></i> 6-DIGIT DELIVERY CONFIRMATION OTP
+                        </small>
+                        <span class="font-monospace fs-2 fw-bolder text-white tracking-wider">
+                            @Model.DeliveryOtp
+                        </span>
+                        <p class="text-secondary small mb-0 mt-1">
+                            Share this OTP with the runner when they arrive at your room to confirm receipt.
+                        </p>
+                    </div>
+                }
+
+                <!-- Location Details -->
+                <div class="row g-3 my-2">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
+                            <small class="text-muted d-block mb-1">PICKUP LOCATION</small>
+                            <span class="text-white fw-semibold"><i class="bi bi-shop me-1 text-warning"></i> @Model.PickupLocation</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
+                            <small class="text-muted d-block mb-1">DROPOFF HOSTEL ROOM</small>
+                            <span class="text-white fw-semibold"><i class="bi bi-geo-alt-fill me-1 text-danger"></i> @Model.DropoffLocation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="mt-4">
+                    <h5 class="fw-bold text-white mb-3">Items in this Delivery</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-borderless align-middle mb-0">
+                            <thead class="border-bottom border-white border-opacity-10 text-secondary small text-uppercase">
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Est. Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var itm in Model.Items)
+                                {
+                                    <tr>
+                                        <td class="text-white fw-semibold">
+                                            @itm.Name
+                                            @if (!string.IsNullOrEmpty(itm.Notes))
+                                            {
+                                                <small class="text-muted d-block">@itm.Notes</small>
+                                            }
+                                        </td>
+                                        <td class="text-center text-white">@itm.Quantity</td>
+                                        <td class="text-end text-success fw-bold">₹@itm.EstimatedPrice.ToString("F2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Student Parties -->
+                <div class="row g-3 mt-4 pt-3 border-top border-white border-opacity-10">
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Requester Student</small>
+                        <span class="text-white fw-semibold">@Model.RequesterName</span>
+                        @if (!string.IsNullOrEmpty(Model.RequesterPhone))
+                        {
+                            <span class="text-secondary small d-block">@Model.RequesterPhone</span>
+                        }
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted d-block">Assigned Runner</small>
+                        @if (!string.IsNullOrEmpty(Model.RunnerName))
+                        {
+                            <span class="text-white fw-semibold">@Model.RunnerName</span>
+                            @if (!string.IsNullOrEmpty(Model.RunnerPhone))
+                            {
+                                <span class="text-secondary small d-block">@Model.RunnerPhone</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-warning small fst-italic">Waiting for a runner to accept...</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Runner Action Bar -->
+                @if (isAssignedRunner && Model.Status != "delivered" && Model.Status != "cancelled")
+                {
+                    <div class="mt-4 pt-4 border-top border-success border-opacity-25">
+                        <h6 class="text-success fw-bold mb-3"><i class="bi bi-lightning-charge me-1"></i> RUNNER CONTROLS</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            @if (Model.Status == "accepted")
+                            {
+                                <form asp-action="UpdateStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="picked_up" />
+                                    <button type="submit" class="btn btn-emerald btn-sm">Mark as Picked Up</button>
+                                </form>
+                            }
+                            @if (Model.Status == "picked_up")
+                            {
+                                <form asp-action="UpdateStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="status" value="in_transit" />
+                                    <button type="submit" class="btn btn-emerald btn-sm">Mark In Transit to Hostel</button>
+                                </form>
+                            }
+                            @if (Model.Status == "in_transit")
+                            {
+                                <form asp-action="CompleteDelivery" method="post" class="d-flex gap-2 align-items-center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="text" name="otp" class="form-control form-control-sm" placeholder="Enter 6-digit OTP" required style="width: 160px;" />
+                                    <button type="submit" class="btn btn-emerald btn-sm">Confirm Delivery</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

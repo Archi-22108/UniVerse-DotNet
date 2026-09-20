@@ -1,0 +1,105 @@
+@model List<UniVerse.Server.Models.DeliveryRequestDetailDto>
+@{
+    ViewData["Title"] = "Campus Delivery Feed";
+    var currentStatus = ViewBag.CurrentStatus as string ?? "all";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="fw-bold text-white mb-1">📦 Campus Delivery Feed</h1>
+            <p class="text-secondary small mb-0">Peer-to-peer hostel room delivery requests across Marwadi University</p>
+        </div>
+        <a asp-controller="Delivery" asp-action="Create" class="btn btn-emerald">
+            <i class="bi bi-plus-lg me-1"></i> New Delivery Request
+        </a>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 overflow-x-auto pb-2">
+        <a asp-action="Index" asp-route-status="" class="btn @(currentStatus == "all" ? "btn-emerald" : "btn-glass") btn-sm px-3">
+            All Orders
+        </a>
+        <a asp-action="Index" asp-route-status="pending" class="btn @(currentStatus == "pending" ? "btn-emerald" : "btn-glass") btn-sm px-3">
+            ⏳ Pending (@Model.Count(r => r.Status == "pending"))
+        </a>
+        <a asp-action="Index" asp-route-status="in_transit" class="btn @(currentStatus == "in_transit" ? "btn-emerald" : "btn-glass") btn-sm px-3">
+            🚴 In Transit (@Model.Count(r => r.Status == "in_transit" || r.Status == "accepted"))
+        </a>
+        <a asp-action="Index" asp-route-status="delivered" class="btn @(currentStatus == "delivered" ? "btn-emerald" : "btn-glass") btn-sm px-3">
+            ✅ Delivered (@Model.Count(r => r.Status == "delivered"))
+        </a>
+    </div>
+
+    <!-- Requests Grid -->
+    <div class="row g-3">
+        @if (Model.Count == 0)
+        {
+            <div class="col-12">
+                <div class="universe-card p-5 text-center text-muted">
+                    <i class="bi bi-box2 fs-1 d-block mb-3 text-secondary"></i>
+                    <h5 class="text-white">No delivery requests found in this category</h5>
+                    <p class="small mb-3">Be the first to place an order from Central Canteen or Stationery.</p>
+                    <a asp-action="Create" class="btn btn-emerald btn-sm">Create Request</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var req in Model)
+            {
+                var badgeClass = req.Status switch
+                {
+                    "pending" => "bg-warning text-dark",
+                    "accepted" => "bg-info text-dark",
+                    "in_transit" => "bg-primary text-white",
+                    "delivered" => "bg-success text-white",
+                    _ => "bg-secondary text-white"
+                };
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="universe-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge @badgeClass text-uppercase fw-bold" style="font-size: 0.7rem;">@req.Status.Replace("_", " ")</span>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                    +₹@req.DeliveryFee.ToString("F2") Runner Tip
+                                </span>
+                            </div>
+
+                            <h5 class="fw-bold text-white mb-2">@req.PickupLocation</h5>
+
+                            <div class="text-secondary small mb-3">
+                                <div class="mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Drop-off: <strong>@req.DropoffLocation</strong></div>
+                                <div class="mb-1"><i class="bi bi-person-fill text-info me-1"></i> Requester: @req.RequesterName</div>
+                                @if (req.Items.Count > 0)
+                                {
+                                    <div class="mb-1 text-light">
+                                        <i class="bi bi-bag-check me-1 text-success"></i> 
+                                        @string.Join(", ", req.Items.Select(i => $"{i.Name} (x{i.Quantity})"))
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(req.Instructions))
+                                {
+                                    <div class="text-muted fst-italic mt-2" style="font-size: 0.78rem;">
+                                        "@req.Instructions"
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-white border-opacity-10">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">ESTIMATED TOTAL</small>
+                                <span class="fw-bold text-white fs-5">₹@req.TotalEstimatedAmount.ToString("F2")</span>
+                            </div>
+                            <a asp-action="Details" asp-route-id="@req.Id" class="btn btn-emerald btn-sm">
+                                Track Order &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

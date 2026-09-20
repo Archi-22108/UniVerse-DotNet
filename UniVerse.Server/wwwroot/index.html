@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniVerse — Marwadi University Campus Super-App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #030712;
+      --card-bg: rgba(15, 23, 42, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --teal: #14b8a6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 50%, rgba(20, 184, 166, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 0% 80%, rgba(6, 78, 59, 0.15) 0%, transparent 50%);
+    }
+
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(3, 7, 18, 0.85);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--emerald-glow);
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title span {
+      background: linear-gradient(135deg, #34d399, #2dd4bf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-csharp {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-swagger {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--emerald-glow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-swagger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Hero */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 2rem;
+      text-align: center;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a7f3d0;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title span.grad {
+      background: linear-gradient(135deg, #34d399 0%, #2dd4bf 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.6;
+    }
+
+    .hero-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Architecture Highlight Card */
+    .arch-banner {
+      max-width: 1100px;
+      margin: 3rem auto;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(20, 184, 166, 0.04));
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      text-align: left;
+      backdrop-filter: blur(12px);
+    }
+
+    .arch-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .arch-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .arch-item h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .arch-item p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Live Data Section */
+    .section {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 1.75rem;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .section-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.1);
+    }
+
+    .card-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-transit { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-delivered { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .card-meta {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-price {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #34d399;
+    }
+
+    .card-price small {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4rem;
+      background: rgba(3, 7, 18, 0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-title">Uni<span>Verse</span></div>
+    </a>
+
+    <div class="badge-csharp">
+      <span class="badge-dot"></span>
+      C# ASP.NET Core &bull; ADO.NET
+    </div>
+
+    <div class="nav-actions">
+      <a href="/swagger" class="btn btn-swagger">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+        Swagger API UI
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-pill">
+      <span>🏛️ Marwadi University Enterprise Solution</span>
+    </div>
+    <h1 class="hero-title">
+      Campus Super-App<br />
+      <span class="grad">Powered by C# & ADO.NET</span>
+    </h1>
+    <p class="hero-subtitle">
+      Peer-to-peer campus delivery, hostel room dispatch, and student marketplace built exclusively with C#, ASP.NET Core, and dedicated ADO.NET Data Access Layer.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="/swagger" class="btn btn-swagger" style="font-size: 1rem; padding: 0.8rem 1.8rem;">
+        ⚡ Test Live APIs on Swagger
+      </a>
+      <a href="/api/auth/users" target="_blank" class="btn btn-secondary" style="font-size: 1rem; padding: 0.8rem 1.8rem;">
+        👥 View Campus Users (JSON)
+      </a>
+    </div>
+  </header>
+
+  <!-- Architecture Banner -->
+  <div class="arch-banner">
+    <div class="arch-item">
+      <div class="arch-icon">⚡</div>
+      <div>
+        <h4>C# & .NET 10 Web API</h4>
+        <p>Ultra-fast server architecture running natively on modern .NET SDK.</p>
+      </div>
+    </div>
+    <div class="arch-item">
+      <div class="arch-icon">💾</div>
+      <div>
+        <h4>Dedicated ADO.NET Layer</h4>
+        <p>Direct SqliteConnection, SqlCommand, SqlParameter & DataReader implementation.</p>
+      </div>
+    </div>
+    <div class="arch-item">
+      <div class="arch-icon">🎓</div>
+      <div>
+        <h4>Marwadi University Dataset</h4>
+        <p>Pre-seeded campus accounts, Hostel D room delivery, and student textbook exchange.</p>
+      </div>
+    </div>
+    <div class="arch-item">
+      <div class="arch-icon">🛡️</div>
+      <div>
+        <h4>Visual Studio Ready</h4>
+        <p>Standard UniVerse.sln solution building with 0 warnings and 0 errors.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Delivery Requests Section -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">📦 Active Campus Delivery Requests</h2>
+        <p class="section-desc">Live requests loaded directly from ADO.NET database (/api/requests)</p>
+      </div>
+      <a href="/api/requests" target="_blank" class="btn btn-secondary">Raw JSON Endpoint &rarr;</a>
+    </div>
+
+    <div class="grid" id="requestsGrid">
+      <div class="card" style="text-align: center; padding: 3rem;">
+        <p style="color: var(--text-muted)">Loading campus requests via ADO.NET...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Marketplace Section -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">🏷️ Campus Peer-to-Peer Marketplace</h2>
+        <p class="section-desc">Student listings retrieved via ADO.NET (/api/marketplace/listings)</p>
+      </div>
+      <a href="/api/marketplace/listings" target="_blank" class="btn btn-secondary">Raw JSON Endpoint &rarr;</a>
+    </div>
+
+    <div class="grid" id="marketplaceGrid">
+      <div class="card" style="text-align: center; padding: 3rem;">
+        <p style="color: var(--text-muted)">Loading marketplace items via ADO.NET...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>UniVerse &bull; Marwadi University Campus Super-App &bull; Developed in C# ASP.NET Core & ADO.NET</p>
+    <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">Visual Studio 2022 Solution | Modern .NET 10 | Zero Configuration SQLite</p>
+  </footer>
+
+  <script>
+    // Fetch and render live Delivery Requests via C# ADO.NET API
+    async function loadRequests() {
+      try {
+        const res = await fetch('/api/requests');
+        if (!res.ok) throw new Error('API failed');
+        const data = await res.json();
+        const grid = document.getElementById('requestsGrid');
+        
+        if (!data || data.length === 0) {
+          grid.innerHTML = '<div class="card"><p>No active requests found.</p></div>';
+          return;
+        }
+
+        grid.innerHTML = data.map(req => {
+          const badgeClass = req.status === 'pending' ? 'badge-pending' : (req.status === 'in_transit' ? 'badge-transit' : 'badge-delivered');
+          const itemsList = req.items && req.items.length > 0 
+            ? req.items.map(i => `${i.name} (x${i.quantity})`).join(', ')
+            : 'Order items';
+
+          return `
+            <div class="card">
+              <span class="card-badge ${badgeClass}">${req.status.replace('_', ' ')}</span>
+              <h3>${req.pickupLocation}</h3>
+              <div class="card-meta">
+                <span>📍 <strong>Drop-off:</strong> ${req.dropoffLocation}</span>
+                <span>👤 <strong>Requester:</strong> ${req.requesterName}</span>
+                <span>🛍️ <strong>Items:</strong> ${itemsList}</span>
+                ${req.runnerName ? `<span>🏃 <strong>Runner:</strong> ${req.runnerName}</span>` : ''}
+              </div>
+              <div class="card-price">
+                <span>₹${req.totalEstimatedAmount.toFixed(2)}</span>
+                <small>Delivery Fee: ₹${req.deliveryFee.toFixed(2)}</small>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Fetch and render live Marketplace items via C# ADO.NET API
+    async function loadMarketplace() {
+      try {
+        const res = await fetch('/api/marketplace/listings');
+        if (!res.ok) throw new Error('API failed');
+        const data = await res.json();
+        const grid = document.getElementById('marketplaceGrid');
+
+        if (!data || data.length === 0) {
+          grid.innerHTML = '<div class="card"><p>No active listings found.</p></div>';
+          return;
+        }
+
+        grid.innerHTML = data.map(item => {
+          return `
+            <div class="card">
+              <span class="card-badge badge-delivered">${item.category} &bull; ${item.condition}</span>
+              <h3>${item.title}</h3>
+              <div class="card-meta">
+                <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">${item.description || ''}</p>
+                <span>📍 <strong>Pickup:</strong> ${item.pickupLocation}</span>
+                <span>👤 <strong>Seller:</strong> ${item.sellerName}</span>
+                <span>💬 <strong>Offers:</strong> ${item.offerCount} active offer(s)</span>
+              </div>
+              <div class="card-price">
+                <span>₹${item.price.toFixed(2)}</span>
+                ${item.originalPrice ? `<small style="text-decoration: line-through;">MRP: ₹${item.originalPrice.toFixed(2)}</small>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadRequests();
+    loadMarketplace();
+  </script>
+</body>
+</html>

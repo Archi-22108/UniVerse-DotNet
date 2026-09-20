@@ -1,0 +1,108 @@
+@model UniVerse.Server.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Student Registration";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="bi bi-person-plus-fill text-success fs-2"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-1">New Student Registration</h2>
+                <p class="text-secondary small">Join the Marwadi University Campus Super-App</p>
+            </div>
+
+            <div class="universe-card p-4 p-md-5">
+                <form asp-controller="Account" asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Aarav Patel" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Enrollment -->
+                        <div class="col-md-6">
+                            <label asp-for="EnrollmentNumber" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="EnrollmentNumber" class="form-control" placeholder="92100103001" />
+                            <span asp-validation-for="EnrollmentNumber" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="aarav.patel@marwadiuniversity.ac.in" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Role Selection -->
+                        <div class="col-md-6">
+                            <label asp-for="Role" class="form-label text-secondary small fw-semibold"></label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="student">Student (Hostel Resident / Requester)</option>
+                                <option value="runner">Campus Runner (Earn Delivery Tips)</option>
+                            </select>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="+91 98765 43210" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Hostel Building -->
+                        <div class="col-md-6">
+                            <label asp-for="HostelName" class="form-label text-secondary small fw-semibold"></label>
+                            <select asp-for="HostelName" class="form-select">
+                                <option value="Hostel D">Hostel D (Boys Wing)</option>
+                                <option value="Hostel B">Hostel B (Girls Wing)</option>
+                                <option value="Hostel C">Hostel C (Senior Block)</option>
+                                <option value="Staff Quarters">Staff Quarters</option>
+                            </select>
+                        </div>
+
+                        <!-- Room Number -->
+                        <div class="col-md-6">
+                            <label asp-for="RoomNumber" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="RoomNumber" class="form-control" placeholder="e.g. 304" />
+                            <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label text-secondary small fw-semibold"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mt-4 mb-3">
+                        Complete Registration & Enter
+                    </button>
+
+                    <div class="text-center text-secondary small">
+                        Already have a campus account? 
+                        <a asp-controller="Account" asp-action="Login" class="text-success fw-semibold text-decoration-none">
+                            Sign In here
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
