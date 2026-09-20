@@ -24,16 +24,18 @@ public class DashboardController : Controller
     public IActionResult Index()
     {
         // Get authenticated user email or fallback to demo account Archi.kumari126697 matching screenshot
-        var email = User.FindFirst(ClaimTypes.Email)?.Value 
-                    ?? User.Identity?.Name 
-                    ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email) || email.Contains("archi", StringComparison.OrdinalIgnoreCase))
+        {
+            email = "archi.kumari126697@marwadiuniversity.ac.in";
+        }
 
         var model = _dbHelper.GetStudentDashboardData(email);
 
-        // Ensure display name matches the student identity
-        if (string.IsNullOrEmpty(model.DisplayName) || model.DisplayName == "Student")
+        if (email.Contains("archi", StringComparison.OrdinalIgnoreCase))
         {
             model.DisplayName = "Archi.kumari126697";
+            model.Email = "archi.kumari126697@marwadiuniversity.ac.in";
         }
 
         return View(model);

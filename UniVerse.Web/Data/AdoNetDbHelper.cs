@@ -114,7 +114,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
         var seedUsers = @"
             INSERT OR REPLACE INTO Users (Id, FullName, Email, Password, Role, HostelBlock, RoomNumber) VALUES
             (1, 'Aarav Patel', 'aarav.patel@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel D', 'D-304'),
-            (2, 'Archi Kumari', 'archi.student@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel D', 'D-402'),
+            (2, 'Archi.kumari126697', 'archi.kumari126697@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel D', 'D-402'),
             (3, 'Rohit Sharma', 'rohit.runner@marwadiuniversity.ac.in', 'Password123!', 'Runner', 'Hostel B', 'B-108'),
             (4, 'Sneha Patel', 'sneha.student@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel C', 'C-215');
 
