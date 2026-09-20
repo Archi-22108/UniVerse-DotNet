@@ -16,4 +16,6 @@ public interface IAdoNetDbHelper
     List<Product> GetFeaturedProducts(int limit = 6);
     HomeViewModel GetHomeMetrics();
     DashboardViewModel GetStudentDashboardData(string studentEmail);
+    List<Product> GetAllProducts(string? category = null);
+    int CreateDeliveryRequest(DeliveryRequest request);
 }

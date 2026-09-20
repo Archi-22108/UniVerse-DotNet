@@ -1,0 +1,1599 @@
+@model UniVerse.Web.Models.CreateRequestViewModel
+@{
+    Layout = null; // Full-screen immersive page matching target screenshot 100%
+    ViewData["Title"] = "Create Request · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-card-bg: rgba(9, 16, 13, 0.65);
+            --uv-card-border: rgba(255, 255, 255, 0.055);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.28);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.35);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Canvas Starfield & Ambient Cosmic Glows ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-top {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(0, 229, 153, 0.12) 0%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Top Navigation Bar ── */
+        .req-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            width: 100%;
+            background: rgba(3, 7, 8, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.85rem 2rem;
+        }
+
+        .req-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-back-dash {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.45rem 0.95rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back-dash:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+        }
+
+        .brand-center {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .brand-circle-monogram {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-circle-monogram svg {
+            width: 16px;
+            height: 16px;
+            fill: #020806;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .badge-network-active {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.28);
+            color: var(--uv-emerald);
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.1);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 2s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* ── Main Container ── */
+        .req-container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 2.25rem 1.25rem 5rem;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* ── Hero Title & Stepper ── */
+        .req-hero-head {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .badge-instant-net {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            color: var(--uv-emerald);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.25rem 0.85rem;
+            border-radius: 9999px;
+        }
+
+        .hero-title-main {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .highlight-emerald {
+            color: var(--uv-emerald);
+            text-shadow: 0 0 25px rgba(0, 229, 153, 0.35);
+        }
+
+        .hero-sub-text {
+            font-size: 0.88rem;
+            color: var(--uv-text-muted);
+            max-width: 580px;
+            line-height: 1.45;
+        }
+
+        /* ── Stepper Indicator (1 Item Details -> 2 Delivery & Reward -> 3 Confirm) ── */
+        .stepper-bar-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .step-node {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--uv-text-dim);
+            transition: all 0.25s ease;
+        }
+
+        .step-node.active .step-circle {
+            background: var(--uv-emerald);
+            color: #020806;
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .step-node.completed .step-circle {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--uv-emerald);
+            border-color: var(--uv-emerald);
+        }
+
+        .step-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--uv-text-dim);
+            transition: color 0.2s ease;
+        }
+
+        .step-node.active .step-label {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            min-width: 40px;
+        }
+
+        /* ── Main Step Card ── */
+        .step-content-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 20px;
+            padding: 2rem 2.25rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .step-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .cube-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.24);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.12);
+        }
+
+        .step-card-title-group h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .step-card-title-group p {
+            font-size: 0.82rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.2rem;
+        }
+
+        /* ── Category Pill Buttons (7 Categories) ── */
+        .categories-scroll-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.65rem;
+        }
+
+        .cat-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.85rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            color: #85988e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .cat-btn i {
+            font-size: 1.3rem;
+            color: inherit;
+        }
+
+        .cat-btn span {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .cat-btn:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.04);
+        }
+
+        .cat-btn.active {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.18);
+        }
+
+        /* ── Sub-Filter Strip ── */
+        .sub-filter-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding-top: 0.25rem;
+        }
+
+        .strip-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .strip-title-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-right: 0.3rem;
+        }
+
+        .stock-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 9999px;
+            padding: 0.28rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .stock-pill:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            color: #ffffff;
+        }
+
+        .stock-pill.active {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-weight: 800;
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 12px var(--uv-emerald-glow);
+        }
+
+        .strip-right {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .search-box-wrap {
+            position: relative;
+        }
+
+        .search-box-wrap input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 0.35rem 0.85rem 0.35rem 2rem;
+            color: #ffffff;
+            font-size: 0.74rem;
+            width: 210px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box-wrap input:focus {
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.2);
+            width: 240px;
+        }
+
+        .search-box-wrap i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--uv-text-dim);
+            font-size: 0.75rem;
+        }
+
+        .badge-machine-loc {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 0.26rem 0.65rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        /* ── Product Cards Grid (Matching screenshot 1:1) ── */
+        .products-showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.85rem;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 229, 153, 0.3) transparent;
+        }
+
+        .products-showcase-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .products-showcase-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 153, 0.3);
+            border-radius: 10px;
+        }
+
+        .product-tile-card {
+            background: rgba(255, 255, 255, 0.018);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.65rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .product-tile-card:hover {
+            border-color: rgba(0, 229, 153, 0.35);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.03);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .tile-tags-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tag-snack-cat {
+            background: rgba(255, 255, 255, 0.05);
+            color: #85988e;
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .tag-slot-code {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 0.08rem 0.42rem;
+            border-radius: 4px;
+        }
+
+        .tile-img-container {
+            width: 100%;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+        }
+
+        .tile-img-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+            transition: transform 0.25s ease;
+        }
+
+        .product-tile-card:hover .tile-img-container img {
+            transform: scale(1.06);
+        }
+
+        .tile-name-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.25;
+            min-height: 2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .tile-foot-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.35rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .tile-price-tag {
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .btn-add-tile {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add-tile:hover {
+            background: var(--uv-emerald);
+            color: #020806;
+            transform: scale(1.1);
+            box-shadow: 0 0 12px var(--uv-emerald-glow);
+        }
+
+        /* ── Custom Item Input Row ── */
+        .custom-item-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.045);
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+
+        .custom-name-in {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            padding: 0.65rem 0.95rem;
+            color: #ffffff;
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .custom-name-in:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .custom-price-in {
+            width: 130px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            color: #ffffff;
+            font-size: 0.8rem;
+            outline: none;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .custom-price-in:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .qty-stepper-box {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            padding: 0.35rem 0.65rem;
+        }
+
+        .btn-stepper {
+            background: transparent;
+            border: none;
+            color: #85988e;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0 0.2rem;
+            line-height: 1;
+        }
+
+        .btn-stepper:hover {
+            color: #ffffff;
+        }
+
+        .qty-val-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .btn-add-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 0.65rem 1.25rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 14px var(--uv-emerald-glow);
+            white-space: nowrap;
+        }
+
+        .btn-add-custom:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+        }
+
+        /* ── Added Items Box (Cart) ── */
+        .added-items-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .added-label-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #85988e;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .added-items-empty-box {
+            border: 1px dashed rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 2.25rem 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .empty-cart-cube-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .empty-cart-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .empty-cart-sub {
+            font-size: 0.74rem;
+            color: var(--uv-text-dim);
+        }
+
+        .cart-items-populated-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .cart-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.95rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.82rem;
+        }
+
+        .cart-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .cart-item-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cart-item-price-mono {
+            font-family: 'Space Mono', monospace;
+            font-weight: 800;
+            color: var(--uv-emerald);
+        }
+
+        .btn-remove-item {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.2rem;
+        }
+
+        /* ── Big Bottom Action Button ── */
+        .btn-continue-step {
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-continue-step.disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--uv-text-dim);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-continue-step.ready {
+            background: linear-gradient(90deg, #00e599 0%, #00d284 100%);
+            color: #020806;
+            cursor: pointer;
+            box-shadow: 0 0 24px var(--uv-emerald-glow);
+        }
+
+        .btn-continue-step.ready:hover {
+            background: #25f4ab;
+            transform: translateY(-2px);
+        }
+
+        /* ── Step 2 & Step 3 Sections ── */
+        .step-panel {
+            display: none;
+        }
+
+        .step-panel.active {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .form-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .form-input-group label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #85988e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .custom-select-dark, .custom-text-dark {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .custom-select-dark:focus, .custom-text-dark:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .custom-select-dark option {
+            background: #09100d;
+            color: #ffffff;
+        }
+
+        .tip-selector-chips {
+            display: flex;
+            gap: 0.65rem;
+        }
+
+        .chip-tip-btn {
+            flex: 1;
+            padding: 0.65rem 0.5rem;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .chip-tip-btn.active {
+            background: rgba(0, 229, 153, 0.12);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.2);
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 900px) {
+            .categories-scroll-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .products-showcase-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .form-grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .categories-scroll-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .custom-item-input-bar {
+                flex-direction: column;
+            }
+            .custom-name-in, .custom-price-in, .qty-stepper-box, .btn-add-custom {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Canvas Twinkling Stars Background ── -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ── Ambient Glow ── -->
+    <div class="ambient-glow-top"></div>
+
+    <!-- ── Top Nav (← Dashboard | UniVerse | ● Campus Network Active) ── -->
+    <header class="req-nav">
+        <div class="req-nav-inner">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-back-dash">
+                <i class="bi bi-arrow-left"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a asp-controller="Home" asp-action="Index" class="brand-center">
+                <div class="brand-circle-monogram">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+                    </svg>
+                </div>
+                <span class="brand-title">UniVerse</span>
+            </a>
+
+            <div class="badge-network-active">
+                <span class="pulse-dot"></span>
+                <span>Campus Network Active</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Main Content Container ── -->
+    <main class="req-container">
+        <!-- ── Hero Head & Stepper ── -->
+        <div class="req-hero-head">
+            <div class="badge-instant-net">
+                <i class="bi bi-stars"></i>
+                <span>Instant Campus Delivery Network</span>
+            </div>
+
+            <h1 class="hero-title-main">
+                <span>Create</span> <span class="highlight-emerald">Request</span>
+            </h1>
+
+            <p class="hero-sub-text">
+                Tell us what you need — student runners will deliver it straight to your room.
+            </p>
+
+            <!-- 3-Step Progress Indicator -->
+            <div class="stepper-bar-wrap">
+                <div class="step-node active" id="stepNode1" onclick="goToStep(1)">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">Item Details</span>
+                </div>
+                <div class="step-line" id="stepLine1"></div>
+                <div class="step-node" id="stepNode2" onclick="goToStep(2)">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Delivery & Reward</span>
+                </div>
+                <div class="step-line" id="stepLine2"></div>
+                <div class="step-node" id="stepNode3" onclick="goToStep(3)">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════ FORM WRAPPER ════════ -->
+        <form asp-controller="Dashboard" asp-action="SubmitRequest" method="post" id="requestForm">
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden Fields for Submission -->
+            <input type="hidden" asp-for="SelectedItemsJson" id="hiddenSelectedItemsJson" value="[]" />
+            <input type="hidden" asp-for="StudentName" value="@Model.StudentName" />
+            <input type="hidden" asp-for="RewardFee" id="hiddenRewardFee" value="15.0" />
+            <input type="hidden" asp-for="Urgency" id="hiddenUrgency" value="Standard" />
+
+            <!-- ══════════════ STEP 1: ITEM DETAILS ══════════════ -->
+            <div class="step-panel active" id="stepPanel1">
+                <div class="step-content-card">
+                    <!-- Step Header -->
+                    <div class="step-card-header">
+                        <div class="cube-icon-box">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div class="step-card-title-group">
+                            <h2>What do you need delivered?</h2>
+                            <p>Pick a category, tap quick campus favorites or type any custom item.</p>
+                        </div>
+                    </div>
+
+                    <!-- 7 Category Tabs -->
+                    <div class="categories-scroll-row">
+                        <button type="button" class="cat-btn active" onclick="setCategory('Vending Machine', this)">
+                            <i class="bi bi-shop"></i>
+                            <span>Vending Machine</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Snack', this)">
+                            <i class="bi bi-pie-chart"></i>
+                            <span>Snack</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Beverage', this)">
+                            <i class="bi bi-cup-hot"></i>
+                            <span>Beverage</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Meal', this)">
+                            <i class="bi bi-egg-fried"></i>
+                            <span>Meal</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Grocery', this)">
+                            <i class="bi bi-bag"></i>
+                            <span>Grocery</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Stationery', this)">
+                            <i class="bi bi-book"></i>
+                            <span>Stationery</span>
+                        </button>
+                        <button type="button" class="cat-btn" onclick="setCategory('Medicine', this)">
+                            <i class="bi bi-capsule"></i>
+                            <span>Medicine</span>
+                        </button>
+                    </div>
+
+                    <!-- Sub-Filter Strip -->
+                    <div class="sub-filter-strip">
+                        <div class="strip-left">
+                            <span class="strip-title-label">
+                                <i class="bi bi-stars"></i>
+                                <span>Hostel Vending Machine Live Stock (Tap to 1-click add):</span>
+                            </span>
+                            <button type="button" class="stock-pill active" onclick="filterStock('All', this)">All (57)</button>
+                            <button type="button" class="stock-pill" onclick="filterStock('Drinks', this)">🍷 Drinks (21)</button>
+                            <button type="button" class="stock-pill" onclick="filterStock('Chips', this)">🍿 Chips (19)</button>
+                            <button type="button" class="stock-pill" onclick="filterStock('Chocolates', this)">🍫 Chocolates (17)</button>
+                        </div>
+
+                        <div class="strip-right">
+                            <div class="search-box-wrap">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="productSearchInput" placeholder="Search 57 snacks & drinks" oninput="searchProducts(this.value)" />
+                            </div>
+                            <span class="badge-machine-loc">
+                                <span class="pulse-dot" style="width: 5px; height: 5px;"></span>
+                                <span>HOSTEL GF MACHINES</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Products Showcase Grid (All 57 items with slot code, tag, price, add button) -->
+                    <div class="products-showcase-grid" id="productsGrid">
+                        @foreach (var p in Model.Products)
+                        {
+                            <div class="product-tile-card" data-category="@p.SubCategory" data-name="@p.Name.ToLowerInvariant()">
+                                <div class="tile-tags-row">
+                                    <span class="tag-snack-cat">@p.Tag</span>
+                                    <span class="tag-slot-code">@p.SlotCode</span>
+                                </div>
+                                <div class="tile-img-container">
+                                    <img src="~/products/@p.ImageFileName" alt="@p.Name" loading="lazy" />
+                                </div>
+                                <div class="tile-name-label">@p.Name</div>
+                                <div class="tile-foot-row">
+                                    <span class="tile-price-tag">₹@((int)p.Price)</span>
+                                    <button type="button" class="btn-add-tile" onclick="addItemToCart('@p.Name', @((int)p.Price))" title="Add to request">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Custom Item Input Row -->
+                    <div class="custom-item-input-bar">
+                        <input type="text" id="customItemName" class="custom-name-in" placeholder="Type vending machine name or custom item..." />
+                        <input type="number" id="customItemPrice" class="custom-price-in" placeholder="₹ Est. price" min="5" value="20" />
+                        <div class="qty-stepper-box">
+                            <button type="button" class="btn-stepper" onclick="adjustCustomQty(-1)">−</button>
+                            <span class="qty-val-mono" id="customQtyDisplay">1</span>
+                            <button type="button" class="btn-stepper" onclick="adjustCustomQty(1)">+</button>
+                        </div>
+                        <button type="button" class="btn-add-custom" onclick="addCustomItem()">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Add</span>
+                        </button>
+                    </div>
+
+                    <!-- Added Items Box (Cart) -->
+                    <div class="added-items-section">
+                        <div class="added-label-mono" id="cartHeaderLabel">ADDED ITEMS (0)</div>
+
+                        <!-- Empty state -->
+                        <div class="added-items-empty-box" id="cartEmptyState">
+                            <div class="empty-cart-cube-circle">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div class="empty-cart-title">No items added yet</div>
+                            <div class="empty-cart-sub">Tap popular chips above or type items and hit "Add".</div>
+                        </div>
+
+                        <!-- Populated state -->
+                        <div class="cart-items-populated-list" id="cartPopulatedList" style="display: none;"></div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button type="button" id="btnContinueStep1" class="btn-continue-step disabled" onclick="advanceToStep2()">
+                        <span>Continue to Delivery Details</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════════ STEP 2: DELIVERY & REWARD ══════════════ -->
+            <div class="step-panel" id="stepPanel2">
+                <div class="step-content-card">
+                    <div class="step-card-header">
+                        <div class="cube-icon-box">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div class="step-card-title-group">
+                            <h2>Where should student runners deliver?</h2>
+                            <p>Confirm your campus room and set an optional runner appreciation tip.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2col">
+                        <div class="form-input-group">
+                            <label>Hostel Block / Building</label>
+                            <select asp-for="HostelBlock" class="custom-select-dark" id="selectHostelBlock">
+                                <option value="Hostel D">Hostel D (Boys Wing)</option>
+                                <option value="Hostel C">Hostel C (Boys Wing)</option>
+                                <option value="Hostel B">Hostel B (Boys Wing)</option>
+                                <option value="Hostel A">Hostel A (Boys Wing)</option>
+                                <option value="Girls Hostel">Girls Hostel Complex</option>
+                                <option value="Main Campus Library">Central Library</option>
+                                <option value="Sports Arena">Sports Ground / Arena</option>
+                            </select>
+                        </div>
+
+                        <div class="form-input-group">
+                            <label>Room / Floor Number</label>
+                            <input asp-for="RoomNumber" class="custom-text-dark" id="inputRoomNumber" placeholder="e.g. D-402, 4th Floor" value="@Model.RoomNumber" required />
+                        </div>
+                    </div>
+
+                    <!-- Urgency Selector -->
+                    <div class="form-input-group">
+                        <label>Delivery Urgency</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div id="urgencyStandard" class="chip-tip-btn active" onclick="setUrgency('Standard', this)" style="display: flex; flex-direction: column; gap: 0.2rem; text-align: left; padding: 0.85rem 1rem;">
+                                <b style="color: #ffffff; font-size: 0.85rem;">Standard Delivery</b>
+                                <span style="font-size: 0.72rem; color: #85988e;">Within 15-20 mins · Normal queue</span>
+                            </div>
+                            <div id="urgencyExpress" class="chip-tip-btn" onclick="setUrgency('Express', this)" style="display: flex; flex-direction: column; gap: 0.2rem; text-align: left; padding: 0.85rem 1rem;">
+                                <b style="color: var(--uv-emerald); font-size: 0.85rem;">⚡ Express Priority</b>
+                                <span style="font-size: 0.72rem; color: #85988e;">Within 5-10 mins · Immediate pickup</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Runner Reward / Tip -->
+                    <div class="form-input-group">
+                        <label>Runner Appreciation Reward (Tip)</label>
+                        <div class="tip-selector-chips">
+                            <button type="button" class="chip-tip-btn" onclick="setTip(10, this)">₹10</button>
+                            <button type="button" class="chip-tip-btn active" onclick="setTip(15, this)">₹15</button>
+                            <button type="button" class="chip-tip-btn" onclick="setTip(20, this)">₹20</button>
+                            <button type="button" class="chip-tip-btn" onclick="setTip(30, this)">₹30</button>
+                            <button type="button" class="chip-tip-btn" onclick="setTip(50, this)">₹50</button>
+                        </div>
+                        <span style="font-size: 0.7rem; color: var(--uv-text-dim); margin-top: 0.2rem;">
+                            100% of this reward goes directly to your fellow student runner!
+                        </span>
+                    </div>
+
+                    <!-- Special Instructions -->
+                    <div class="form-input-group">
+                        <label>Delivery Note (Optional)</label>
+                        <input asp-for="Notes" class="custom-text-dark" placeholder="e.g. Please knock softly, or call when arriving at hostel lift..." />
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button type="button" class="btn-continue-step" style="background: rgba(255,255,255,0.05); color: #ffffff; flex: 0.4;" onclick="goToStep(1)">
+                            <i class="bi bi-arrow-left"></i>
+                            <span>Back to Items</span>
+                        </button>
+                        <button type="button" class="btn-continue-step ready" style="flex: 0.6;" onclick="advanceToStep3()">
+                            <span>Review & Confirm</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════ STEP 3: CONFIRM & BROADCAST ══════════════ -->
+            <div class="step-panel" id="stepPanel3">
+                <div class="step-content-card">
+                    <div class="step-card-header">
+                        <div class="cube-icon-box">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <div class="step-card-title-group">
+                            <h2>Review your campus request</h2>
+                            <p>Check order details before broadcasting to active student runners.</p>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary Box -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
+                            <span style="color: #85988e; font-size: 0.82rem;">Student Requester:</span>
+                            <b style="color: #ffffff; font-size: 0.85rem;">@Model.StudentName</b>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
+                            <span style="color: #85988e; font-size: 0.82rem;">Delivery Destination:</span>
+                            <b style="color: var(--uv-emerald); font-size: 0.85rem;" id="reviewRoomText">Hostel D · Room D-402</b>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
+                            <span style="color: #85988e; font-size: 0.82rem;">Urgency Level:</span>
+                            <span style="color: #ffffff; font-size: 0.82rem; font-weight: 700;" id="reviewUrgencyText">Standard</span>
+                        </div>
+
+                        <!-- Itemized breakdown -->
+                        <div id="reviewItemsList" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.4rem 0;"></div>
+
+                        <!-- Total breakdown -->
+                        <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.95rem;">
+                            <span style="font-weight: 800; color: #ffffff;">Total (Items + Runner Reward):</span>
+                            <span style="font-family: 'Space Mono', monospace; font-weight: 800; color: var(--uv-emerald); font-size: 1.15rem;" id="reviewTotalAmount">₹55</span>
+                        </div>
+                    </div>
+
+                    <!-- Campus Runner SLA Note -->
+                    <div style="display: flex; gap: 0.75rem; align-items: center; padding: 0.85rem 1rem; border-radius: 10px; background: rgba(0, 229, 153, 0.06); border: 1px solid rgba(0, 229, 153, 0.2);">
+                        <i class="bi bi-shield-check" style="color: var(--uv-emerald); font-size: 1.25rem;"></i>
+                        <span style="font-size: 0.76rem; color: rgba(255, 255, 255, 0.85); line-height: 1.35;">
+                            Payment is made upon delivery handover (Cash / UPI). Your request will be instantly dispatched to verified campus runners near your hostel block.
+                        </span>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button type="button" class="btn-continue-step" style="background: rgba(255,255,255,0.05); color: #ffffff; flex: 0.4;" onclick="goToStep(2)">
+                            <i class="bi bi-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                        <button type="submit" class="btn-continue-step ready" style="flex: 0.6;">
+                            <span>Confirm & Place Request</span>
+                            <i class="bi bi-send-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <!-- ── Interactive Client Script: Cart & Stepper ── -->
+    <script>
+        // ── 1. HTML5 Canvas Twinkling Stars Background ──
+        (function initStarfield() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 75;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.3 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Cart State Management ──
+        let cart = [];
+        let currentStep = 1;
+        let selectedTip = 15;
+        let selectedUrgency = 'Standard';
+        let customQty = 1;
+
+        function addItemToCart(name, price) {
+            const existing = cart.find(x => x.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ name: name, price: price, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function adjustQty(name, delta) {
+            const item = cart.find(x => x.name.toLowerCase() === name.toLowerCase());
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(x => x.name.toLowerCase() !== name.toLowerCase());
+            }
+            updateCartUI();
+        }
+
+        function removeItem(name) {
+            cart = cart.filter(x => x.name.toLowerCase() !== name.toLowerCase());
+            updateCartUI();
+        }
+
+        function adjustCustomQty(delta) {
+            customQty = Math.max(1, customQty + delta);
+            document.getElementById('customQtyDisplay').innerText = customQty;
+        }
+
+        function addCustomItem() {
+            const nameInput = document.getElementById('customItemName');
+            const priceInput = document.getElementById('customItemPrice');
+            const name = nameInput.value.trim();
+            const price = parseFloat(priceInput.value) || 20;
+
+            if (!name) {
+                alert('Please enter a vending item or snack name.');
+                nameInput.focus();
+                return;
+            }
+
+            const existing = cart.find(x => x.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.qty += customQty;
+            } else {
+                cart.push({ name: name, price: price, qty: customQty });
+            }
+
+            nameInput.value = '';
+            customQty = 1;
+            document.getElementById('customQtyDisplay').innerText = '1';
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const totalCount = cart.reduce((acc, curr) => acc + curr.qty, 0);
+            const subtotal = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+
+            // Update Labels
+            document.getElementById('cartHeaderLabel').innerText = `ADDED ITEMS (${totalCount})`;
+
+            const emptyBox = document.getElementById('cartEmptyState');
+            const populatedBox = document.getElementById('cartPopulatedList');
+            const btnContinue = document.getElementById('btnContinueStep1');
+
+            if (cart.length === 0) {
+                emptyBox.style.display = 'flex';
+                populatedBox.style.display = 'none';
+                btnContinue.className = 'btn-continue-step disabled';
+            } else {
+                emptyBox.style.display = 'none';
+                populatedBox.style.display = 'flex';
+                populatedBox.innerHTML = '';
+
+                cart.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'cart-item-row';
+                    row.innerHTML = `
+                        <div class="cart-item-left">
+                            <span style="color: #ffffff; font-weight: 700;">${item.name}</span>
+                            <span style="color: #85988e; font-size: 0.74rem;">(₹${item.price} each)</span>
+                        </div>
+                        <div class="cart-item-right">
+                            <div class="qty-stepper-box" style="padding: 0.2rem 0.5rem;">
+                                <button type="button" class="btn-stepper" onclick="adjustQty('${item.name.replace(/'/g, "\\'")}', -1)">−</button>
+                                <span class="qty-val-mono">${item.qty}</span>
+                                <button type="button" class="btn-stepper" onclick="adjustQty('${item.name.replace(/'/g, "\\'")}', 1)">+</button>
+                            </div>
+                            <span class="cart-item-price-mono">₹${item.price * item.qty}</span>
+                            <button type="button" class="btn-remove-item" onclick="removeItem('${item.name.replace(/'/g, "\\'")}')" title="Remove">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                    populatedBox.appendChild(row);
+                });
+
+                btnContinue.className = 'btn-continue-step ready';
+            }
+
+            // Sync hidden JSON for submit
+            document.getElementById('hiddenSelectedItemsJson').value = JSON.stringify(cart);
+        }
+
+        // ── 3. Step Transitions ──
+        function goToStep(step) {
+            if (step === 2 && cart.length === 0) {
+                alert('Please add at least one item first.');
+                return;
+            }
+            if (step === 3 && cart.length === 0) {
+                alert('Please add at least one item first.');
+                return;
+            }
+
+            currentStep = step;
+
+            // Hide/Show Panels
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`stepPanel${step}`).classList.add('active');
+
+            // Update Stepper Nodes
+            for (let i = 1; i <= 3; i++) {
+                const node = document.getElementById(`stepNode${i}`);
+                node.classList.remove('active', 'completed');
+                if (i === step) {
+                    node.classList.add('active');
+                } else if (i < step) {
+                    node.classList.add('completed');
+                }
+            }
+
+            if (step === 3) {
+                populateReview();
+            }
+
+            window.scrollTo({ top: 180, behavior: 'smooth' });
+        }
+
+        function advanceToStep2() {
+            if (cart.length === 0) return;
+            goToStep(2);
+        }
+
+        function advanceToStep3() {
+            goToStep(3);
+        }
+
+        function populateReview() {
+            const block = document.getElementById('selectHostelBlock').value;
+            const room = document.getElementById('inputRoomNumber').value;
+            document.getElementById('reviewRoomText').innerText = `${block} · Room ${room}`;
+            document.getElementById('reviewUrgencyText').innerText = selectedUrgency === 'Express' ? '⚡ Express Priority (~5-10 min)' : 'Standard (~15-20 min)';
+
+            const list = document.getElementById('reviewItemsList');
+            list.innerHTML = '';
+            let subtotal = 0;
+
+            cart.forEach(item => {
+                const lineTotal = item.price * item.qty;
+                subtotal += lineTotal;
+                const d = document.createElement('div');
+                d.style = "display: flex; justify-content: space-between; font-size: 0.8rem; color: #d0dcd5;";
+                d.innerHTML = `<span>${item.qty}x ${item.name}</span><span style="font-family: 'Space Mono', monospace;">₹${lineTotal}</span>`;
+                list.appendChild(d);
+            });
+
+            const tipLine = document.createElement('div');
+            tipLine.style = "display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--uv-emerald); font-weight: 700;";
+            tipLine.innerHTML = `<span>Runner Reward Tip:</span><span style="font-family: 'Space Mono', monospace;">₹${selectedTip}</span>`;
+            list.appendChild(tipLine);
+
+            document.getElementById('reviewTotalAmount').innerText = `₹${subtotal + selectedTip}`;
+        }
+
+        // ── 4. Category & Stock Filters ──
+        function setCategory(catName, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function filterStock(subCat, btn) {
+            document.querySelectorAll('.stock-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const tiles = document.querySelectorAll('.product-tile-card');
+            tiles.forEach(tile => {
+                const tileCat = tile.getAttribute('data-category');
+                if (subCat === 'All' || tileCat.toLowerCase() === subCat.toLowerCase()) {
+                    tile.style.display = 'flex';
+                } else {
+                    tile.style.display = 'none';
+                }
+            });
+        }
+
+        function searchProducts(query) {
+            const q = query.trim().toLowerCase();
+            const tiles = document.querySelectorAll('.product-tile-card');
+            tiles.forEach(tile => {
+                const name = tile.getAttribute('data-name');
+                if (!q || name.includes(q)) {
+                    tile.style.display = 'flex';
+                } else {
+                    tile.style.display = 'none';
+                }
+            });
+        }
+
+        // ── 5. Urgency & Tip Selectors ──
+        function setUrgency(urg, el) {
+            selectedUrgency = urg;
+            document.getElementById('hiddenUrgency').value = urg;
+            document.getElementById('urgencyStandard').classList.remove('active');
+            document.getElementById('urgencyExpress').classList.remove('active');
+            el.classList.add('active');
+        }
+
+        function setTip(val, btn) {
+            selectedTip = val;
+            document.getElementById('hiddenRewardFee').value = val;
+            document.querySelectorAll('.chip-tip-btn').forEach(b => {
+                if (b.innerText.includes('₹')) b.classList.remove('active');
+            });
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
