@@ -39,13 +39,26 @@
 
         <!-- CTA Buttons -->
         <div class="uv-hero-actions">
-            <a href="#signup" class="uv-btn-primary">
-                Get Started
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </a>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Dashboard" asp-action="Index" class="uv-btn-primary">
+                    Get Started
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="uv-btn-primary">
+                    Get Started
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            }
             <a href="#how-it-works" class="uv-btn-secondary">
                 How It Works
             </a>
@@ -177,7 +190,14 @@
     <!-- CTA Bar -->
     <div class="uv-why-cta">
         <span>Ready to join?</span>
-        <a href="#signup" class="uv-btn-cta-green">Join UniVerse — It's Free</a>
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <a asp-controller="Dashboard" asp-action="Index" class="uv-btn-cta-green">Go to Dashboard →</a>
+        }
+        else
+        {
+            <a asp-controller="Account" asp-action="Register" class="uv-btn-cta-green">Join UniVerse — It's Free</a>
+        }
     </div>
 </section>
 
@@ -186,7 +206,7 @@
 ══════════════════════════════════════════════════════════════ -->
 <section class="uv-section-how" id="how-it-works" aria-label="How UniVerse Works">
     <div class="uv-section-header">
-        <span class="uv-section-badge">QUICK & EASY STEPS</span>
+        <span class="uv-section-badge">SIMPLE. FAST. SMART.</span>
         <h2 class="uv-section-title">
             How <span class="uv-gradient-text">UniVerse Works</span>
         </h2>
@@ -305,22 +325,22 @@
                 <span class="uv-brand-name">Uni<span>Verse</span></span>
             </div>
 
-            <p class="tagline">Skip the Stairs. Buy & Get Snacks.</p>
+            <p class="tagline">Skip the Stairs. Buy &amp; Sell Smarter.</p>
             <p class="about">
-                The verified campus super-app for hostel craving, peer-to-peer marketplace, and campus community — exclusively for Marwadi University.
+                The verified campus super-app for fast deliveries, student resale marketplace, and campus community — exclusively for Marwadi University.
             </p>
 
             <div class="uv-campus-tag">
                 <i class="bi bi-geo-alt-fill"></i>
-                Under Campus - Marwadi University, Rajkot
+                Live on Campus - Marwadi University, Rajkot
             </div>
 
             <div class="uv-download-btns">
-                <a href="#request" class="uv-btn-app">
-                    <i class="bi bi-bag-plus"></i> Request Snack
+                <a href="#support" class="uv-btn-app">
+                    <i class="bi bi-headset"></i> Support Desk
                 </a>
-                <a href="#app" class="uv-btn-app">
-                    <i class="bi bi-phone"></i> Open App
+                <a href="#share" class="uv-btn-app">
+                    <i class="bi bi-share"></i> Share App
                 </a>
             </div>
         </div>
@@ -331,8 +351,8 @@
             <ul>
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#why-universe">Why UniVerse</a></li>
-                <li><a href="#get-started">Get Started</a></li>
-                <li><a href="#login">Login</a></li>
+                <li><a asp-controller="Account" asp-action="Register">Get Started</a></li>
+                <li><a asp-controller="Account" asp-action="Login">Login</a></li>
             </ul>
         </div>
 

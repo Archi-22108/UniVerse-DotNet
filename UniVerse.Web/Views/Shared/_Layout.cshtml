@@ -35,23 +35,14 @@
         </ul>
 
         <div class="uv-nav-auth">
-            @if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span style="font-size: 0.85rem; font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 0.4rem;">
-                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #34d399; display: inline-block;"></span>
-                        @User.Identity.Name
-                    </span>
-                    <a asp-controller="Account" asp-action="Logout" class="uv-btn-login" style="color: #f87171; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
-                        Logout
-                    </a>
-                </div>
-            }
-            else
-            {
-                <a asp-controller="Account" asp-action="Login" class="uv-btn-login">Login</a>
-                <a asp-controller="Account" asp-action="Login" class="uv-btn-signup">Sign Up</a>
-            }
+            <a asp-controller="Dashboard" asp-action="Index" class="uv-btn-signup" style="display:inline-flex;align-items:center;gap:0.4rem;">
+                Dashboard
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </a>
+            <a asp-controller="Account" asp-action="Logout" class="uv-btn-login">Sign out</a>
         </div>
     </header>
 
