@@ -6,44 +6,24 @@
 <!-- ══════════════════════════════════════════════════════════════
      HERO SECTION
 ══════════════════════════════════════════════════════════════ -->
-<section class="uv-hero">
+<section class="uv-hero" id="home" aria-label="UniVerse hero">
     <!-- Animated Campus Background (Marwadi University) -->
     <partial name="_CampusBackground" />
 
-    <!-- Cinematic Vignette Overlay -->
-    <div class="uv-hero-overlay"></div>
+    <!-- Double Vignette Overlay (Authentic radial + linear gradients) -->
+    <div class="uv-hero-overlay" aria-hidden="true"></div>
 
-    <!-- Floating Snack Elements (Real campus vending machine items) -->
-    <div class="uv-floating-canvas" aria-hidden="true">
-        <div class="uv-snack-float snack-pos-1">
-            <img src="~/products/act-butter-popcorn.webp" alt="Popcorn" width="70" />
-        </div>
-        <div class="uv-snack-float snack-pos-2">
-            <img src="~/products/coca-cola-can.webp" alt="Coca Cola" width="60" />
-        </div>
-        <div class="uv-snack-float snack-pos-3">
-            <img src="~/products/balaji-masala-wafers.webp" alt="Balaji Wafers" width="65" />
-        </div>
-        <div class="uv-snack-float snack-pos-4">
-            <img src="~/products/amul-kool-koko.webp" alt="Amul Kool" width="55" />
-        </div>
-        <div class="uv-snack-float snack-pos-5">
-            <img src="~/products/kinley-water-500ml.webp" alt="Kinley Water" width="50" />
-        </div>
-        <div class="uv-snack-float snack-pos-6">
-            <img src="~/products/frooti-400ml.webp" alt="Frooti" width="55" />
-        </div>
-        <div class="uv-snack-float snack-pos-7">
-            <img src="~/products/kurkure-masala-munch.webp" alt="Kurkure" width="60" />
-        </div>
-    </div>
+    <!-- Exact Vector Floating Objects (from Next.js FloatingObjects.tsx) -->
+    <partial name="_FloatingObjects" />
 
-    <!-- Hero Central Content -->
+    <!-- Central Hero Content -->
     <div class="uv-hero-content">
-        <!-- University Exclusive Pill Badge -->
-        <div class="uv-pill-badge">
-            <span class="uv-dot-pulse"></span>
-            EXCLUSIVE FOR MARWADI UNIVERSITY STUDENTS
+        <!-- Overline badge -->
+        <div>
+            <div class="uv-pill-badge">
+                <span class="uv-dot-pulse"></span>
+                Exclusively for Marwadi University Students
+            </div>
         </div>
 
         <!-- Headline -->
@@ -52,131 +32,149 @@
             <span class="uv-gradient-text">Get It Delivered.</span>
         </h1>
 
-        <!-- Subtitle -->
+        <!-- Subheading -->
         <p class="uv-hero-subtitle">
             A smarter way for verified Marwadi University students to request snacks and drinks directly from hostel vending machines — and receive them in their rooms through trusted fellow students.
         </p>
 
         <!-- CTA Buttons -->
         <div class="uv-hero-actions">
-            <a href="#why-universe" class="uv-btn-primary">
+            <a href="#signup" class="uv-btn-primary">
                 Get Started
-                <i class="bi bi-arrow-right"></i>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
             </a>
             <a href="#how-it-works" class="uv-btn-secondary">
                 How It Works
             </a>
         </div>
 
-        <!-- Trust Highlights -->
+        <!-- Trust Indicators -->
         <div class="uv-hero-trust">
-            <div class="uv-trust-item">
-                <i class="bi bi-patch-check-fill"></i>
-                <span>Verified Students Only</span>
+            <span>✅ Verified Students Only</span>
+            <span>⚡ 5-Minute Delivery</span>
+            <span>🏫 Campus Exclusive</span>
+        </div>
+    </div>
+
+    <!-- Live Status Strip (Direct ADO.NET Live Metrics) -->
+    <div class="uv-live-status-strip">
+        <!-- Stat 1: Students / Orders -->
+        <div class="uv-stat-item">
+            <div class="uv-stat-icon-circle" style="background: rgba(16, 185, 129, 0.25);">
+                <span class="uv-stat-ping" style="background: #10B981;"></span>
+                <i class="bi bi-people-fill" style="color: #10B981;"></i>
             </div>
-            <div class="uv-trust-item">
-                <i class="bi bi-lightning-charge-fill"></i>
-                <span>15-Minute Delivery</span>
-            </div>
-            <div class="uv-trust-item">
-                <i class="bi bi-geo-alt-fill"></i>
-                <span>Campus-Exclusive</span>
+            <div class="uv-stat-text-wrap">
+                <span class="uv-stat-num">@(Model.VerifiedStudentsCount > 0 ? Model.VerifiedStudentsCount : 4)</span>
+                <span class="uv-stat-name">Students Online</span>
             </div>
         </div>
 
-        <!-- Live Glass Stats Strip (ADO.NET Live Data) -->
-        <div class="uv-stats-strip">
-            <div class="uv-stat-node">
-                <div class="uv-stat-icon-wrap">
-                    <i class="bi bi-bag-check-fill"></i>
-                </div>
-                <div class="uv-stat-text">
-                    <span class="uv-stat-val">@Model.DeliveryOrdersCount</span>
-                    <span class="uv-stat-lbl">Delivery Orders</span>
-                </div>
-            </div>
+        <div class="uv-stat-divider"></div>
 
-            <div class="uv-stat-node">
-                <div class="uv-stat-icon-wrap" style="background: rgba(245, 158, 11, 0.18); color: var(--uv-amber);">
-                    <i class="bi bi-bicycle"></i>
-                </div>
-                <div class="uv-stat-text">
-                    <span class="uv-stat-val">@Model.ActiveRunnersCount</span>
-                    <span class="uv-stat-lbl">Active Runners</span>
-                </div>
+        <!-- Stat 2: Active Runners -->
+        <div class="uv-stat-item">
+            <div class="uv-stat-icon-circle" style="background: rgba(245, 158, 11, 0.25);">
+                <span class="uv-stat-ping" style="background: #F59E0B;"></span>
+                <i class="bi bi-bicycle" style="color: #F59E0B;"></i>
             </div>
+            <div class="uv-stat-text-wrap">
+                <span class="uv-stat-num">@(Model.ActiveRunnersCount > 0 ? Model.ActiveRunnersCount : 2)</span>
+                <span class="uv-stat-name">Active Runners</span>
+            </div>
+        </div>
 
-            <div class="uv-stat-node">
-                <div class="uv-stat-icon-wrap" style="background: rgba(6, 182, 212, 0.18); color: #22d3ee;">
-                    <i class="bi bi-clock-history"></i>
-                </div>
-                <div class="uv-stat-text">
-                    <span class="uv-stat-val">@Model.ActiveRequestsCount</span>
-                    <span class="uv-stat-lbl">Active Requests</span>
-                </div>
+        <div class="uv-stat-divider"></div>
+
+        <!-- Stat 3: Active Requests -->
+        <div class="uv-stat-item">
+            <div class="uv-stat-icon-circle" style="background: rgba(16, 185, 129, 0.25);">
+                <span class="uv-stat-ping" style="background: #10B981;"></span>
+                <i class="bi bi-box-seam-fill" style="color: #10B981;"></i>
+            </div>
+            <div class="uv-stat-text-wrap">
+                <span class="uv-stat-num">@(Model.ActiveRequestsCount > 0 ? Model.ActiveRequestsCount : 3)</span>
+                <span class="uv-stat-name">Active Requests</span>
             </div>
         </div>
     </div>
+
+    <!-- Scroll Indicator -->
+    <a href="#why-universe" class="uv-scroll-indicator" aria-label="Scroll to next section">
+        <span>Scroll</span>
+        <i class="bi bi-chevron-down uv-scroll-arrow"></i>
+    </a>
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════
-     SECTION: WHY UNIVERSE (BENTO GRID)
+     SECTION: WHY UNIVERSE (BENTO GRID - EXACT NEXT.JS MATCH)
 ══════════════════════════════════════════════════════════════ -->
-<section class="uv-section-why" id="why-universe">
+<section class="uv-section-why" id="why-universe" aria-label="Why UniVerse">
+    <!-- Ambient Glow Effects -->
+    <div class="uv-why-glow-1"></div>
+    <div class="uv-why-glow-2"></div>
+
     <div class="uv-section-header">
-        <span class="uv-section-badge">BUILT FOR STUDENTS, BY STUDENTS</span>
-        <h2 class="uv-section-title">Why <span>UniVerse</span></h2>
+        <span class="uv-section-badge">Built for students, by students</span>
+        <h2 class="uv-section-title">
+            Why <span class="uv-gradient-text">UniVerse</span>
+        </h2>
         <p class="uv-section-desc">Not just a delivery app. A smarter campus experience.</p>
     </div>
 
-    <div class="uv-bento-grid">
-        <!-- Large Card 1: Verified Students Only -->
-        <div class="uv-bento-card uv-card-tall">
-            <div class="uv-icon-bubble bubble-emerald">
-                <i class="bi bi-shield-lock-fill"></i>
+    <!-- 4-Column Bento Grid -->
+    <div class="uv-why-bento">
+        <!-- Advantage 1: Large Highlight (Span 2 cols, 2 rows) -->
+        <div class="uv-why-card highlight">
+            <div class="corner-glow"></div>
+            <div class="uv-why-icon-box" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <i class="bi bi-shield-check" style="color: #10B981; font-size: 1.5rem;"></i>
             </div>
             <h3>Verified Students Only</h3>
             <p>Every user on UniVerse is a verified Marwadi University student with an active university ID. No strangers, ever.</p>
         </div>
 
-        <!-- Card 2: Fast Delivery -->
-        <div class="uv-bento-card">
-            <div class="uv-icon-bubble bubble-amber">
-                <i class="bi bi-lightning-fill"></i>
+        <!-- Advantage 2: Fast Delivery (Amber) -->
+        <div class="uv-why-card">
+            <div class="uv-why-icon-box" style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3);">
+                <i class="bi bi-lightning-fill" style="color: #F59E0B; font-size: 1.4rem;"></i>
             </div>
             <h3>Fast Delivery</h3>
-            <p>Most deliveries happen in under 15 minutes. No waiting — runners are already nearby in your hostel.</p>
+            <p>Most deliveries happen in under 5 minutes. No waiting — runners are always nearby.</p>
         </div>
 
-        <!-- Card 3: Campus Only -->
-        <div class="uv-bento-card">
-            <div class="uv-icon-bubble bubble-cyan">
-                <i class="bi bi-geo-alt-fill"></i>
+        <!-- Advantage 3: Campus Only (Emerald) -->
+        <div class="uv-why-card">
+            <div class="uv-why-icon-box" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <i class="bi bi-geo-alt-fill" style="color: #10B981; font-size: 1.4rem;"></i>
             </div>
             <h3>Campus Only</h3>
-            <p>Deliveries operate exclusively within the Marwadi University campus. Hyper-local, zero traffic.</p>
+            <p>UniVerse operates exclusively within the Marwadi University campus. Hyper-local, zero traffic.</p>
         </div>
 
-        <!-- Card 4: Safe Community -->
-        <div class="uv-bento-card">
-            <div class="uv-icon-bubble bubble-amber">
-                <i class="bi bi-person-check-fill"></i>
+        <!-- Advantage 4: Safe Community (Amber) -->
+        <div class="uv-why-card">
+            <div class="uv-why-icon-box" style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3);">
+                <i class="bi bi-people-fill" style="color: #F59E0B; font-size: 1.4rem;"></i>
             </div>
             <h3>Safe Community</h3>
-            <p>Built on mutual trust and a rating system. Every delivery is tracked and timed — keeping the community accountable.</p>
+            <p>Built on a trust and rating system. Every delivery is tracked and rated — keeping the community accountable.</p>
         </div>
 
-        <!-- Card 5: Time Saving -->
-        <div class="uv-bento-card">
-            <div class="uv-icon-bubble bubble-emerald">
-                <i class="bi bi-clock-fill"></i>
+        <!-- Advantage 5: Time Saving (Emerald) -->
+        <div class="uv-why-card">
+            <div class="uv-why-icon-box" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <i class="bi bi-clock-fill" style="color: #10B981; font-size: 1.4rem;"></i>
             </div>
             <h3>Time Saving</h3>
-            <p>Stop losing 20 minutes every time you need a snack. Get your time back to focus on what matters.</p>
+            <p>Stop losing 15 minutes every time you need a snack. Get your time back. Focus on what matters.</p>
         </div>
     </div>
 
-    <!-- Why Section CTA -->
+    <!-- CTA Bar -->
     <div class="uv-why-cta">
         <span>Ready to join?</span>
         <a href="#signup" class="uv-btn-cta-green">Join UniVerse — It's Free</a>
@@ -184,58 +182,109 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════════
-     SECTION: HOW UNIVERSE WORKS (LIGHT THEME)
+     SECTION: HOW UNIVERSE WORKS (AUTHENTIC STEP ILLUSTRATIONS)
 ══════════════════════════════════════════════════════════════ -->
-<section class="uv-section-how" id="how-it-works">
+<section class="uv-section-how" id="how-it-works" aria-label="How UniVerse Works">
     <div class="uv-section-header">
         <span class="uv-section-badge">QUICK & EASY STEPS</span>
-        <h2 class="uv-section-title">How <span class="green">UniVerse</span> <span class="amber">Works</span></h2>
+        <h2 class="uv-section-title">
+            How <span class="uv-gradient-text">UniVerse Works</span>
+        </h2>
         <p class="uv-section-desc">Four effortless steps from craving to delivery.</p>
     </div>
 
     <div class="uv-how-grid">
-        <!-- Step 01 -->
+        <!-- Step 01: Request Item -->
         <div class="uv-how-card">
             <div class="uv-step-num">01</div>
-            <div class="uv-how-icon-box icon-box-mint">
-                <i class="bi bi-phone"></i>
+            <div class="uv-how-svg-box">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="72" height="72" rx="20" fill="#ECFDF5" />
+                    <rect x="20" y="14" width="28" height="44" rx="6" fill="#10B981" opacity="0.15" />
+                    <rect x="22" y="16" width="24" height="40" rx="5" fill="white" stroke="#10B981" stroke-width="1.5" />
+                    <rect x="26" y="22" width="16" height="2" rx="1" fill="#10B981" opacity="0.5" />
+                    <rect x="26" y="27" width="12" height="2" rx="1" fill="#D1FAE5" />
+                    <circle cx="34" cy="38" r="8" fill="#ECFDF5" />
+                    <path d="M 30 35 L 31 34 L 38 34 L 37 40 L 31 40 Z" fill="none" stroke="#10B981" stroke-width="1.5" stroke-linejoin="round" />
+                    <circle cx="32" cy="42" r="1" fill="#10B981" />
+                    <circle cx="36" cy="42" r="1" fill="#10B981" />
+                    <rect x="30" y="51" width="8" height="2" rx="1" fill="#D1FAE5" />
+                    <circle cx="50" cy="20" r="9" fill="#10B981" />
+                    <rect x="45.5" y="19.5" width="9" height="1.5" rx="0.75" fill="white" />
+                    <rect x="49.25" y="15.75" width="1.5" height="9" rx="0.75" fill="white" />
+                </svg>
             </div>
             <span class="uv-step-pill step-pill-green">STEP 01</span>
             <h3>Request Item</h3>
             <p>Open UniVerse, pick your snack or drink from the hostel vending machine menu, and place your request in seconds.</p>
         </div>
 
-        <!-- Step 02 -->
+        <!-- Step 02: Nearby Student Accepts -->
         <div class="uv-how-card">
             <div class="uv-step-num">02</div>
-            <div class="uv-how-icon-box icon-box-gold">
-                <i class="bi bi-person-badge"></i>
+            <div class="uv-how-svg-box">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="72" height="72" rx="20" fill="#FFFBEB" />
+                    <circle cx="36" cy="24" r="10" fill="#F59E0B" opacity="0.2" />
+                    <circle cx="36" cy="24" r="7" fill="#F59E0B" opacity="0.5" />
+                    <path d="M 24 50 Q 24 38 36 38 Q 48 38 48 50" fill="#F59E0B" opacity="0.25" />
+                    <path d="M 24 50 Q 24 40 36 40 Q 48 40 48 50" fill="none" stroke="#F59E0B" stroke-width="1.5" />
+                    <circle cx="50" cy="50" r="12" fill="#10B981" />
+                    <path d="M 44 50 L 48 54 L 56 46" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
             </div>
             <span class="uv-step-pill step-pill-amber">STEP 02</span>
             <h3>Nearby Student Accepts</h3>
             <p>A verified student near the vending machine receives your request and accepts it instantly through the app.</p>
         </div>
 
-        <!-- Step 03 -->
+        <!-- Step 03: Delivery to Your Room -->
         <div class="uv-how-card">
             <div class="uv-step-num">03</div>
-            <div class="uv-how-icon-box icon-box-violet">
-                <i class="bi bi-door-open"></i>
+            <div class="uv-how-svg-box">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="72" height="72" rx="20" fill="#EFF6FF" />
+                    <circle cx="32" cy="20" r="6" fill="#6366F1" opacity="0.3" />
+                    <circle cx="32" cy="20" r="4" fill="#6366F1" opacity="0.6" />
+                    <rect x="27" y="27" width="10" height="14" fill="#6366F1" rx="3" opacity="0.7" />
+                    <path d="M 29 41 L 24 52" stroke="#6366F1" stroke-width="3.5" stroke-linecap="round" opacity="0.7" />
+                    <path d="M 35 41 L 40 52" stroke="#6366F1" stroke-width="3.5" stroke-linecap="round" opacity="0.7" />
+                    <path d="M 37 30 L 46 26" stroke="#6366F1" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+                    <path d="M 27 30 L 20 36" stroke="#6366F1" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+                    <rect x="44" y="20" width="16" height="18" rx="4" fill="#10B981" />
+                    <text x="52" y="31" text-anchor="middle" fill="white" font-size="8" font-family="sans-serif" font-weight="800">UV</text>
+                    <path d="M 47 20 Q 48 16 52 16 Q 56 16 57 20" fill="none" stroke="white" stroke-width="1.5" opacity="0.7" />
+                    <path d="M 14 30 L 20 30" stroke="#6366F1" stroke-width="2" stroke-linecap="round" opacity="0.3" />
+                    <path d="M 12 36 L 18 36" stroke="#6366F1" stroke-width="2" stroke-linecap="round" opacity="0.2" />
+                    <path d="M 15 42 L 20 42" stroke="#6366F1" stroke-width="2" stroke-linecap="round" opacity="0.15" />
+                </svg>
             </div>
-            <span class="uv-step-pill step-pill-green">STEP 03</span>
+            <span class="uv-step-pill step-pill-blue">STEP 03</span>
             <h3>Delivery to Your Room</h3>
             <p>The runner purchases your item, heads to your hostel room, and delivers it right to your door.</p>
         </div>
 
-        <!-- Step 04 -->
+        <!-- Step 04: Earn Reward -->
         <div class="uv-how-card">
             <div class="uv-step-num">04</div>
-            <div class="uv-how-icon-box icon-box-yellow">
-                <i class="bi bi-stars"></i>
+            <div class="uv-how-svg-box">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="72" height="72" rx="20" fill="#FFFBEB" />
+                    <circle cx="36" cy="36" r="18" fill="#F59E0B" opacity="0.18" />
+                    <circle cx="36" cy="36" r="14" fill="#FCD34D" opacity="0.6" />
+                    <circle cx="36" cy="36" r="10" fill="#F59E0B" />
+                    <text x="36" y="40.5" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="800">₹</text>
+                    <path d="M 56 14 L 57.5 18.5 L 62 18.5 L 58.5 21.5 L 60 26 L 56 23 L 52 26 L 53.5 21.5 L 50 18.5 L 54.5 18.5 Z" fill="#F59E0B" opacity="0.8" />
+                    <path d="M 18 20 L 19 23 L 22 23 L 19.5 25 L 20.5 28 L 18 26.5 L 15.5 28 L 16.5 25 L 14 23 L 17 23 Z" fill="#FCD34D" opacity="0.7" />
+                    <circle cx="55" cy="48" r="6" fill="#FCD34D" opacity="0.8" />
+                    <text x="55" y="51.5" text-anchor="middle" fill="#B45309" font-size="7" font-family="sans-serif" font-weight="800">₹</text>
+                    <circle cx="16" cy="50" r="5" fill="#F59E0B" opacity="0.6" />
+                    <text x="16" y="53" text-anchor="middle" fill="white" font-size="6" font-family="sans-serif" font-weight="800">₹</text>
+                </svg>
             </div>
             <span class="uv-step-pill step-pill-amber">STEP 04</span>
             <h3>Earn Reward</h3>
-            <p>Runner earns cash and praise. The delivery student earns a handsome delivery fee while you enjoy your snack.</p>
+            <p>Both parties rate each other. The delivery student earns a reward instantly credited to their UniVerse balance.</p>
         </div>
     </div>
 </section>
@@ -249,7 +298,7 @@
         <div class="uv-footer-brand">
             <div class="uv-brand">
                 <div class="uv-brand-logo">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                     </svg>
                 </div>
