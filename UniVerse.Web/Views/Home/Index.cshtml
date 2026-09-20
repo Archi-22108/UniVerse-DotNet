@@ -1,0 +1,317 @@
+@model UniVerse.Web.Models.HomeViewModel
+@{
+    ViewData["Title"] = "Skip the Stairs. Get It Delivered.";
+}
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO SECTION
+══════════════════════════════════════════════════════════════ -->
+<section class="uv-hero">
+    <!-- Animated Campus Background (Marwadi University) -->
+    <partial name="_CampusBackground" />
+
+    <!-- Cinematic Vignette Overlay -->
+    <div class="uv-hero-overlay"></div>
+
+    <!-- Floating Snack Elements (Real campus vending machine items) -->
+    <div class="uv-floating-canvas" aria-hidden="true">
+        <div class="uv-snack-float snack-pos-1">
+            <img src="~/products/act-butter-popcorn.webp" alt="Popcorn" width="70" />
+        </div>
+        <div class="uv-snack-float snack-pos-2">
+            <img src="~/products/coca-cola-can.webp" alt="Coca Cola" width="60" />
+        </div>
+        <div class="uv-snack-float snack-pos-3">
+            <img src="~/products/balaji-masala-wafers.webp" alt="Balaji Wafers" width="65" />
+        </div>
+        <div class="uv-snack-float snack-pos-4">
+            <img src="~/products/amul-kool-koko.webp" alt="Amul Kool" width="55" />
+        </div>
+        <div class="uv-snack-float snack-pos-5">
+            <img src="~/products/kinley-water-500ml.webp" alt="Kinley Water" width="50" />
+        </div>
+        <div class="uv-snack-float snack-pos-6">
+            <img src="~/products/frooti-400ml.webp" alt="Frooti" width="55" />
+        </div>
+        <div class="uv-snack-float snack-pos-7">
+            <img src="~/products/kurkure-masala-munch.webp" alt="Kurkure" width="60" />
+        </div>
+    </div>
+
+    <!-- Hero Central Content -->
+    <div class="uv-hero-content">
+        <!-- University Exclusive Pill Badge -->
+        <div class="uv-pill-badge">
+            <span class="uv-dot-pulse"></span>
+            EXCLUSIVE FOR MARWADI UNIVERSITY STUDENTS
+        </div>
+
+        <!-- Headline -->
+        <h1 class="uv-hero-title">
+            Skip the Stairs.<br />
+            <span class="uv-gradient-text">Get It Delivered.</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="uv-hero-subtitle">
+            A smarter way for verified Marwadi University students to request snacks and drinks directly from hostel vending machines — and receive them in their rooms through trusted fellow students.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="uv-hero-actions">
+            <a href="#why-universe" class="uv-btn-primary">
+                Get Started
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="#how-it-works" class="uv-btn-secondary">
+                How It Works
+            </a>
+        </div>
+
+        <!-- Trust Highlights -->
+        <div class="uv-hero-trust">
+            <div class="uv-trust-item">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Verified Students Only</span>
+            </div>
+            <div class="uv-trust-item">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <span>15-Minute Delivery</span>
+            </div>
+            <div class="uv-trust-item">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Campus-Exclusive</span>
+            </div>
+        </div>
+
+        <!-- Live Glass Stats Strip (ADO.NET Live Data) -->
+        <div class="uv-stats-strip">
+            <div class="uv-stat-node">
+                <div class="uv-stat-icon-wrap">
+                    <i class="bi bi-bag-check-fill"></i>
+                </div>
+                <div class="uv-stat-text">
+                    <span class="uv-stat-val">@Model.DeliveryOrdersCount</span>
+                    <span class="uv-stat-lbl">Delivery Orders</span>
+                </div>
+            </div>
+
+            <div class="uv-stat-node">
+                <div class="uv-stat-icon-wrap" style="background: rgba(245, 158, 11, 0.18); color: var(--uv-amber);">
+                    <i class="bi bi-bicycle"></i>
+                </div>
+                <div class="uv-stat-text">
+                    <span class="uv-stat-val">@Model.ActiveRunnersCount</span>
+                    <span class="uv-stat-lbl">Active Runners</span>
+                </div>
+            </div>
+
+            <div class="uv-stat-node">
+                <div class="uv-stat-icon-wrap" style="background: rgba(6, 182, 212, 0.18); color: #22d3ee;">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="uv-stat-text">
+                    <span class="uv-stat-val">@Model.ActiveRequestsCount</span>
+                    <span class="uv-stat-lbl">Active Requests</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SECTION: WHY UNIVERSE (BENTO GRID)
+══════════════════════════════════════════════════════════════ -->
+<section class="uv-section-why" id="why-universe">
+    <div class="uv-section-header">
+        <span class="uv-section-badge">BUILT FOR STUDENTS, BY STUDENTS</span>
+        <h2 class="uv-section-title">Why <span>UniVerse</span></h2>
+        <p class="uv-section-desc">Not just a delivery app. A smarter campus experience.</p>
+    </div>
+
+    <div class="uv-bento-grid">
+        <!-- Large Card 1: Verified Students Only -->
+        <div class="uv-bento-card uv-card-tall">
+            <div class="uv-icon-bubble bubble-emerald">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h3>Verified Students Only</h3>
+            <p>Every user on UniVerse is a verified Marwadi University student with an active university ID. No strangers, ever.</p>
+        </div>
+
+        <!-- Card 2: Fast Delivery -->
+        <div class="uv-bento-card">
+            <div class="uv-icon-bubble bubble-amber">
+                <i class="bi bi-lightning-fill"></i>
+            </div>
+            <h3>Fast Delivery</h3>
+            <p>Most deliveries happen in under 15 minutes. No waiting — runners are already nearby in your hostel.</p>
+        </div>
+
+        <!-- Card 3: Campus Only -->
+        <div class="uv-bento-card">
+            <div class="uv-icon-bubble bubble-cyan">
+                <i class="bi bi-geo-alt-fill"></i>
+            </div>
+            <h3>Campus Only</h3>
+            <p>Deliveries operate exclusively within the Marwadi University campus. Hyper-local, zero traffic.</p>
+        </div>
+
+        <!-- Card 4: Safe Community -->
+        <div class="uv-bento-card">
+            <div class="uv-icon-bubble bubble-amber">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <h3>Safe Community</h3>
+            <p>Built on mutual trust and a rating system. Every delivery is tracked and timed — keeping the community accountable.</p>
+        </div>
+
+        <!-- Card 5: Time Saving -->
+        <div class="uv-bento-card">
+            <div class="uv-icon-bubble bubble-emerald">
+                <i class="bi bi-clock-fill"></i>
+            </div>
+            <h3>Time Saving</h3>
+            <p>Stop losing 20 minutes every time you need a snack. Get your time back to focus on what matters.</p>
+        </div>
+    </div>
+
+    <!-- Why Section CTA -->
+    <div class="uv-why-cta">
+        <span>Ready to join?</span>
+        <a href="#signup" class="uv-btn-cta-green">Join UniVerse — It's Free</a>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SECTION: HOW UNIVERSE WORKS (LIGHT THEME)
+══════════════════════════════════════════════════════════════ -->
+<section class="uv-section-how" id="how-it-works">
+    <div class="uv-section-header">
+        <span class="uv-section-badge">QUICK & EASY STEPS</span>
+        <h2 class="uv-section-title">How <span class="green">UniVerse</span> <span class="amber">Works</span></h2>
+        <p class="uv-section-desc">Four effortless steps from craving to delivery.</p>
+    </div>
+
+    <div class="uv-how-grid">
+        <!-- Step 01 -->
+        <div class="uv-how-card">
+            <div class="uv-step-num">01</div>
+            <div class="uv-how-icon-box icon-box-mint">
+                <i class="bi bi-phone"></i>
+            </div>
+            <span class="uv-step-pill step-pill-green">STEP 01</span>
+            <h3>Request Item</h3>
+            <p>Open UniVerse, pick your snack or drink from the hostel vending machine menu, and place your request in seconds.</p>
+        </div>
+
+        <!-- Step 02 -->
+        <div class="uv-how-card">
+            <div class="uv-step-num">02</div>
+            <div class="uv-how-icon-box icon-box-gold">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <span class="uv-step-pill step-pill-amber">STEP 02</span>
+            <h3>Nearby Student Accepts</h3>
+            <p>A verified student near the vending machine receives your request and accepts it instantly through the app.</p>
+        </div>
+
+        <!-- Step 03 -->
+        <div class="uv-how-card">
+            <div class="uv-step-num">03</div>
+            <div class="uv-how-icon-box icon-box-violet">
+                <i class="bi bi-door-open"></i>
+            </div>
+            <span class="uv-step-pill step-pill-green">STEP 03</span>
+            <h3>Delivery to Your Room</h3>
+            <p>The runner purchases your item, heads to your hostel room, and delivers it right to your door.</p>
+        </div>
+
+        <!-- Step 04 -->
+        <div class="uv-how-card">
+            <div class="uv-step-num">04</div>
+            <div class="uv-how-icon-box icon-box-yellow">
+                <i class="bi bi-stars"></i>
+            </div>
+            <span class="uv-step-pill step-pill-amber">STEP 04</span>
+            <h3>Earn Reward</h3>
+            <p>Runner earns cash and praise. The delivery student earns a handsome delivery fee while you enjoy your snack.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════ -->
+<footer class="uv-footer">
+    <div class="uv-footer-inner">
+        <!-- Brand Summary -->
+        <div class="uv-footer-brand">
+            <div class="uv-brand">
+                <div class="uv-brand-logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <span class="uv-brand-name">Uni<span>Verse</span></span>
+            </div>
+
+            <p class="tagline">Skip the Stairs. Buy & Get Snacks.</p>
+            <p class="about">
+                The verified campus super-app for hostel craving, peer-to-peer marketplace, and campus community — exclusively for Marwadi University.
+            </p>
+
+            <div class="uv-campus-tag">
+                <i class="bi bi-geo-alt-fill"></i>
+                Under Campus - Marwadi University, Rajkot
+            </div>
+
+            <div class="uv-download-btns">
+                <a href="#request" class="uv-btn-app">
+                    <i class="bi bi-bag-plus"></i> Request Snack
+                </a>
+                <a href="#app" class="uv-btn-app">
+                    <i class="bi bi-phone"></i> Open App
+                </a>
+            </div>
+        </div>
+
+        <!-- Product Links -->
+        <div class="uv-footer-col">
+            <h4>PRODUCT</h4>
+            <ul>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#why-universe">Why UniVerse</a></li>
+                <li><a href="#get-started">Get Started</a></li>
+                <li><a href="#login">Login</a></li>
+            </ul>
+        </div>
+
+        <!-- Company Links -->
+        <div class="uv-footer-col">
+            <h4>COMPANY</h4>
+            <ul>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#support">Support Desk</a></li>
+                <li><a href="#privacy">Privacy Policy</a></li>
+                <li><a href="#terms">Terms of Use</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="uv-footer-bottom">
+        <div>© 2026 UniVerse. All rights reserved.</div>
+
+        <div class="uv-legal-links">
+            <a href="#privacy">Privacy</a>
+            <a href="#terms">Terms</a>
+            <a href="#support">Support</a>
+        </div>
+
+        <div class="uv-status-pill">
+            <span class="uv-dot-pulse"></span>
+            All systems operational
+        </div>
+    </div>
+</footer>
