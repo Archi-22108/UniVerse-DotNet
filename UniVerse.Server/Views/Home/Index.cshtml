@@ -1,129 +1,315 @@
 @{
-    ViewData["Title"] = "Campus Super-App";
+    ViewData["Title"] = "UniVerse — Skip the Stairs. Get It Delivered.";
     var recentRequests = ViewBag.RecentRequests as List<UniVerse.Server.Models.DeliveryRequestDetailDto> ?? new();
     var recentListings = ViewBag.RecentListings as List<UniVerse.Server.Models.MarketplaceListingDetailDto> ?? new();
 }
 
-<!-- Hero Banner -->
-<section class="py-5 text-center position-relative">
-    <div class="container py-4">
+<style>
+    /* Cinematic Gradient & Animations */
+    .hero-gradient-text {
+        background: linear-gradient(90deg, #10B981 20%, #F59E0B 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .glass-pill {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #4ADE80;
+        backdrop-filter: blur(8px);
+        font-size: 0.78rem;
+        letter-spacing: 0.05em;
+    }
+
+    .glass-status-strip {
+        background: rgba(10, 20, 15, 0.75);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border-radius: 20px;
+    }
+
+    /* Floating Item Animations */
+    @@keyframes floatSlow {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-16px) rotate(4deg); }
+    }
+    @@keyframes floatMedium {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-22px) rotate(-5deg); }
+    }
+    @@keyframes floatFast {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    .floating-snack {
+        animation: floatSlow 6s ease-in-out infinite;
+    }
+    .floating-soda {
+        animation: floatMedium 7s ease-in-out infinite 1s;
+    }
+    .floating-choco {
+        animation: floatFast 5.5s ease-in-out infinite 0.5s;
+    }
+
+    /* Bento Grid */
+    .bento-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+    .bento-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(16, 185, 129, 0.3);
+        transform: translateY(-4px);
+    }
+    .bento-highlight {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.04) 100%);
+        border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    /* Step Card */
+    .step-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        transition: all 0.3s ease;
+    }
+    .step-card:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+        transform: translateY(-4px);
+    }
+</style>
+
+<!-- ─── HERO SECTION ─────────────────────────────────────────────────────────── -->
+<section class="position-relative overflow-hidden py-5 py-lg-6 text-center">
+    <!-- Floating Ambient Elements (Desktop Only) -->
+    <div class="position-absolute d-none d-lg-block floating-snack" style="top: 15%; left: 6%; opacity: 0.85; z-index: 1;">
+        <svg width="60" height="74" viewBox="0 0 52 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.5));">
+            <rect x="6" y="14" width="40" height="44" fill="#F59E0B" rx="6" stroke="#C09040" stroke-width="1.5"/>
+            <path d="M 6 14 Q 26 8 46 14" fill="#E8B040" stroke="#B07030" stroke-width="1"/>
+            <rect x="6" y="28" width="40" height="16" fill="#10B981" opacity="0.9"/>
+            <rect x="12" y="32" width="28" height="8" fill="#059669" rx="4" />
+            <text x="26" y="39" text-anchor="middle" fill="white" font-size="7" font-family="sans-serif" font-weight="800" letter-spacing="1">SNACK</text>
+        </svg>
+    </div>
+
+    <div class="position-absolute d-none d-lg-block floating-soda" style="top: 25%; right: 7%; opacity: 0.85; z-index: 1;">
+        <svg width="50" height="78" viewBox="0 0 38 62" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.5));">
+            <rect x="4" y="10" width="30" height="46" fill="#10B981" rx="4"/>
+            <ellipse cx="19" cy="10" rx="15" ry="5" fill="#C0C0C0"/>
+            <ellipse cx="19" cy="56" rx="15" ry="5" fill="#C0C0C0"/>
+            <rect x="4" y="22" width="30" height="22" fill="#064E3B" opacity="0.9"/>
+            <text x="19" y="36" text-anchor="middle" fill="#6EE7B7" font-size="11" font-family="sans-serif" font-weight="900" letter-spacing="1">UV</text>
+        </svg>
+    </div>
+
+    <div class="position-absolute d-none d-lg-block floating-choco" style="bottom: 15%; left: 10%; opacity: 0.85; z-index: 1;">
+        <svg width="64" height="50" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.5));">
+            <rect x="2" y="4" width="52" height="36" fill="#B05030" rx="5" stroke="#904020" stroke-width="1.5"/>
+            <text x="28" y="13" text-anchor="middle" fill="white" font-size="6" font-family="sans-serif" font-weight="800" letter-spacing="1">CHOCO</text>
+            <rect x="8" y="18" width="10" height="8" fill="#4A2511" rx="1.5"/>
+            <rect x="22" y="18" width="10" height="8" fill="#4A2511" rx="1.5"/>
+            <rect x="36" y="18" width="10" height="8" fill="#4A2511" rx="1.5"/>
+            <rect x="8" y="28" width="10" height="8" fill="#4A2511" rx="1.5"/>
+            <rect x="22" y="28" width="10" height="8" fill="#4A2511" rx="1.5"/>
+            <rect x="36" y="28" width="10" height="8" fill="#4A2511" rx="1.5"/>
+        </svg>
+    </div>
+
+    <div class="container position-relative" style="z-index: 2;">
         <!-- University Badge -->
-        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
-            <i class="bi bi-geo-alt-fill text-success"></i>
-            <span class="text-success fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.05em;">MARWADI UNIVERSITY &bull; ENTERPRISE CAMPUS NETWORK</span>
+        <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill mb-4 glass-pill">
+            <span class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 8px; height: 8px;"></span>
+            <span class="fw-semibold">EXCLUSIVELY FOR MARWADI UNIVERSITY STUDENTS</span>
         </div>
 
-        <h1 class="display-4 fw-bolder text-white mb-3 brand-font">
-            Campus Super-App for <br class="d-none d-sm-inline" />
-            <span style="background: linear-gradient(135deg, #34d399, #2dd4bf, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                Hostel Delivery & Student Marketplace
-            </span>
+        <!-- Headline -->
+        <h1 class="display-3 fw-bolder text-white mb-3 brand-font" style="letter-spacing: -0.02em;">
+            Skip the Stairs.<br />
+            <span class="hero-gradient-text">Get It Delivered.</span>
         </h1>
 
-        <p class="lead text-secondary mx-auto mb-4" style="max-width: 720px; font-size: 1.15rem;">
-            Order food and stationery directly to your Hostel room, earn rewards as a campus student runner, and trade used engineering textbooks — powered 100% by pure <strong>C#, ASP.NET Core MVC, and ADO.NET</strong>.
+        <!-- Subheading -->
+        <p class="lead text-secondary mx-auto mb-4" style="max-width: 680px; font-size: 1.15rem; line-height: 1.6;">
+            A smarter way for verified Marwadi University students to request snacks and drinks directly from hostel vending machines — and receive them in under 15 minutes.
         </p>
 
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a asp-controller="Delivery" asp-action="Create" class="btn btn-emerald px-4 py-2 fs-6">
-                <i class="bi bi-box-seam me-2"></i> Request Hostel Delivery
+        <!-- CTA Buttons -->
+        <div class="d-flex justify-content-center gap-3 flex-wrap mb-5">
+            <a asp-controller="Delivery" asp-action="Create" class="btn btn-emerald px-4 py-3 fw-bold rounded-3 shadow-lg fs-6">
+                Get Started <i class="bi bi-arrow-right ms-2"></i>
             </a>
-            <a asp-controller="Marketplace" asp-action="Index" class="btn btn-glass px-4 py-2 fs-6">
-                <i class="bi bi-shop me-2"></i> Explore Marketplace
+            <a href="#how-it-works" class="btn btn-glass px-4 py-3 fw-semibold rounded-3 fs-6">
+                How It Works
             </a>
-            <a asp-controller="Delivery" asp-action="RunnerHub" class="btn btn-glass px-4 py-2 fs-6">
-                <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Runner Mode
+            <a asp-controller="Delivery" asp-action="RunnerHub" class="btn btn-glass px-4 py-3 fw-semibold rounded-3 fs-6">
+                <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Runner Hub
             </a>
+        </div>
+
+        <!-- Live Status Glass Strip -->
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="glass-status-strip p-3 p-sm-4">
+                    <div class="row g-2 align-items-center text-center">
+                        <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="fs-3 fw-bold text-white brand-font">@ViewBag.TotalUsers</div>
+                            <div class="text-muted small fw-medium text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Verified Students</div>
+                        </div>
+                        <div class="col-4 border-end border-secondary border-opacity-25">
+                            <div class="fs-3 fw-bold text-warning brand-font">@ViewBag.ActiveRunners</div>
+                            <div class="text-muted small fw-medium text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Active Runners</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-3 fw-bold text-success brand-font">@ViewBag.TotalRequests</div>
+                            <div class="text-muted small fw-medium text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Active Requests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Live Campus Stats Counters (ADO.NET Computed) -->
-<section class="pb-5">
+<!-- ─── HOW IT WORKS SECTION ─────────────────────────────────────────────────── -->
+<section id="how-it-works" class="py-5">
     <div class="container">
-        <div class="row g-3">
-            <div class="col-6 col-md-3">
-                <div class="universe-card p-3 p-md-4 text-center">
-                    <div class="fs-2 fw-bold text-white mb-1 brand-font">@ViewBag.TotalUsers</div>
-                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Campus Users</div>
+        <div class="text-center mb-5">
+            <span class="badge bg-success bg-opacity-25 text-success px-3 py-1 mb-2">SIMPLE & FAST</span>
+            <h2 class="display-6 fw-bold text-white brand-font">How UniVerse Works</h2>
+            <p class="text-secondary mx-auto" style="max-width: 550px;">From placing an order to doorstep delivery in four effortless campus steps.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="step-card p-4 h-100 text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge bg-success bg-opacity-25 text-success rounded-pill px-3 py-1">Step 01</span>
+                        <i class="bi bi-cart-plus fs-3 text-success"></i>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">Place a Request</h5>
+                    <p class="text-secondary small mb-0">Craving a cold drink, chips, or stationery from the vending machine? Tap to place an order in under 30 seconds.</p>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="universe-card p-3 p-md-4 text-center">
-                    <div class="fs-2 fw-bold text-success mb-1 brand-font">@ViewBag.TotalRequests</div>
-                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Delivery Orders</div>
+
+            <!-- Step 2 -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="step-card p-4 h-100 text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-3 py-1">Step 02</span>
+                        <i class="bi bi-person-check fs-3 text-warning"></i>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">Runner Accepts</h5>
+                    <p class="text-secondary small mb-0">A peer student in your hostel block heading downstairs grabs your order from the machine on their way back.</p>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="universe-card p-3 p-md-4 text-center">
-                    <div class="fs-2 fw-bold text-info mb-1 brand-font">@ViewBag.TotalListings</div>
-                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Active Listings</div>
+
+            <!-- Step 3 -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="step-card p-4 h-100 text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge bg-primary bg-opacity-25 text-primary rounded-pill px-3 py-1">Step 03</span>
+                        <i class="bi bi-door-open fs-3 text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">Doorstep Delivery</h5>
+                    <p class="text-secondary small mb-0">Your runner brings the requested items right to your hostel room door within 5 to 15 minutes max.</p>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="universe-card p-3 p-md-4 text-center">
-                    <div class="fs-2 fw-bold text-warning mb-1 brand-font">@ViewBag.ActiveRunners</div>
-                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">On-Duty Runners</div>
+
+            <!-- Step 4 -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="step-card p-4 h-100 text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="badge bg-info bg-opacity-25 text-info rounded-pill px-3 py-1">Step 04</span>
+                        <i class="bi bi-shield-check fs-3 text-info"></i>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">OTP Confirmation</h5>
+                    <p class="text-secondary small mb-0">Share your 6-digit OTP to verify delivery. The runner's reward is instantly credited to their campus balance.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Architecture Viva Highlights Card -->
-<section class="pb-5">
+<!-- ─── WHY UNIVERSE SECTION (BENTO GRID) ────────────────────────────────────── -->
+<section id="why" class="py-5">
     <div class="container">
-        <div class="universe-card p-4 p-md-5 border-success border-opacity-25" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.8));">
-            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div>
-                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1 mb-2">ACADEMIC VIVA READY</span>
-                    <h3 class="fw-bold text-white mb-0">3-Tier ASP.NET Core MVC & Raw ADO.NET</h3>
+        <div class="text-center mb-5">
+            <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-1 mb-2">CAMPUS ADVANTAGES</span>
+            <h2 class="display-6 fw-bold text-white brand-font">Why UniVerse?</h2>
+            <p class="text-secondary mx-auto" style="max-width: 550px;">Designed and tailored exclusively for hostel life at Marwadi University.</p>
+        </div>
+
+        <div class="row g-3 text-start">
+            <!-- Card 1 (Highlight - Large) -->
+            <div class="col-12 col-lg-7">
+                <div class="bento-card bento-highlight p-4 p-md-5 h-100">
+                    <div class="fs-1 text-success mb-3"><i class="bi bi-patch-check-fill"></i></div>
+                    <h3 class="fw-bold text-white mb-2">Verified Students Only</h3>
+                    <p class="text-secondary" style="font-size: 1.05rem;">
+                        Every user on UniVerse is an enrolled Marwadi University student verified via their official university credentials and registration numbers. Zero strangers, 100% peer trust.
+                    </p>
+                    <div class="mt-4 pt-3 border-top border-success border-opacity-25 d-flex gap-3 flex-wrap">
+                        <span class="badge bg-success bg-opacity-25 text-success">Active Hostel Blocks</span>
+                        <span class="badge bg-success bg-opacity-25 text-success">Hostel A &bull; Hostel B &bull; Girls Hostel</span>
+                    </div>
                 </div>
-                <a href="/swagger" target="_blank" class="btn btn-emerald btn-sm">
-                    <i class="bi bi-file-earmark-code me-1"></i> Open Swagger API UI
-                </a>
             </div>
 
-            <div class="row g-4 text-start">
-                <div class="col-md-4">
-                    <div class="d-flex gap-3">
-                        <div class="fs-3 text-success"><i class="bi bi-layers-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold text-white mb-1">Presentation Layer</h5>
-                            <p class="text-secondary small mb-0">Server-rendered Razor Views (<code>.cshtml</code>), Tag Helpers, and Model Binding with Bootstrap 5. 0% Node.js dependencies.</p>
-                        </div>
-                    </div>
+            <!-- Card 2 -->
+            <div class="col-12 col-lg-5">
+                <div class="bento-card p-4 h-100">
+                    <div class="fs-2 text-warning mb-2"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <h4 class="fw-bold text-white mb-2">Ultra-Fast 5-Min Delivery</h4>
+                    <p class="text-secondary small mb-0">
+                        No waiting for commercial delivery bikes from outside the city. Fellow hostellers are already on your floor or heading down.
+                    </p>
                 </div>
-                <div class="col-md-4">
-                    <div class="d-flex gap-3">
-                        <div class="fs-3 text-info"><i class="bi bi-database-fill-gear"></i></div>
-                        <div>
-                            <h5 class="fw-bold text-white mb-1">Raw ADO.NET Layer</h5>
-                            <p class="text-secondary small mb-0">Direct <code>SqliteConnection</code>, <code>SqlCommand</code>, parameterized queries (SQLi protection), and atomic transactions.</p>
-                        </div>
-                    </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="col-12 col-md-4">
+                <div class="bento-card p-4 h-100">
+                    <div class="fs-2 text-info mb-2"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h5 class="fw-bold text-white mb-2">Hyper-Local Campus</h5>
+                    <p class="text-secondary small mb-0">Operates 100% inside MU gates. Zero road traffic, zero gate security hassles, and zero external delays.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="d-flex gap-3">
-                        <div class="fs-3 text-warning"><i class="bi bi-shield-lock-fill"></i></div>
-                        <div>
-                            <h5 class="fw-bold text-white mb-1">Campus Context & Auth</h5>
-                            <p class="text-secondary small mb-0">Cookie-based authentication with salted SHA-256 passwords, Marwadi University seed records, and 6-digit delivery OTP verification.</p>
-                        </div>
-                    </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="col-12 col-md-4">
+                <div class="bento-card p-4 h-100">
+                    <div class="fs-2 text-success mb-2"><i class="bi bi-shield-lock-fill"></i></div>
+                    <h5 class="fw-bold text-white mb-2">Safe & Accountable</h5>
+                    <p class="text-secondary small mb-0">Every handover is locked with a cryptographically generated 6-digit OTP and mutual student reputation ratings.</p>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="col-12 col-md-4">
+                <div class="bento-card p-4 h-100">
+                    <div class="fs-2 text-warning mb-2"><i class="bi bi-clock-history"></i></div>
+                    <h5 class="fw-bold text-white mb-2">Save Hours Every Week</h5>
+                    <p class="text-secondary small mb-0">Stop walking down 6 flights of stairs late at night during exam revisions. Let nearby runners assist you.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Live Delivery Feed -->
-<section class="py-4">
+<!-- ─── LIVE DELIVERY FEED (ADO.NET) ─────────────────────────────────────────── -->
+<section class="py-5">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold text-white mb-1">📦 Campus Delivery Feed</h2>
-                <p class="text-secondary small mb-0">Live hostel room orders retrieved directly from ADO.NET (Central Canteen, Amul, Stationery)</p>
+                <span class="badge bg-success bg-opacity-25 text-success mb-1">REAL-TIME DATA</span>
+                <h3 class="fw-bold text-white mb-0 brand-font">📦 Live Campus Delivery Feed</h3>
             </div>
             <a asp-controller="Delivery" asp-action="Index" class="btn btn-glass btn-sm">View All Orders &rarr;</a>
         </div>
@@ -131,7 +317,7 @@
         <div class="row g-3">
             @if (recentRequests.Count == 0)
             {
-                <div class="col-12 text-center text-muted py-4">No active delivery requests right now.</div>
+                <div class="col-12 text-center text-muted py-4 universe-card">No active delivery requests right now. Be the first to create one!</div>
             }
             else
             {
@@ -177,13 +363,13 @@
     </div>
 </section>
 
-<!-- Marketplace Preview -->
+<!-- ─── STUDENT MARKETPLACE PREVIEW ─────────────────────────────────────────── -->
 <section class="py-5">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold text-white mb-1">🏷️ Student Peer-to-Peer Marketplace</h2>
-                <p class="text-secondary small mb-0">Buy & sell used semester textbooks, drawing drafters, and IoT electronics safely on campus.</p>
+                <span class="badge bg-info bg-opacity-25 text-info mb-1">STUDENT PEER-TO-PEER</span>
+                <h3 class="fw-bold text-white mb-0 brand-font">🛍️ Campus Marketplace</h3>
             </div>
             <a asp-controller="Marketplace" asp-action="Index" class="btn btn-glass btn-sm">Browse All Items &rarr;</a>
         </div>
@@ -191,7 +377,7 @@
         <div class="row g-3">
             @if (recentListings.Count == 0)
             {
-                <div class="col-12 text-center text-muted py-4">No active marketplace items found.</div>
+                <div class="col-12 text-center text-muted py-4 universe-card">No marketplace listings posted yet.</div>
             }
             else
             {
@@ -228,6 +414,53 @@
                     </div>
                 }
             }
+        </div>
+    </div>
+</section>
+
+<!-- ─── PROFESSOR & VIVA EVALUATION FOOTER CALLOUT ───────────────────────────── -->
+<section class="pb-5">
+    <div class="container">
+        <div class="universe-card p-4 p-md-5 border-success border-opacity-25" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.85));">
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1 mb-2">MARWADI UNIVERSITY VIVA DEFENSE</span>
+                    <h3 class="fw-bold text-white mb-0 brand-font">Pure C# (.NET 10) & Pure ADO.NET Architecture</h3>
+                </div>
+                <a href="/swagger" target="_blank" class="btn btn-emerald btn-sm">
+                    <i class="bi bi-file-earmark-code me-1"></i> REST API Documentation (Swagger)
+                </a>
+            </div>
+
+            <div class="row g-4 text-start">
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-success"><i class="bi bi-layers-fill"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Presentation Layer</h5>
+                            <p class="text-secondary small mb-0">Server-rendered Razor Views (<code>.cshtml</code>), Tag Helpers, and Model Binding with Bootstrap 5. Zero external JavaScript frameworks.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-info"><i class="bi bi-database-fill-gear"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Raw ADO.NET Layer</h5>
+                            <p class="text-secondary small mb-0">Direct <code>SqliteConnection</code>, <code>SqlCommand</code>, parameterized queries (SQLi protection), and atomic transactions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-warning"><i class="bi bi-shield-lock-fill"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Security & Seed Data</h5>
+                            <p class="text-secondary small mb-0">Cookie-based authentication with SHA-256 salted hashes, pre-seeded Marwadi University student profiles, and 6-digit delivery OTP verification.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
