@@ -20,6 +20,9 @@
    - **ADO.NET Implementation**: Dedicated Data Access Layer using ADO.NET objects (`Connection`, `Command`, `DataReader`, `Parameter`) to satisfy university grading and viva requirements.
    - **Database**: Relational database with clean schema, foreign keys, and seed data.
 
-4. **Code Quality & Build Standards**:
+4. **100% Free of Cost & Open Source**:
+   - All tools, SDKs, database engines, packages, and frameworks used must be 100% free and open-source (no paid licenses, no paid cloud APIs, no subscriptions).
+
+5. **Code Quality & Build Standards**:
    - Visual Studio & CLI ready: Running `dotnet run` or building the solution must succeed with **0 errors**.
    - Clean project structure adhering to industry best practices.
