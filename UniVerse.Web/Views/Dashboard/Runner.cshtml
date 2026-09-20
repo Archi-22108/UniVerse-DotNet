@@ -846,8 +846,46 @@
            LOWER SECTION: GUIDE ACCORDION & LEVEL CARD
            ══════════════════════════════════════════════════════ */
         /* ══════════════════════════════════════════════════════
-           LOWER SECTION: PLAYBOOK (MATCHING media_1789930543051.png 1:1)
+           LOWER SECTION: GUIDE BANNER & PLAYBOOK (MATCHING SCREENSHOTS 1:1)
            ══════════════════════════════════════════════════════ */
+        .runner-guide-banner {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .runner-guide-banner:hover {
+            border-color: rgba(0, 229, 153, 0.25);
+        }
+
+        .guide-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #85988e;
+        }
+
+        .guide-tag-emerald {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            color: var(--uv-emerald);
+        }
+
+        .guide-expand-link {
+            color: #ffffff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
         .runner-playbook-card {
             background: var(--uv-card-bg);
             border: 1px solid var(--uv-card-border);
@@ -1549,12 +1587,22 @@
         <!-- ══════════════════════════════════════════════════════
            LOWER SECTION: RUNNER GUIDE & LEVEL CARD (MATCHING SCREENSHOT 1:1)
            ══════════════════════════════════════════════════════ -->
-        <!-- ══════════════════════════════════════════════════════
-           LOWER SECTION: RUNNER PLAYBOOK & LEVEL CARD (MATCHING SCREENSHOT 1:1)
-           ══════════════════════════════════════════════════════ -->
         <div id="runnerLowerSection" style="display: flex; flex-direction: column; gap: 1.15rem;">
-            <!-- Campus Runner Playbook (Matching media_1789930543051.png 1:1) -->
-            <section class="runner-playbook-card">
+            <!-- Collapsible Runner Guide Banner (Active in Online mode, matching user screenshots 1:1) -->
+            <div class="runner-guide-banner" onclick="togglePlaybook()" id="runnerGuideBanner" style="display: @(Model.IsOnline ? "flex" : "none");">
+                <div class="guide-left">
+                    <span class="dot-pulse-green"></span>
+                    <span class="guide-tag-emerald">RUNNER GUIDE</span>
+                    <span>· Earn cash on campus walks</span>
+                </div>
+                <span class="guide-expand-link">
+                    <span>How it Works (3 Steps)</span>
+                    <i class="bi bi-chevron-down" id="guideChevronIcon"></i>
+                </span>
+            </div>
+
+            <!-- Campus Runner Playbook (Full 3-step grid, matching media_1789930543051.png 1:1) -->
+            <section class="runner-playbook-card" id="runnerPlaybookCard" style="display: @(Model.IsOnline ? "none" : "flex");">
                 <div class="playbook-header-row">
                     <div class="playbook-head-left">
                         <div class="playbook-tag-pill">
@@ -1701,7 +1749,9 @@
             const label = document.getElementById('onlineStatusLabel');
             const onlineState = document.getElementById('radarOnlineState');
             const offlineState = document.getElementById('radarOfflineState');
-            const lowerSection = document.getElementById('runnerLowerSection');
+            const guideBanner = document.getElementById('runnerGuideBanner');
+            const playbookCard = document.getElementById('runnerPlaybookCard');
+            const chevron = document.getElementById('guideChevronIcon');
 
             if (online) {
                 if (wrap) wrap.classList.remove('offline');
@@ -1710,6 +1760,9 @@
                 }
                 if (onlineState) onlineState.style.display = 'block';
                 if (offlineState) offlineState.style.display = 'none';
+                if (guideBanner) guideBanner.style.display = 'flex';
+                if (playbookCard) playbookCard.style.display = 'none';
+                if (chevron) chevron.className = 'bi bi-chevron-down';
             } else {
                 if (wrap) wrap.classList.add('offline');
                 if (label) {
@@ -1717,9 +1770,9 @@
                 }
                 if (onlineState) onlineState.style.display = 'none';
                 if (offlineState) offlineState.style.display = 'flex';
+                if (guideBanner) guideBanner.style.display = 'none';
+                if (playbookCard) playbookCard.style.display = 'flex';
             }
-
-            if (lowerSection) lowerSection.style.display = 'flex';
 
             try {
                 const newUrl = new URL(window.location.href);
@@ -1731,27 +1784,26 @@
             }
         }
 
+        function togglePlaybook() {
+            const playbookCard = document.getElementById('runnerPlaybookCard');
+            const chevron = document.getElementById('guideChevronIcon');
+            if (!playbookCard) return;
+
+            if (playbookCard.style.display === 'none' || playbookCard.style.display === '') {
+                playbookCard.style.display = 'flex';
+                if (chevron) chevron.className = 'bi bi-chevron-up';
+            } else {
+                playbookCard.style.display = 'none';
+                if (chevron) chevron.className = 'bi bi-chevron-down';
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const urlParam = new URLSearchParams(window.location.search).get('isOnline');
             if (urlParam !== null) {
                 updateRunnerModeUI(urlParam === 'true');
             }
         });
-
-        // ── 3. Runner Guide Accordion Toggle ──
-        let guideOpen = false;
-        function toggleGuide() {
-            guideOpen = !guideOpen;
-            const panel = document.getElementById('guidePanel');
-            const chevron = document.getElementById('guideChevronIcon');
-            if (guideOpen) {
-                panel.style.display = 'grid';
-                chevron.className = 'bi bi-chevron-up';
-            } else {
-                panel.style.display = 'none';
-                chevron.className = 'bi bi-chevron-down';
-            }
-        }
     </script>
 </body>
 </html>
