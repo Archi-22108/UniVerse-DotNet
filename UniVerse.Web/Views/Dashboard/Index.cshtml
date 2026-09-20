@@ -21,12 +21,14 @@
     <style>
         :root {
             --uv-bg: #030708;
-            --uv-card-bg: rgba(10, 16, 14, 0.55);
-            --uv-card-border: rgba(255, 255, 255, 0.07);
+            --uv-card-bg: rgba(9, 16, 13, 0.62);
+            --uv-card-border: rgba(255, 255, 255, 0.055);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.22);
             --uv-emerald: #00e599;
             --uv-emerald-glow: rgba(0, 229, 153, 0.35);
-            --uv-text-muted: rgba(255, 255, 255, 0.6);
-            --uv-text-dim: rgba(255, 255, 255, 0.38);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #83978d;
+            --uv-text-dim: #54685f;
         }
 
         * {
@@ -37,8 +39,8 @@
 
         body {
             background-color: var(--uv-bg);
-            color: #ffffff;
-            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             min-height: 100dvh;
             overflow-x: hidden;
@@ -60,43 +62,34 @@
             pointer-events: none;
             z-index: 1;
             filter: blur(140px);
-            opacity: 0.65;
+            opacity: 0.55;
         }
 
-        .glow-top-left {
-            top: -150px;
-            left: 10%;
-            width: 650px;
-            height: 650px;
-            background: radial-gradient(circle, rgba(0, 229, 153, 0.18) 0%, transparent 70%);
-        }
-
-        .glow-middle-right {
-            top: 35%;
-            right: -100px;
+        .glow-top-center {
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0, 229, 153, 0.14) 0%, transparent 70%);
         }
 
-        /* ── Top Navbar ── */
+        /* ── Top Navbar (Matching Screenshot: Brand Left, Hamburger Right ONLY) ── */
         .dash-nav {
             position: sticky;
             top: 0;
             z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.85rem 1.5rem;
+            width: 100%;
             background: rgba(3, 7, 8, 0.88);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 0.75rem 1rem;
         }
 
         .nav-inner {
             width: 100%;
-            max-width: 820px;
+            max-width: 480px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -106,309 +99,344 @@
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.55rem;
             text-decoration: none;
         }
 
         .brand-monogram {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: rgba(0, 229, 153, 0.12);
+            background: rgba(0, 229, 153, 0.1);
             border: 1.5px solid var(--uv-emerald);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 14px var(--uv-emerald-glow);
+            box-shadow: 0 0 12px var(--uv-emerald-glow);
         }
 
         .brand-monogram svg {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
         }
 
         .brand-name {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 800;
             color: #ffffff;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.2px;
         }
 
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-        }
-
-        .btn-nav-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
-            background: rgba(255, 255, 255, 0.035);
+        .btn-hamburger {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .btn-nav-icon:hover {
-            border-color: rgba(0, 229, 153, 0.4);
+        .btn-hamburger:hover {
+            border-color: rgba(0, 229, 153, 0.35);
             color: #ffffff;
-            background: rgba(0, 229, 153, 0.08);
+            background: rgba(0, 229, 153, 0.06);
         }
 
-        .btn-new-request {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--uv-emerald);
-            color: #030708;
-            font-size: 0.82rem;
-            font-weight: 800;
-            padding: 0.55rem 1.1rem;
-            border-radius: 9999px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.25s ease;
-            box-shadow: 0 0 18px var(--uv-emerald-glow);
-        }
-
-        .btn-new-request:hover {
-            background: #25f4ab;
-            transform: translateY(-1px);
-            box-shadow: 0 0 25px rgba(0, 229, 153, 0.55);
-        }
-
-        /* ── Centered Column Main Container (Matches Screenshot Proportions) ── */
+        /* ── Centered Column Main Container (480px Matching Screenshot Proportions) ── */
         .dash-container {
             position: relative;
             z-index: 10;
             width: 100%;
-            max-width: 820px;
+            max-width: 480px;
             margin: 0 auto;
-            padding: 1.75rem 1rem 4rem;
+            padding: 1.1rem 0.85rem 3.5rem;
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 0.85rem;
         }
 
-        /* ── Welcome Header Block ── */
-        .welcome-block {
-            margin-bottom: 0.25rem;
+        /* ── Hero Header Section ── */
+        .dash-hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 0.4rem;
+            position: relative;
+        }
+
+        .hero-left {
+            flex: 1;
+            min-width: 0;
         }
 
         .greeting-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
-            padding: 0.32rem 0.85rem;
+            gap: 0.35rem;
+            padding: 0.22rem 0.7rem;
             border-radius: 9999px;
             background: rgba(0, 229, 153, 0.08);
             border: 1px solid rgba(0, 229, 153, 0.22);
             color: var(--uv-emerald);
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
-            box-shadow: 0 0 12px rgba(0, 229, 153, 0.12);
-        }
-
-        .welcome-title-row {
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-            flex-wrap: wrap;
+            margin-bottom: 0.55rem;
         }
 
         .welcome-title {
-            font-size: clamp(1.75rem, 3.2vw, 2.3rem);
+            font-size: 1.35rem;
             font-weight: 800;
-            letter-spacing: -0.4px;
-            line-height: 1.2;
+            letter-spacing: -0.3px;
+            line-height: 1.25;
             color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            word-break: break-word;
         }
 
         .student-name-highlight {
             color: var(--uv-emerald);
         }
 
-        /* The glowing planet orb right beside "Welcome back, Archi.kumari126697 👋" */
-        .header-planet-orb {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #00e599 0%, #059669 45%, #022c22 100%);
-            box-shadow: 0 0 32px rgba(0, 229, 153, 0.55), inset 0 0 12px rgba(0, 229, 153, 0.4);
-            display: inline-block;
-            margin-left: 0.75rem;
-            vertical-align: middle;
-            flex-shrink: 0;
-        }
-
         .welcome-sub {
-            font-size: 0.82rem;
+            font-size: 0.68rem;
             color: var(--uv-text-muted);
-            margin-top: 0.4rem;
+            margin-top: 0.35rem;
+            line-height: 1.35;
         }
 
-        .welcome-sub span {
-            color: rgba(0, 229, 153, 0.4);
-            margin: 0 0.35rem;
+        .welcome-sub .dot-sep {
+            color: rgba(0, 229, 153, 0.45);
+            margin: 0 0.25rem;
+        }
+
+        .hero-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.65rem;
+            flex-shrink: 0;
+            padding-top: 0.2rem;
+        }
+
+        .hero-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .btn-bell {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-bell:hover {
+            border-color: rgba(0, 229, 153, 0.35);
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+        }
+
+        .btn-new-request-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0.45rem 0.85rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 14px var(--uv-emerald-glow);
+        }
+
+        .btn-new-request-pill:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+        }
+
+        /* The glowing 3D planet orb floating beneath '+ New Request' */
+        .hero-planet-wrapper {
+            margin-right: 0.25rem;
+            margin-top: 0.15rem;
+        }
+
+        .header-planet-orb {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #00f5a0 0%, #00a86b 40%, #013220 85%, #00120b 100%);
+            box-shadow: 0 0 24px rgba(0, 229, 153, 0.5), inset 0 0 8px rgba(0, 229, 153, 0.35);
+            animation: planetFloat 4s ease-in-out infinite alternate;
+        }
+
+        @@keyframes planetFloat {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-4px) rotate(8deg); }
         }
 
         /* ── 2x2 Stats Grid Matching Screenshot ── */
         .stats-grid-2x2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.85rem;
+            gap: 0.65rem;
         }
 
         .stat-card-box {
             background: var(--uv-card-bg);
             border: 1px solid var(--uv-card-border);
-            border-radius: 18px;
-            padding: 1.1rem 1.25rem;
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 104px;
+            min-height: 92px;
             position: relative;
-            overflow: hidden;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
 
         .stat-card-box:hover {
-            border-color: rgba(0, 229, 153, 0.25);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            border-color: var(--uv-card-border-hover);
+            transform: translateY(-1px);
         }
 
         .stat-card-top {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
         }
 
         .stat-label-mono {
-            font-size: 0.65rem;
+            font-size: 0.58rem;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: #A7B8B0;
+            color: #7f9689;
             font-family: 'Space Mono', monospace;
         }
 
         .stat-icon-circle {
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: rgba(0, 229, 153, 0.09);
+            background: rgba(0, 229, 153, 0.08);
             border: 1px solid rgba(0, 229, 153, 0.2);
             color: var(--uv-emerald);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.95rem;
+            font-size: 0.78rem;
         }
 
         .stat-number-mono {
             font-family: 'Space Mono', monospace;
-            font-size: 1.85rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #ffffff;
             line-height: 1.1;
-            margin: 0.35rem 0 0.15rem;
+            margin: 0.2rem 0 0.1rem;
         }
 
         .stat-trend-text {
-            font-size: 0.7rem;
-            color: var(--uv-text-dim);
+            font-size: 0.64rem;
+            color: #5a7065;
         }
 
-        /* ── Glass Section Containers ── */
+        /* ── Standard Section Cards ── */
         .dash-card-section {
             background: var(--uv-card-bg);
             border: 1px solid var(--uv-card-border);
-            border-radius: 18px;
-            padding: 1.25rem 1.4rem;
+            border-radius: 14px;
+            padding: 1rem 1.05rem;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             transition: border-color 0.2s ease;
         }
 
         .dash-card-section:hover {
-            border-color: rgba(0, 229, 153, 0.2);
+            border-color: var(--uv-card-border-hover);
         }
 
         .section-header-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.65rem;
         }
 
         .section-header-title {
-            font-size: 1.05rem;
+            font-size: 0.88rem;
             font-weight: 800;
             color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .badge-count-pill {
             background: var(--uv-emerald);
             color: #030708;
-            font-size: 0.68rem;
+            font-size: 0.62rem;
             font-weight: 800;
-            padding: 0.12rem 0.52rem;
+            padding: 0.08rem 0.45rem;
             border-radius: 9999px;
+            margin-left: 0.25rem;
         }
 
         .empty-placeholder {
             text-align: center;
-            padding: 2.25rem 1rem;
-            color: var(--uv-text-dim);
-            font-size: 0.82rem;
+            padding: 1.75rem 0.5rem;
+            color: #6b8075;
+            font-size: 0.72rem;
             font-weight: 500;
+            line-height: 1.4;
         }
 
         /* ── Overview Analytics ── */
         .analytics-subtext {
-            font-size: 0.72rem;
-            color: var(--uv-text-muted);
+            font-size: 0.64rem;
+            color: #6b8075;
             margin-top: 0.15rem;
         }
 
         .pill-select-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.09);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 9999px;
-            padding: 0.32rem 0.8rem;
+            padding: 0.25rem 0.65rem;
             color: #ffffff;
-            font-size: 0.74rem;
+            font-size: 0.66rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.3rem;
             cursor: pointer;
         }
 
         .chart-box-relative {
-            margin-top: 1.25rem;
+            margin-top: 1rem;
             position: relative;
-            height: 110px;
+            height: 80px;
             width: 100%;
         }
 
@@ -416,17 +444,17 @@
             position: absolute;
             left: 0;
             top: 0;
-            bottom: 22px;
+            bottom: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--uv-text-dim);
+            font-size: 0.58rem;
+            color: #5a7065;
         }
 
         .chart-stage-area {
-            margin-left: 22px;
+            margin-left: 18px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -448,34 +476,33 @@
         .chart-x-days-row {
             display: flex;
             justify-content: space-between;
-            padding-top: 0.4rem;
+            padding-top: 0.35rem;
             font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
-            color: var(--uv-text-muted);
+            font-size: 0.58rem;
+            color: #6b8075;
         }
 
         /* ── Requests by Status ── */
         .badge-total-pill {
-            border: 1px solid rgba(0, 229, 153, 0.3);
+            border: 1px solid rgba(0, 229, 153, 0.35);
             color: var(--uv-emerald);
-            font-size: 0.7rem;
+            font-size: 0.62rem;
             font-weight: 700;
-            padding: 0.12rem 0.6rem;
+            padding: 0.1rem 0.5rem;
             border-radius: 9999px;
-            background: rgba(0, 229, 153, 0.08);
+            background: rgba(0, 229, 153, 0.06);
         }
 
         .status-chart-flex {
             display: flex;
             align-items: center;
-            gap: 1.75rem;
-            margin-top: 0.4rem;
-            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin-top: 0.3rem;
         }
 
         .status-donut-ring {
-            width: 100px;
-            height: 100px;
+            width: 76px;
+            height: 76px;
             position: relative;
             flex-shrink: 0;
             display: flex;
@@ -496,75 +523,74 @@
 
         .donut-val-mono {
             font-family: 'Space Mono', monospace;
-            font-size: 1.4rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
             line-height: 1;
         }
 
         .donut-tag-mono {
-            font-size: 0.6rem;
+            font-size: 0.52rem;
             font-family: 'Space Mono', monospace;
-            color: var(--uv-text-dim);
+            color: #5a7065;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-top: 0.15rem;
+            margin-top: 0.12rem;
         }
 
         .status-rows-stack {
             flex: 1;
-            min-width: 190px;
             display: flex;
             flex-direction: column;
-            gap: 0.45rem;
+            gap: 0.35rem;
         }
 
         .status-pill-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.5rem 0.8rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
+            padding: 0.42rem 0.65rem;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
         }
 
         .status-item-left {
             display: flex;
             align-items: center;
-            gap: 0.55rem;
-            font-size: 0.78rem;
+            gap: 0.45rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.85);
         }
 
         .status-dot-circle {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
         }
 
-        .dot-c-green { background: #00e599; box-shadow: 0 0 6px #00e599; }
-        .dot-c-amber { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
-        .dot-c-red { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+        .dot-c-green { background: #00e599; box-shadow: 0 0 5px #00e599; }
+        .dot-c-amber { background: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+        .dot-c-red { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
 
         .status-pct-label {
             font-family: 'Space Mono', monospace;
-            font-size: 0.74rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            color: var(--uv-text-muted);
+            color: #6b8075;
         }
 
         /* ── Recent Completed Table ── */
         .table-headers-grid {
             display: grid;
             grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 1fr 1fr;
-            padding: 0.5rem 0.25rem 0.65rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.4rem 0.2rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             font-family: 'Space Mono', monospace;
-            font-size: 0.65rem;
+            font-size: 0.56rem;
             font-weight: 700;
-            color: #A7B8B0;
+            color: #6b8075;
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
@@ -573,31 +599,30 @@
         .quick-actions-box {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.65rem;
         }
 
         .btn-create-request-big {
             width: 100%;
             background: linear-gradient(90deg, #00e599 0%, #00d284 100%);
-            color: #030708;
-            font-size: 0.85rem;
+            color: #020806;
+            font-size: 0.78rem;
             font-weight: 800;
-            padding: 0.7rem 1rem;
-            border-radius: 12px;
+            padding: 0.65rem 1rem;
+            border-radius: 10px;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.45rem;
+            gap: 0.4rem;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.25s ease;
-            box-shadow: 0 0 20px var(--uv-emerald-glow);
+            transition: all 0.2s ease;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
         }
 
         .btn-create-request-big:hover {
             background: #25f4ab;
-            box-shadow: 0 0 28px rgba(0, 229, 153, 0.6);
             transform: translateY(-1px);
         }
 
@@ -605,20 +630,20 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.65rem 0.8rem;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.85);
+            padding: 0.55rem 0.65rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            color: #d0dcd5;
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.74rem;
             font-weight: 600;
             transition: all 0.2s ease;
         }
 
         .shortcut-item-row:hover {
-            background: rgba(0, 229, 153, 0.08);
-            border-color: rgba(0, 229, 153, 0.25);
+            background: rgba(0, 229, 153, 0.06);
+            border-color: rgba(0, 229, 153, 0.2);
             color: #ffffff;
             transform: translateX(2px);
         }
@@ -626,55 +651,55 @@
         .shortcut-item-left {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
+            gap: 0.55rem;
         }
 
         .shortcut-item-left i {
             color: var(--uv-emerald);
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
 
         .shortcut-chevron {
-            color: var(--uv-text-dim);
-            font-size: 0.75rem;
+            color: #4a5c53;
+            font-size: 0.7rem;
         }
 
         /* ── Profile Summary Card ── */
         .profile-summary-box {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.65rem;
         }
 
         .profile-top-avatar-row {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 0.65rem;
         }
 
         .avatar-initial-box {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             background: var(--uv-emerald);
-            color: #030708;
-            font-size: 1.25rem;
+            color: #020806;
+            font-size: 1.1rem;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 16px rgba(0, 229, 153, 0.4);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.35);
             flex-shrink: 0;
         }
 
         .profile-identity-info {
             display: flex;
             flex-direction: column;
-            gap: 0.2rem;
+            gap: 0.15rem;
         }
 
         .student-full-name {
-            font-size: 0.92rem;
+            font-size: 0.82rem;
             font-weight: 800;
             color: #ffffff;
             line-height: 1.1;
@@ -683,13 +708,13 @@
         .student-verified-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            font-size: 0.62rem;
+            gap: 0.25rem;
+            font-size: 0.58rem;
             font-weight: 700;
             color: var(--uv-emerald);
-            background: rgba(0, 229, 153, 0.09);
+            background: rgba(0, 229, 153, 0.08);
             border: 1px solid rgba(0, 229, 153, 0.22);
-            padding: 0.12rem 0.45rem;
+            padding: 0.06rem 0.38rem;
             border-radius: 9999px;
             width: fit-content;
         }
@@ -697,58 +722,46 @@
         .profile-contact-data {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
-            padding-top: 0.6rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.74rem;
-            color: var(--uv-text-muted);
+            gap: 0.3rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.68rem;
+            color: #7f9689;
         }
 
         .contact-data-line {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.4rem;
         }
 
         .contact-data-line i {
             color: var(--uv-emerald);
-            font-size: 0.85rem;
+            font-size: 0.78rem;
         }
 
         .btn-edit-student-profile {
             width: 100%;
             background: transparent;
             border: 1px solid rgba(0, 229, 153, 0.28);
-            border-radius: 10px;
-            padding: 0.55rem;
+            border-radius: 8px;
+            padding: 0.45rem;
             color: var(--uv-emerald);
-            font-size: 0.76rem;
+            font-size: 0.72rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s ease;
+            margin-top: 0.15rem;
         }
 
         .btn-edit-student-profile:hover {
-            background: rgba(0, 229, 153, 0.09);
+            background: rgba(0, 229, 153, 0.08);
             border-color: var(--uv-emerald);
-        }
-
-        @@media (max-width: 640px) {
-            .table-headers-grid {
-                font-size: 0.6rem;
-            }
-            .welcome-title {
-                font-size: 1.6rem;
-            }
-            .header-planet-orb {
-                width: 32px;
-                height: 32px;
-            }
         }
     </style>
 </head>
@@ -757,10 +770,9 @@
     <canvas id="starCanvas"></canvas>
 
     <!-- ── Ambient Cosmic Glows ── -->
-    <div class="ambient-glow glow-top-left"></div>
-    <div class="ambient-glow glow-middle-right"></div>
+    <div class="ambient-glow glow-top-center"></div>
 
-    <!-- ── Top Navbar ── -->
+    <!-- ── Top Navbar (Brand Left, Hamburger Right) ── -->
     <header class="dash-nav">
         <div class="nav-inner">
             <a asp-controller="Home" asp-action="Index" class="nav-brand">
@@ -773,50 +785,57 @@
                 <span class="brand-name">UniVerse</span>
             </a>
 
-            <div class="nav-actions">
-                <!-- Bell Icon Button -->
-                <button class="btn-nav-icon" onclick="showNotice('Notifications', 'No new campus announcements right now.')" aria-label="Notifications">
-                    <i class="bi bi-bell"></i>
-                </button>
-
-                <!-- New Request Pill Button -->
-                <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-new-request">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>New Request</span>
-                </a>
-
-                <!-- Hamburger Menu Button -->
-                <button class="btn-nav-icon" onclick="toggleNavMenu()" aria-label="Menu">
-                    <i class="bi bi-list"></i>
-                </button>
-            </div>
+            <!-- Only Hamburger Menu Icon Button on Right (Matching Screenshot) -->
+            <button class="btn-hamburger" onclick="toggleNavMenu()" aria-label="Menu">
+                <i class="bi bi-list"></i>
+            </button>
         </div>
     </header>
 
-    <!-- ── Main Dashboard Single-Column Stack (Matching Screenshot) ── -->
+    <!-- ── Main Dashboard Single-Column Stack (Matching Screenshot Proportions) ── -->
     <main class="dash-container">
-        <!-- ── 1. Welcome Header Block ── -->
-        <div class="welcome-block">
-            <!-- Greeting Pill -->
-            <div class="greeting-pill">
-                <i class="bi bi-stars"></i>
-                <span id="greetingText">Good night 🌙</span>
-            </div>
+        <!-- ── 1. Hero Header Section ── -->
+        <div class="dash-hero-header">
+            <!-- Left Side: Greeting, Welcome Back, Subtitle -->
+            <div class="hero-left">
+                <!-- Greeting Pill -->
+                <div class="greeting-pill">
+                    <span id="greetingText">Good night 🌙</span>
+                </div>
 
-            <!-- Welcome Title with glowing green planet orb beside it -->
-            <div class="welcome-title-row">
+                <!-- Welcome Title -->
                 <h1 class="welcome-title">
                     <span>Welcome back,</span>
                     <span class="student-name-highlight">@Model.DisplayName</span>
                     <span>👋</span>
                 </h1>
-                <div class="header-planet-orb"></div>
+
+                <!-- Subtitle -->
+                <p class="welcome-sub">
+                    @Model.UniversityName <span class="dot-sep">•</span> Your campus deliveries, your UniVerse.
+                </p>
             </div>
 
-            <!-- Subtitle -->
-            <p class="welcome-sub">
-                @Model.UniversityName <span>•</span> Your campus deliveries, your UniVerse.
-            </p>
+            <!-- Right Side: Bell Icon, + New Request, Glowing Green Planet Orb -->
+            <div class="hero-right">
+                <div class="hero-actions-row">
+                    <!-- Bell Icon Button -->
+                    <button class="btn-bell" onclick="showNotice('Notifications', 'No new campus announcements right now.')" aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                    </button>
+
+                    <!-- New Request Pill Button -->
+                    <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-new-request-pill">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>New Request</span>
+                    </a>
+                </div>
+
+                <!-- Floating Green Planet Orb Beneath Buttons -->
+                <div class="hero-planet-wrapper">
+                    <div class="header-planet-orb"></div>
+                </div>
+            </div>
         </div>
 
         <!-- ── 2. 2x2 Stats Grid Matching Screenshot ── -->
@@ -826,7 +845,7 @@
                 <div class="stat-card-top">
                     <span class="stat-label-mono">TOTAL REQUESTS</span>
                     <div class="stat-icon-circle">
-                        <i class="bi bi-globe"></i>
+                        <i class="bi bi-box-seam"></i>
                     </div>
                 </div>
                 <div>
@@ -895,17 +914,17 @@
             }
             else
             {
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.65rem;">
                     @foreach (var req in Model.ActiveDeliveries)
                     {
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.65rem; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
                             <div>
-                                <b style="color: #ffffff; font-size: 0.85rem;">@req.ItemsDescription</b>
-                                <div style="color: var(--uv-text-dim); font-size: 0.72rem;">To: @req.HostelRoom</div>
+                                <b style="color: #ffffff; font-size: 0.82rem;">@req.ItemsDescription</b>
+                                <div style="color: var(--uv-text-dim); font-size: 0.68rem;">To: @req.HostelRoom</div>
                             </div>
                             <div style="text-align: right;">
-                                <span style="color: #f59e0b; font-size: 0.72rem; font-weight: 700;">● @req.Status</span>
-                                <div style="color: var(--uv-emerald); font-weight: 800; font-family: 'Space Mono', monospace;">₹@req.TotalAmount</div>
+                                <span style="color: #f59e0b; font-size: 0.68rem; font-weight: 700;">● @req.Status</span>
+                                <div style="color: var(--uv-emerald); font-weight: 800; font-family: 'Space Mono', monospace; font-size: 0.85rem;">₹@req.TotalAmount</div>
                             </div>
                         </div>
                     }
@@ -922,7 +941,7 @@
                 </div>
                 <button class="pill-select-btn">
                     <span>This Week</span>
-                    <i class="bi bi-chevron-down" style="font-size: 0.6rem;"></i>
+                    <i class="bi bi-chevron-down" style="font-size: 0.58rem;"></i>
                 </button>
             </div>
 
@@ -939,17 +958,17 @@
                     <div class="chart-svg-draw">
                         <svg viewBox="0 0 700 70" preserveAspectRatio="none">
                             <!-- Dotted Upper Grid line -->
-                            <line x1="0" y1="8" x2="700" y2="8" stroke="rgba(255, 255, 255, 0.05)" stroke-dasharray="3,3" />
+                            <line x1="0" y1="8" x2="700" y2="8" stroke="rgba(255, 255, 255, 0.04)" stroke-dasharray="3,3" />
                             <!-- Baseline Solid line -->
-                            <line x1="0" y1="65" x2="700" y2="65" stroke="rgba(255, 255, 255, 0.07)" />
+                            <line x1="0" y1="65" x2="700" y2="65" stroke="rgba(255, 255, 255, 0.05)" />
 
                             <!-- Sleek glowing green sparkline line matching screenshot -->
-                            <path d="M 20 65 L 120 65 L 220 65 L 320 65 L 420 65 L 530 65 L 680 65"
+                            <path d="M 10 65 L 115 65 L 225 65 L 340 65 L 450 65 L 565 65 L 690 65"
                                   fill="none"
                                   stroke="#00e599"
                                   stroke-width="2.2"
                                   stroke-linecap="round"
-                                  style="filter: drop-shadow(0 0 6px rgba(0, 229, 153, 0.8));" />
+                                  style="filter: drop-shadow(0 0 5px rgba(0, 229, 153, 0.75));" />
                         </svg>
                     </div>
 
@@ -978,11 +997,11 @@
                 <!-- Left Donut Ring Chart -->
                 <div class="status-donut-ring">
                     <svg viewBox="0 0 36 36">
-                        <path stroke="rgba(255, 255, 255, 0.07)" stroke-width="3" fill="none"
+                        <path stroke="rgba(255, 255, 255, 0.06)" stroke-width="3.2" fill="none"
                               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path stroke="#00e599" stroke-width="3" stroke-linecap="round" fill="none"
+                        <path stroke="#00e599" stroke-width="3.2" stroke-linecap="round" fill="none"
                               stroke-dasharray="@Model.CompletedPercentage, 100"
-                              style="filter: drop-shadow(0 0 6px rgba(0, 229, 153, 0.7));"
+                              style="filter: drop-shadow(0 0 5px rgba(0, 229, 153, 0.6));"
                               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
                     <div class="donut-center-info">
@@ -1022,11 +1041,11 @@
 
         <!-- ── 6. Recent Completed Section ── -->
         <section class="dash-card-section" style="overflow-x: auto;">
-            <div class="section-header-row" style="margin-bottom: 0.4rem;">
+            <div class="section-header-row" style="margin-bottom: 0.35rem;">
                 <div class="section-header-title">Recent Completed</div>
             </div>
 
-            <div style="width: 100%; min-width: 580px;">
+            <div style="width: 100%; min-width: 440px;">
                 <!-- Table Headers -->
                 <div class="table-headers-grid">
                     <span>ITEM</span>
@@ -1040,7 +1059,7 @@
 
                 @if (Model.RecentCompleted.Count == 0)
                 {
-                    <div class="empty-placeholder" style="padding: 2.5rem 1rem;">
+                    <div class="empty-placeholder" style="padding: 2.25rem 0.5rem;">
                         No completed requests yet.
                     </div>
                 }
@@ -1049,13 +1068,13 @@
                     <div style="display: flex; flex-direction: column;">
                         @foreach (var item in Model.RecentCompleted)
                         {
-                            <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 1fr 1fr; padding: 0.75rem 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.75rem; align-items: center;">
+                            <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 1fr 1fr; padding: 0.65rem 0.2rem; border-bottom: 1px solid rgba(255,255,255,0.035); font-size: 0.72rem; align-items: center;">
                                 <b style="color: #ffffff;">@item.ItemsDescription</b>
                                 <span style="color: var(--uv-text-muted);">@item.PickupLocation</span>
                                 <span style="color: var(--uv-text-muted);">@item.DropoffLocation</span>
                                 <span style="color: #ffffff;">@(item.RunnerName ?? "Assigned")</span>
-                                <span style="color: var(--uv-text-dim); font-family: 'Space Mono', monospace;">@item.CreatedAt.ToString("MMM dd")</span>
-                                <span><span style="background: rgba(0,229,153,0.1); color: var(--uv-emerald); padding: 0.12rem 0.45rem; border-radius: 9999px; font-size: 0.68rem; font-weight: 700;">● Delivered</span></span>
+                                <span style="color: var(--uv-text-dim); font-family: 'Space Mono', monospace; font-size: 0.65rem;">@item.CreatedAt.ToString("MMM dd")</span>
+                                <span><span style="background: rgba(0,229,153,0.1); color: var(--uv-emerald); padding: 0.1rem 0.4rem; border-radius: 9999px; font-size: 0.64rem; font-weight: 700;">● Delivered</span></span>
                                 <span style="text-align: right; color: var(--uv-emerald); font-weight: 800; font-family: 'Space Mono', monospace;">₹@item.TotalAmount</span>
                             </div>
                         }
@@ -1067,8 +1086,8 @@
         <!-- ── 7. Quick Actions Section ── -->
         <section class="dash-card-section quick-actions-box">
             <div class="section-header-row" style="margin-bottom: 0;">
-                <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">Quick Actions</span>
-                <span style="color: var(--uv-emerald); font-size: 0.7rem; font-family: 'Space Mono', monospace; font-weight: 700;">✦ Shortcuts</span>
+                <span style="font-size: 0.88rem; font-weight: 800; color: #ffffff;">Quick Actions</span>
+                <span style="color: var(--uv-emerald); font-size: 0.62rem; font-family: 'Space Mono', monospace; font-weight: 700;">✦ Shortcuts</span>
             </div>
 
             <!-- Wide Create New Request Button -->
@@ -1078,10 +1097,10 @@
             </a>
 
             <!-- Action Rows Stack -->
-            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
                 <a asp-controller="Dashboard" asp-action="Requests" class="shortcut-item-row">
                     <div class="shortcut-item-left">
-                        <i class="bi bi-file-text"></i>
+                        <i class="bi bi-file-earmark-text"></i>
                         <span>My Requests</span>
                     </div>
                     <i class="bi bi-chevron-right shortcut-chevron"></i>
@@ -1113,7 +1132,7 @@
 
                 <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="analytics" class="shortcut-item-row">
                     <div class="shortcut-item-left">
-                        <i class="bi bi-bar-chart-line"></i>
+                        <i class="bi bi-bar-chart"></i>
                         <span>Analytics</span>
                     </div>
                     <i class="bi bi-chevron-right shortcut-chevron"></i>
@@ -1147,7 +1166,7 @@
                 </div>
                 <div class="contact-data-line">
                     <i class="bi bi-telephone"></i>
-                    <a href="javascript:void(0)" onclick="promptPhone()" style="color: var(--uv-text-muted); text-decoration: none;">
+                    <a href="javascript:void(0)" onclick="promptPhone()" style="color: #7f9689; text-decoration: none;">
                         @(Model.PhoneNumber ?? "Add phone number")
                     </a>
                 </div>
@@ -1161,29 +1180,29 @@
         </section>
 
         <!-- ── 9. Recent Activity Section ── -->
-        <section class="dash-card-section" style="margin-bottom: 1.5rem;">
+        <section class="dash-card-section" style="margin-bottom: 1rem;">
             <div class="section-header-row" style="margin-bottom: 0;">
-                <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">Recent Activity</span>
+                <span style="font-size: 0.88rem; font-weight: 800; color: #ffffff;">Recent Activity</span>
             </div>
 
             @if (Model.Activities.Count == 0)
             {
-                <div class="empty-placeholder" style="padding: 1.75rem 0.5rem;">
+                <div class="empty-placeholder" style="padding: 1.5rem 0.5rem;">
                     No recent activity.
                 </div>
             }
             else
             {
-                <div style="display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.65rem; padding-top: 0.4rem;">
                     @foreach (var act in Model.Activities)
                     {
-                        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
-                            <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(0,229,153,0.12); color: var(--uv-emerald); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; margin-top: 2px;">
+                        <div style="display: flex; gap: 0.55rem; align-items: flex-start;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; background: rgba(0,229,153,0.12); color: var(--uv-emerald); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; flex-shrink: 0; margin-top: 2px;">
                                 <i class="bi @act.IconType"></i>
                             </div>
-                            <div style="font-size: 0.74rem;">
+                            <div style="font-size: 0.72rem;">
                                 <p style="color: #ffffff; margin-bottom: 0.1rem;">@act.Description</p>
-                                <span style="color: var(--uv-text-dim); font-size: 0.66rem;">@act.TimeAgo</span>
+                                <span style="color: var(--uv-text-dim); font-size: 0.64rem;">@act.TimeAgo</span>
                             </div>
                         </div>
                     }
@@ -1207,12 +1226,11 @@
                 h = canvas.height = window.innerHeight;
             });
 
-            // Realistic stars distribution
-            const starCount = 65;
+            const starCount = 60;
             const stars = Array.from({ length: starCount }, () => ({
                 x: Math.random() * w,
                 y: Math.random() * h,
-                r: Math.random() * 1.4 + 0.4,
+                r: Math.random() * 1.3 + 0.3,
                 alpha: Math.random() * 0.7 + 0.2,
                 speed: Math.random() * 0.02 + 0.005,
                 phase: Math.random() * Math.PI * 2
@@ -1236,7 +1254,7 @@
             render();
         })();
 
-        // ── 2. Dynamic Time-Based Greeting ──
+        // ── 2. Time-Based Greeting ──
         (function updateGreeting() {
             const hours = new Date().getHours();
             let text = "Good night 🌙";
