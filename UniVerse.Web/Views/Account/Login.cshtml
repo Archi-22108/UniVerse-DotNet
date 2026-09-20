@@ -121,7 +121,7 @@
             position: relative;
             width: 100%;
             border-radius: 28px;
-            padding: 2.25rem 2rem;
+            padding: 2.5rem 2.25rem;
             background: linear-gradient(180deg, rgba(8, 14, 28, 0.82) 0%, rgba(4, 7, 16, 0.92) 100%);
             border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.95), 0 0 40px rgba(16, 185, 129, 0.15);
@@ -197,33 +197,9 @@
             margin-bottom: 1.75rem;
         }
 
-        /* ── Quick Demo Button ── */
-        .demo-bar {
-            width: 100%;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 12px;
-            padding: 0.55rem 0.85rem;
-            margin-bottom: 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: #34d399;
-            font-size: 0.76rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .demo-bar:hover {
-            background: rgba(16, 185, 129, 0.18);
-            border-color: rgba(16, 185, 129, 0.5);
-            transform: translateY(-1px);
-        }
-
         /* ── Input Fields ── */
         .field-group {
-            margin-bottom: 1.15rem;
+            margin-bottom: 1.25rem;
         }
 
         .field-label {
@@ -300,24 +276,6 @@
             color: #34d399;
         }
 
-        .domain-badge-btn {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            border-radius: 6px;
-            color: #34d399;
-            font-size: 0.68rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            cursor: pointer;
-            margin-left: 0.5rem;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .domain-badge-btn:hover {
-            background: rgba(16, 185, 129, 0.25);
-            color: #ffffff;
-        }
-
         .caps-warn {
             color: #fbbf24;
             font-size: 0.72rem;
@@ -331,7 +289,7 @@
             align-items: center;
             justify-content: space-between;
             font-size: 0.8rem;
-            margin: 0.75rem 0 1.5rem;
+            margin: 0.85rem 0 1.5rem;
         }
 
         .rem-label {
@@ -460,29 +418,37 @@
             text-decoration: underline;
         }
 
-        /* ── Bottom Trust Pill ── */
+        /* ── Bottom Trust Pill (Single Horizontal Bar) ── */
         .trust-pill {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 1.25rem;
-            padding: 0.5rem 1.4rem;
+            padding: 0.55rem 1.6rem;
             border-radius: 9999px;
-            background: rgba(10, 20, 15, 0.6);
+            background: rgba(10, 20, 15, 0.65);
             border: 1px solid rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             font-size: 0.76rem;
-            color: rgba(255, 255, 255, 0.65);
+            color: rgba(255, 255, 255, 0.7);
             margin-top: 1.75rem;
+            white-space: nowrap;
         }
 
         .trust-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.4rem;
+            white-space: nowrap;
         }
 
         .trust-item i {
             color: #34d399;
+        }
+
+        .trust-sep {
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.7rem;
         }
 
         /* Error Banner */
@@ -501,7 +467,8 @@
 
         @@media (max-width: 640px) {
             .hud-coord { display: none; }
-            .auth-card { padding: 1.75rem 1.25rem; }
+            .auth-card { padding: 2rem 1.25rem; }
+            .trust-pill { gap: 0.75rem; padding: 0.45rem 1rem; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -542,16 +509,6 @@
             </h1>
             <p class="brand-sub">CAMPUS COMMERCE • STUDENT NETWORK</p>
 
-            <!-- 1-Click Quick Demo Button -->
-            <form asp-controller="Account" asp-action="QuickDemoLogin" method="post" style="width: 100%;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                <button type="submit" class="demo-bar">
-                    <span>⚡ <strong>Quick Demo:</strong> Aarav Patel (Hostel D-304)</span>
-                    <span>1-Click &rarr;</span>
-                </button>
-            </form>
-
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
             {
                 <div class="error-banner">
@@ -574,9 +531,6 @@
                     <div class="input-box">
                         <i class="bi bi-envelope input-icon"></i>
                         <input asp-for="Email" id="emailInput" type="email" placeholder="you@marwadiuniversity.ac.in" required autocomplete="email" />
-                        <button type="button" class="domain-badge-btn" id="domainBtn" title="Autocomplete @@marwadiuniversity.ac.in">
-                            + @@mu
-                        </button>
                     </div>
                     <span asp-validation-for="Email" style="color: #f87171; font-size: 0.72rem; margin-top: 0.25rem; display: block;"></span>
                 </div>
@@ -637,14 +591,14 @@
         <div class="trust-pill">
             <div class="trust-item">
                 <i class="bi bi-shield-lock-fill"></i>
-                <span>256-Bit SSL</span>
+                <span>256–Bit SSL</span>
             </div>
-            <span>•</span>
+            <span class="trust-sep">•</span>
             <div class="trust-item">
                 <i class="bi bi-lightning-charge-fill"></i>
                 <span>MU Verified</span>
             </div>
-            <span>•</span>
+            <span class="trust-sep">•</span>
             <div class="trust-item">
                 <i class="bi bi-layers-fill"></i>
                 <span>Campus P2P</span>
@@ -752,22 +706,10 @@
             }
         });
 
-        // ── 4. Domain 1-Click Autocomplete ──
-        const emailInput = document.getElementById('emailInput');
-        const domainBtn = document.getElementById('domainBtn');
-        domainBtn.addEventListener('click', () => {
-            let val = emailInput.value.trim();
-            if (val.includes('@@')) {
-                val = val.split('@@')[0];
-            }
-            emailInput.value = (val || 'student') + '@@marwadiuniversity.ac.in';
-            pwInput.focus();
-        });
-
-        // ── 5. Demo Google Login ──
+        // ── 4. Google Login Demo ──
         function demoGoogleLogin() {
-            emailInput.value = 'archi.student@@marwadiuniversity.ac.in';
-            pwInput.value = 'Password123!';
+            document.getElementById('emailInput').value = 'archi.student@@marwadiuniversity.ac.in';
+            document.getElementById('passwordInput').value = 'Password123!';
             document.getElementById('loginForm').submit();
         }
     </script>
