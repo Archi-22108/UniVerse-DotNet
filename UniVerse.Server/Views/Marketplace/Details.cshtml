@@ -1,0 +1,140 @@
+@model UniVerse.Server.Models.MarketplaceListingDetailDto
+@{
+    ViewData["Title"] = Model.Title;
+    bool isSeller = ViewBag.IsSeller ?? false;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <a asp-action="Index" class="btn btn-glass btn-sm">
+                    &larr; Back to Marketplace
+                </a>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
+                    STATUS: @Model.Status
+                </span>
+            </div>
+
+            <!-- Item Main Card -->
+            <div class="universe-card p-4 p-md-5 mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                @Model.Category
+                            </span>
+                            <span class="badge bg-secondary bg-opacity-25 text-light">
+                                Condition: @Model.Condition
+                            </span>
+                        </div>
+                        <h2 class="fw-bold text-white mb-1">@Model.Title</h2>
+                        <div class="text-secondary small">
+                            <i class="bi bi-clock me-1"></i> Posted: @DateTime.Parse(Model.CreatedAt).ToLocalTime().ToString("f")
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="fs-2 fw-bold text-white">₹@Model.Price.ToString("F2")</span>
+                        @if (Model.OriginalPrice.HasValue)
+                        {
+                            <small class="text-muted text-decoration-line-through d-block">
+                                MRP: ₹@Model.OriginalPrice.Value.ToString("F2")
+                            </small>
+                            var savings = ((Model.OriginalPrice.Value - Model.Price) / Model.OriginalPrice.Value) * 100;
+                            if (savings > 0)
+                            {
+                                <span class="badge bg-danger text-white mt-1">@savings.ToString("F0")% OFF</span>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="my-4 p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10">
+                    <small class="text-muted d-block mb-1">DESCRIPTION</small>
+                    <p class="text-light mb-0" style="white-space: pre-line;">
+                        @(Model.Description ?? "No description provided by the seller.")
+                    </p>
+                </div>
+
+                <!-- Pickup Spot and Seller Details -->
+                <div class="row g-3 my-2">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
+                            <small class="text-muted d-block mb-1">CAMPUS PICKUP SPOT</small>
+                            <span class="text-white fw-semibold"><i class="bi bi-geo-alt-fill me-1 text-danger"></i> @Model.PickupLocation</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
+                            <small class="text-muted d-block mb-1">STUDENT SELLER</small>
+                            <span class="text-white fw-semibold"><i class="bi bi-person-fill me-1 text-info"></i> @Model.SellerName</span>
+                            @if (!string.IsNullOrEmpty(Model.SellerPhone))
+                            {
+                                <small class="text-secondary d-block">@Model.SellerPhone</small>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Negotiation / Offer Section -->
+                <div class="mt-5 pt-4 border-top border-white border-opacity-10">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-white mb-0">💬 Price Negotiation Offers (@Model.OfferCount)</h4>
+                        @if (Model.Negotiable)
+                        {
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                Seller Accepts Price Offers
+                            </span>
+                        }
+                    </div>
+
+                    @if (!isSeller && Model.Negotiable)
+                    {
+                        <div class="universe-card p-3 mb-4 bg-dark bg-opacity-40">
+                            <form asp-action="MakeOffer" method="post" class="row g-2 align-items-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ListingId" value="@Model.Id" />
+                                <div class="col-sm-7">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-success">₹</span>
+                                        <input type="number" name="OfferPrice" class="form-control form-control-sm" placeholder="Your Counter Offer (e.g. 500)" required />
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <button type="submit" class="btn btn-emerald btn-sm w-100">
+                                        Submit Offer to Seller
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+
+                    <!-- Offers List -->
+                    @if (Model.Offers.Count == 0)
+                    {
+                        <p class="text-secondary small fst-italic">No offers submitted yet. Be the first to negotiate!</p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush bg-transparent">
+                            @foreach (var off in Model.Offers)
+                            {
+                                <div class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between align-items-center px-0 py-2">
+                                    <div>
+                                        <span class="fw-semibold">@off.BuyerName</span>
+                                        <small class="text-muted d-block">Submitted: @DateTime.Parse(off.CreatedAt).ToLocalTime().ToString("g")</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold fs-5 text-success">₹@off.OfferPrice.ToString("F2")</span>
+                                        <span class="badge bg-warning text-dark text-uppercase ms-2">@off.Status</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

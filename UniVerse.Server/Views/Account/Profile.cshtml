@@ -1,0 +1,62 @@
+@model UniVerse.Server.Models.User
+@{
+    ViewData["Title"] = "Student Profile";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <!-- Profile Identity Card -->
+            <div class="universe-card p-4 p-md-5 mb-4 position-relative overflow-hidden">
+                <div class="d-flex align-items-center gap-4 flex-wrap mb-4">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-1 shadow" style="width: 76px; height: 76px;">
+                        @Model.FullName.Substring(0, 1)
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h2 class="fw-bold text-white mb-0">@Model.FullName</h2>
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase">@Model.Role</span>
+                        </div>
+                        <div class="text-secondary small mb-1">
+                            <i class="bi bi-envelope me-1"></i> @Model.Email
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-person-badge me-1"></i> Enrollment: @(Model.EnrollmentNumber ?? "MU-2026-N/A")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 border-top border-white border-opacity-10 pt-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10">
+                            <span class="text-secondary small d-block mb-1">Campus Residence</span>
+                            <span class="text-white fw-bold fs-6">
+                                <i class="bi bi-building me-1 text-info"></i> @Model.HostelName, Room @Model.RoomNumber
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10">
+                            <span class="text-secondary small d-block mb-1">Wallet Tip Rewards</span>
+                            <span class="text-success fw-bold fs-6">
+                                <i class="bi bi-wallet2 me-1"></i> ₹@Model.RewardBalance.ToString("F2")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4 flex-wrap">
+                    <a asp-controller="Delivery" asp-action="Create" class="btn btn-emerald btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> New Request
+                    </a>
+                    <a asp-controller="Delivery" asp-action="RunnerHub" class="btn btn-glass btn-sm">
+                        <i class="bi bi-lightning-charge me-1"></i> Runner Hub
+                    </a>
+                    <a asp-controller="Marketplace" asp-action="Create" class="btn btn-glass btn-sm">
+                        <i class="bi bi-tag me-1"></i> Post Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

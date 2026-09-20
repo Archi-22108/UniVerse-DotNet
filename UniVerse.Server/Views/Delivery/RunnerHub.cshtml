@@ -1,0 +1,153 @@
+@model UniVerse.Server.Models.ViewModels.RunnerHubViewModel
+@{
+    ViewData["Title"] = "Campus Runner Hub";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="fw-bold text-white mb-1"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Campus Runner Hub</h1>
+            <p class="text-secondary small mb-0">Earn tip rewards by accepting peer delivery requests across campus</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Duty Toggle Form -->
+            <form asp-action="ToggleDuty" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="isActive" value="@(Model.CurrentRunner.IsActiveRunner ? "false" : "true")" />
+                <button type="submit" class="btn @(Model.CurrentRunner.IsActiveRunner ? "btn-emerald" : "btn-glass") d-flex align-items-center gap-2">
+                    <span class="badge-dot" style="background: @(Model.CurrentRunner.IsActiveRunner ? "#10b981" : "#94a3b8")"></span>
+                    <span>@(Model.CurrentRunner.IsActiveRunner ? "DUTY: ONLINE" : "DUTY: OFFLINE")</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Runner Wallet Stats Banner -->
+    <div class="universe-card p-4 mb-4 border-warning border-opacity-25" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.7));">
+        <div class="row align-items-center g-3">
+            <div class="col-md-4">
+                <small class="text-secondary d-block">RUNNER IDENTITY</small>
+                <span class="text-white fw-bold fs-5">@Model.CurrentRunner.FullName</span>
+                <span class="text-muted small d-block">Hostel: @Model.CurrentRunner.HostelName, Room @Model.CurrentRunner.RoomNumber</span>
+            </div>
+            <div class="col-md-4">
+                <small class="text-secondary d-block">WALLET REWARD BALANCE</small>
+                <span class="text-warning fw-bold fs-3">₹@Model.CurrentRunner.RewardBalance.ToString("F2")</span>
+                <small class="text-muted d-block">Withdrawable to UPI / Campus Pay</small>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span class="badge @(Model.CurrentRunner.IsActiveRunner ? "bg-success" : "bg-secondary") p-2 text-uppercase">
+                    @(Model.CurrentRunner.IsActiveRunner ? "Active & Receiving Orders" : "Offline / Off Duty")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Tasks Section -->
+    @if (Model.MyActiveDeliveries.Count > 0)
+    {
+        <div class="mb-5">
+            <h3 class="fw-bold text-white mb-3"><i class="bi bi-bicycle me-2 text-info"></i> Your Active Deliveries</h3>
+            <div class="row g-3">
+                @foreach (var task in Model.MyActiveDeliveries)
+                {
+                    <div class="col-md-6">
+                        <div class="universe-card p-4 border-info border-opacity-30">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-info text-dark text-uppercase fw-bold">@task.Status.Replace("_", " ")</span>
+                                <span class="fw-bold text-success">+₹@task.DeliveryFee.ToString("F2") Reward</span>
+                            </div>
+                            <h5 class="fw-bold text-white mb-1">@task.PickupLocation</h5>
+                            <div class="text-secondary small mb-3">
+                                <div><i class="bi bi-geo-alt-fill text-danger me-1"></i> Deliver to: <strong>@task.DropoffLocation</strong></div>
+                                <div><i class="bi bi-person me-1"></i> Requester: @task.RequesterName (@task.RequesterPhone)</div>
+                            </div>
+
+                            <!-- Interactive Progress / Complete Buttons -->
+                            <div class="pt-3 border-top border-white border-opacity-10 d-flex flex-wrap gap-2 align-items-center">
+                                @if (task.Status == "accepted")
+                                {
+                                    <form asp-action="UpdateStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@task.Id" />
+                                        <input type="hidden" name="status" value="picked_up" />
+                                        <button type="submit" class="btn btn-emerald btn-sm">1. Confirm Picked Up</button>
+                                    </form>
+                                }
+                                @if (task.Status == "picked_up")
+                                {
+                                    <form asp-action="UpdateStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@task.Id" />
+                                        <input type="hidden" name="status" value="in_transit" />
+                                        <button type="submit" class="btn btn-emerald btn-sm">2. Heading to Room</button>
+                                    </form>
+                                }
+                                @if (task.Status == "in_transit")
+                                {
+                                    <form asp-action="CompleteDelivery" method="post" class="d-flex gap-2 align-items-center w-100 mt-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@task.Id" />
+                                        <input type="text" name="otp" class="form-control form-control-sm" placeholder="Enter Student 6-digit OTP" required />
+                                        <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold text-nowrap">Verify & Payout</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Available Orders to Accept -->
+    <h3 class="fw-bold text-white mb-3"><i class="bi bi-inbox-fill me-2 text-success"></i> Available Orders Waiting for Pickup</h3>
+    <div class="row g-3">
+        @if (Model.PendingDeliveries.Count == 0)
+        {
+            <div class="col-12 text-center text-muted py-5 universe-card">
+                <i class="bi bi-cup-hot fs-1 d-block mb-2 text-secondary"></i>
+                <h5 class="text-white">No pending campus orders right now</h5>
+                <p class="small mb-0">Keep your duty status set to ONLINE. New orders from Canteen and Stationery will appear automatically.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var order in Model.PendingDeliveries)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="universe-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning text-dark text-uppercase">WAITING RUNNER</span>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 fs-6">
+                                    +₹@order.DeliveryFee.ToString("F2") Tip
+                                </span>
+                            </div>
+                            <h5 class="fw-bold text-white mb-2">@order.PickupLocation</h5>
+                            <div class="text-secondary small mb-3">
+                                <div><i class="bi bi-geo-alt me-1 text-danger"></i> Dropoff: <strong>@order.DropoffLocation</strong></div>
+                                <div><i class="bi bi-person me-1"></i> Requester: @order.RequesterName</div>
+                                @if (order.Items.Count > 0)
+                                {
+                                    <div class="mt-2 text-light"><i class="bi bi-bag me-1 text-success"></i> @string.Join(", ", order.Items.Select(i => $"{i.Name} (x{i.Quantity})"))</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                            <span class="text-white fw-bold">Est. ₹@order.TotalEstimatedAmount.ToString("F2")</span>
+                            <form asp-action="AcceptDelivery" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@order.Id" />
+                                <button type="submit" class="btn btn-emerald btn-sm" @(!Model.CurrentRunner.IsActiveRunner ? "disabled" : "")>
+                                    Accept Order
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

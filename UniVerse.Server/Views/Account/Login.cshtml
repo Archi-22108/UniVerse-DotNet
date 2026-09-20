@@ -1,0 +1,94 @@
+@model UniVerse.Server.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Student Sign In";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <!-- University Badge Header -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i class="bi bi-shield-lock-fill text-success fs-2"></i>
+                </div>
+                <h2 class="fw-bold text-white mb-1">Student Sign In</h2>
+                <p class="text-secondary small">Marwadi University Campus Authentication</p>
+            </div>
+
+            <!-- Quick Demo 1-Click Login Card (Perfect for Viva Examiner) -->
+            <div class="universe-card p-3 mb-4 border-success border-opacity-50" style="background: rgba(16, 185, 129, 0.08);">
+                <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold small">
+                    <span class="spinner-grow spinner-grow-sm text-success"></span>
+                    <span>1-CLICK VIVA EVALUATION ACCESS:</span>
+                </div>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Account" asp-action="QuickLogin" asp-route-email="aarav.patel@marwadiuniversity.ac.in" class="btn btn-emerald btn-sm text-start d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Aarav Patel</strong> <small class="d-block text-white-50">Student &bull; Hostel D-304</small>
+                        </div>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </a>
+                    <a asp-controller="Account" asp-action="QuickLogin" asp-route-email="rohit.sharma@marwadiuniversity.ac.in" class="btn btn-glass btn-sm text-start d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Rohit Sharma</strong> <small class="d-block text-muted">Runner &bull; Hostel D-212</small>
+                        </div>
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="universe-card p-4">
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label text-secondary small fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control" placeholder="name@marwadiuniversity.ac.in" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label text-secondary small fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">
+                                <i class="bi bi-key"></i>
+                            </span>
+                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input bg-dark border-secondary" />
+                            <label asp-for="RememberMe" class="form-check-label text-secondary small"></label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mb-3">
+                        Sign In to UniVerse
+                    </button>
+
+                    <div class="text-center text-secondary small">
+                        Don't have an account? 
+                        <a asp-controller="Account" asp-action="Register" class="text-success fw-semibold text-decoration-none">
+                            Register as Student
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,233 @@
+@{
+    ViewData["Title"] = "Campus Super-App";
+    var recentRequests = ViewBag.RecentRequests as List<UniVerse.Server.Models.DeliveryRequestDetailDto> ?? new();
+    var recentListings = ViewBag.RecentListings as List<UniVerse.Server.Models.MarketplaceListingDetailDto> ?? new();
+}
+
+<!-- Hero Banner -->
+<section class="py-5 text-center position-relative">
+    <div class="container py-4">
+        <!-- University Badge -->
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i class="bi bi-geo-alt-fill text-success"></i>
+            <span class="text-success fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.05em;">MARWADI UNIVERSITY &bull; ENTERPRISE CAMPUS NETWORK</span>
+        </div>
+
+        <h1 class="display-4 fw-bolder text-white mb-3 brand-font">
+            Campus Super-App for <br class="d-none d-sm-inline" />
+            <span style="background: linear-gradient(135deg, #34d399, #2dd4bf, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Hostel Delivery & Student Marketplace
+            </span>
+        </h1>
+
+        <p class="lead text-secondary mx-auto mb-4" style="max-width: 720px; font-size: 1.15rem;">
+            Order food and stationery directly to your Hostel room, earn rewards as a campus student runner, and trade used engineering textbooks — powered 100% by pure <strong>C#, ASP.NET Core MVC, and ADO.NET</strong>.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-controller="Delivery" asp-action="Create" class="btn btn-emerald px-4 py-2 fs-6">
+                <i class="bi bi-box-seam me-2"></i> Request Hostel Delivery
+            </a>
+            <a asp-controller="Marketplace" asp-action="Index" class="btn btn-glass px-4 py-2 fs-6">
+                <i class="bi bi-shop me-2"></i> Explore Marketplace
+            </a>
+            <a asp-controller="Delivery" asp-action="RunnerHub" class="btn btn-glass px-4 py-2 fs-6">
+                <i class="bi bi-lightning-charge-fill text-warning me-2"></i> Runner Mode
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Live Campus Stats Counters (ADO.NET Computed) -->
+<section class="pb-5">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="universe-card p-3 p-md-4 text-center">
+                    <div class="fs-2 fw-bold text-white mb-1 brand-font">@ViewBag.TotalUsers</div>
+                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Campus Users</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="universe-card p-3 p-md-4 text-center">
+                    <div class="fs-2 fw-bold text-success mb-1 brand-font">@ViewBag.TotalRequests</div>
+                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Delivery Orders</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="universe-card p-3 p-md-4 text-center">
+                    <div class="fs-2 fw-bold text-info mb-1 brand-font">@ViewBag.TotalListings</div>
+                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">Active Listings</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="universe-card p-3 p-md-4 text-center">
+                    <div class="fs-2 fw-bold text-warning mb-1 brand-font">@ViewBag.ActiveRunners</div>
+                    <div class="text-muted small fw-medium text-uppercase" style="letter-spacing: 0.05em;">On-Duty Runners</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture Viva Highlights Card -->
+<section class="pb-5">
+    <div class="container">
+        <div class="universe-card p-4 p-md-5 border-success border-opacity-25" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.8));">
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1 mb-2">ACADEMIC VIVA READY</span>
+                    <h3 class="fw-bold text-white mb-0">3-Tier ASP.NET Core MVC & Raw ADO.NET</h3>
+                </div>
+                <a href="/swagger" target="_blank" class="btn btn-emerald btn-sm">
+                    <i class="bi bi-file-earmark-code me-1"></i> Open Swagger API UI
+                </a>
+            </div>
+
+            <div class="row g-4 text-start">
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-success"><i class="bi bi-layers-fill"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Presentation Layer</h5>
+                            <p class="text-secondary small mb-0">Server-rendered Razor Views (<code>.cshtml</code>), Tag Helpers, and Model Binding with Bootstrap 5. 0% Node.js dependencies.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-info"><i class="bi bi-database-fill-gear"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Raw ADO.NET Layer</h5>
+                            <p class="text-secondary small mb-0">Direct <code>SqliteConnection</code>, <code>SqlCommand</code>, parameterized queries (SQLi protection), and atomic transactions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-3">
+                        <div class="fs-3 text-warning"><i class="bi bi-shield-lock-fill"></i></div>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">Campus Context & Auth</h5>
+                            <p class="text-secondary small mb-0">Cookie-based authentication with salted SHA-256 passwords, Marwadi University seed records, and 6-digit delivery OTP verification.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Live Delivery Feed -->
+<section class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1">📦 Campus Delivery Feed</h2>
+                <p class="text-secondary small mb-0">Live hostel room orders retrieved directly from ADO.NET (Central Canteen, Amul, Stationery)</p>
+            </div>
+            <a asp-controller="Delivery" asp-action="Index" class="btn btn-glass btn-sm">View All Orders &rarr;</a>
+        </div>
+
+        <div class="row g-3">
+            @if (recentRequests.Count == 0)
+            {
+                <div class="col-12 text-center text-muted py-4">No active delivery requests right now.</div>
+            }
+            else
+            {
+                @foreach (var req in recentRequests.Take(3))
+                {
+                    var badgeClass = req.Status switch
+                    {
+                        "pending" => "bg-warning text-dark",
+                        "accepted" => "bg-info text-dark",
+                        "in_transit" => "bg-primary text-white",
+                        "delivered" => "bg-success text-white",
+                        _ => "bg-secondary text-white"
+                    };
+
+                    <div class="col-md-4">
+                        <div class="universe-card p-4 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge @badgeClass text-uppercase fw-bold" style="font-size: 0.7rem;">@req.Status.Replace("_", " ")</span>
+                                    <small class="text-muted">₹@req.DeliveryFee.ToString("F2") Tip</small>
+                                </div>
+                                <h5 class="fw-bold text-white mb-2">@req.PickupLocation</h5>
+                                <div class="text-secondary small mb-3">
+                                    <div class="mb-1"><i class="bi bi-geo-alt me-1 text-danger"></i> @req.DropoffLocation</div>
+                                    <div class="mb-1"><i class="bi bi-person me-1 text-info"></i> @req.RequesterName</div>
+                                    @if (!string.IsNullOrEmpty(req.RunnerName))
+                                    {
+                                        <div><i class="bi bi-bicycle me-1 text-warning"></i> Runner: @req.RunnerName</div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-white border-opacity-10">
+                                <span class="fw-bold text-success fs-5">₹@req.TotalEstimatedAmount.ToString("F2")</span>
+                                <a asp-controller="Delivery" asp-action="Details" asp-route-id="@req.Id" class="btn btn-glass btn-sm">
+                                    Details &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Marketplace Preview -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h2 class="fw-bold text-white mb-1">🏷️ Student Peer-to-Peer Marketplace</h2>
+                <p class="text-secondary small mb-0">Buy & sell used semester textbooks, drawing drafters, and IoT electronics safely on campus.</p>
+            </div>
+            <a asp-controller="Marketplace" asp-action="Index" class="btn btn-glass btn-sm">Browse All Items &rarr;</a>
+        </div>
+
+        <div class="row g-3">
+            @if (recentListings.Count == 0)
+            {
+                <div class="col-12 text-center text-muted py-4">No active marketplace items found.</div>
+            }
+            else
+            {
+                @foreach (var item in recentListings.Take(3))
+                {
+                    <div class="col-md-4">
+                        <div class="universe-card p-4 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">@item.Category</span>
+                                    <small class="text-muted">@item.Condition</small>
+                                </div>
+                                <h5 class="fw-bold text-white mb-2">@item.Title</h5>
+                                <p class="text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                    @(item.Description ?? "Authentic campus item available for in-person inspection.")
+                                </p>
+                                <div class="text-muted small mb-2">
+                                    <i class="bi bi-geo-alt me-1"></i> @item.PickupLocation
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-white border-opacity-10">
+                                <div>
+                                    <span class="fw-bold text-white fs-5">₹@item.Price.ToString("F2")</span>
+                                    @if (item.OriginalPrice.HasValue)
+                                    {
+                                        <small class="text-muted text-decoration-line-through ms-1">₹@item.OriginalPrice.Value.ToString("F2")</small>
+                                    }
+                                </div>
+                                <a asp-controller="Marketplace" asp-action="Details" asp-route-id="@item.Id" class="btn btn-glass btn-sm">
+                                    View Item &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

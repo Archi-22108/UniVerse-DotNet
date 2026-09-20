@@ -1,0 +1,94 @@
+@model List<UniVerse.Server.Models.MarketplaceListingDetailDto>
+@{
+    ViewData["Title"] = "Campus Marketplace";
+    var currentCat = ViewBag.CurrentCategory as string ?? "All";
+    var categories = new[] { "All", "Books", "Electronics", "Lab Equipment", "Hostel Essentials" };
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="fw-bold text-white mb-1">🏷️ Campus Peer-to-Peer Marketplace</h1>
+            <p class="text-secondary small mb-0">Exchange semester textbooks, embedded lab kits, and college essentials safely on campus</p>
+        </div>
+        <a asp-action="Create" class="btn btn-emerald">
+            <i class="bi bi-tag-fill me-1"></i> Post Used Item
+        </a>
+    </div>
+
+    <!-- Category Pills -->
+    <div class="d-flex gap-2 mb-4 overflow-x-auto pb-2">
+        @foreach (var cat in categories)
+        {
+            var active = (cat.Equals(currentCat, StringComparison.OrdinalIgnoreCase)) || (cat == "All" && string.IsNullOrEmpty(currentCat));
+            <a asp-action="Index" asp-route-category="@(cat == "All" ? "" : cat)" class="btn @(active ? "btn-emerald" : "btn-glass") btn-sm px-3 text-nowrap">
+                @cat
+            </a>
+        }
+    </div>
+
+    <!-- Listings Grid -->
+    <div class="row g-3">
+        @if (Model.Count == 0)
+        {
+            <div class="col-12">
+                <div class="universe-card p-5 text-center text-muted">
+                    <i class="bi bi-tag fs-1 d-block mb-3 text-secondary"></i>
+                    <h5 class="text-white">No listings found in category "@currentCat"</h5>
+                    <p class="small mb-3">Be the first to list a textbook or drawing board.</p>
+                    <a asp-action="Create" class="btn btn-emerald btn-sm">Post an Item</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="universe-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                    @item.Category
+                                </span>
+                                <span class="badge bg-secondary bg-opacity-25 text-light small">
+                                    @item.Condition
+                                </span>
+                            </div>
+
+                            <h5 class="fw-bold text-white mb-2">@item.Title</h5>
+
+                            <p class="text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @(item.Description ?? "No description provided.")
+                            </p>
+
+                            <div class="text-secondary small mb-3">
+                                <div><i class="bi bi-geo-alt me-1 text-danger"></i> Pickup: @item.PickupLocation</div>
+                                <div><i class="bi bi-person me-1 text-info"></i> Seller: @item.SellerName</div>
+                                @if (item.Negotiable)
+                                {
+                                    <div class="text-success small mt-1"><i class="bi bi-check-circle me-1"></i> Open to Price Negotiation</div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold text-white fs-4">₹@item.Price.ToString("F2")</span>
+                                @if (item.OriginalPrice.HasValue)
+                                {
+                                    <small class="text-muted text-decoration-line-through d-block" style="font-size: 0.75rem;">
+                                        MRP: ₹@item.OriginalPrice.Value.ToString("F2")
+                                    </small>
+                                }
+                            </div>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-glass btn-sm">
+                                View & Offer &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
