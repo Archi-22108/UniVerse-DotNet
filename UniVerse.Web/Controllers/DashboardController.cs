@@ -72,7 +72,25 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
+    public IActionResult Marketplace()
+    {
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public IActionResult Analytics()
+    {
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
     public IActionResult Profile()
+    {
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet]
+    public IActionResult Setting()
     {
         return RedirectToAction("Index");
     }
