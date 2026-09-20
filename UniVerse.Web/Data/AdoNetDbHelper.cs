@@ -14,7 +14,7 @@ namespace UniVerse.Web.Data;
 /// - SqliteParameter (SQL Injection Prevention)
 /// - SqliteDataReader
 /// </summary>
-public class AdoNetDbHelper
+public class AdoNetDbHelper : IAdoNetDbHelper
 {
     private readonly string _connectionString;
 

@@ -3,14 +3,25 @@ using UniVerse.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add MVC Controllers and Views
 builder.Services.AddControllersWithViews();
 
-// Register ADO.NET Data Access Layer with Dependency Injection
+// Register ADO.NET Data Access Layer via Interface for C# OOP Dependency Injection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Data Source=universe.db";
 
-builder.Services.AddSingleton(new AdoNetDbHelper(connectionString));
+var dbHelperInstance = new AdoNetDbHelper(connectionString);
+builder.Services.AddSingleton<IAdoNetDbHelper>(dbHelperInstance);
+builder.Services.AddSingleton<AdoNetDbHelper>(dbHelperInstance);
+
+// Add ASP.NET Core Session Management (Course requirement)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Add ASP.NET Core Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -25,10 +36,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
-// Auto-initialize SQLite schema and seed sample data on startup
+// Auto-initialize SQLite schema and seed sample data on startup via ADO.NET
 using (var scope = app.Services.CreateScope())
 {
-    var dbHelper = scope.ServiceProvider.GetRequiredService<AdoNetDbHelper>();
+    var dbHelper = scope.ServiceProvider.GetRequiredService<IAdoNetDbHelper>();
     dbHelper.InitializeDatabase();
 }
 
@@ -43,6 +54,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Session Middleware (must be before Authentication/Authorization)
+app.UseSession();
 
 // Authentication & Authorization middlewares
 app.UseAuthentication();

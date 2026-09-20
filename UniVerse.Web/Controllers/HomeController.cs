@@ -8,9 +8,9 @@ namespace UniVerse.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly AdoNetDbHelper _dbHelper;
+    private readonly IAdoNetDbHelper _dbHelper;
 
-    public HomeController(ILogger<HomeController> logger, AdoNetDbHelper dbHelper)
+    public HomeController(ILogger<HomeController> logger, IAdoNetDbHelper dbHelper)
     {
         _logger = logger;
         _dbHelper = dbHelper;

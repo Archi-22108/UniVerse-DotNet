@@ -12,10 +12,10 @@ namespace UniVerse.Web.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly AdoNetDbHelper _dbHelper;
+    private readonly IAdoNetDbHelper _dbHelper;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(AdoNetDbHelper dbHelper, ILogger<AccountController> logger)
+    public AccountController(IAdoNetDbHelper dbHelper, ILogger<AccountController> logger)
     {
         _dbHelper = dbHelper;
         _logger = logger;
