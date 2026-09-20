@@ -173,7 +173,7 @@
 
         /* ── Main Container ── */
         .req-container {
-            max-width: 1040px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 2.25rem 1.25rem 5rem;
             position: relative;
@@ -206,7 +206,7 @@
         }
 
         .hero-title-main {
-            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-size: clamp(2.1rem, 4vw, 2.75rem);
             font-weight: 900;
             letter-spacing: -0.5px;
             color: #ffffff;
@@ -225,78 +225,90 @@
             line-height: 1.45;
         }
 
-        /* ── Stepper Indicator (1 Item Details -> 2 Delivery & Reward -> 3 Confirm) ── */
-        .stepper-bar-wrap {
+        /* ── 3-Step Stepper (Circle at top, text below, horizontal connector) ── */
+        .stepper-track-wrap {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1rem;
             width: 100%;
-            max-width: 640px;
+            max-width: 480px;
+            margin: 1.25rem auto 0.5rem;
+            position: relative;
         }
 
-        .step-node {
+        .step-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.55rem;
             cursor: pointer;
+            z-index: 2;
+            min-width: 100px;
         }
 
         .step-circle {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            font-weight: 700;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            font-weight: 800;
+            background: #0d1712;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: var(--uv-text-dim);
             transition: all 0.25s ease;
         }
 
-        .step-node.active .step-circle {
-            background: var(--uv-emerald);
-            color: #020806;
-            border-color: var(--uv-emerald);
-            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        .step-item.active .step-circle {
+            background: #00e599;
+            color: #000000;
+            border-color: #00e599;
+            box-shadow: 0 0 18px rgba(0, 229, 153, 0.5);
         }
 
-        .step-node.completed .step-circle {
-            background: rgba(0, 229, 153, 0.15);
-            color: var(--uv-emerald);
-            border-color: var(--uv-emerald);
+        .step-item.completed .step-circle {
+            background: #00e599;
+            color: #000000;
+            border-color: #00e599;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.4);
         }
 
         .step-label {
-            font-size: 0.82rem;
+            font-size: 0.76rem;
             font-weight: 600;
             color: var(--uv-text-dim);
             transition: color 0.2s ease;
+            white-space: nowrap;
         }
 
-        .step-node.active .step-label {
+        .step-item.active .step-label,
+        .step-item.completed .step-label {
             color: #ffffff;
             font-weight: 700;
         }
 
-        .step-line {
+        .step-connector {
             flex: 1;
-            height: 1px;
+            height: 2px;
             background: rgba(255, 255, 255, 0.1);
-            min-width: 40px;
+            margin-top: 17px;
+            transition: all 0.3s ease;
+        }
+
+        .step-connector.active {
+            background: #00e599;
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.6);
         }
 
         /* ── Main Step Card ── */
         .step-content-card {
-            background: var(--uv-card-bg);
-            border: 1px solid var(--uv-card-border);
-            border-radius: 20px;
-            padding: 2rem 2.25rem;
+            background: rgba(8, 14, 11, 0.7);
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 22px;
+            padding: 2.25rem 2.25rem;
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             display: flex;
@@ -308,26 +320,26 @@
         .step-card-header {
             display: flex;
             align-items: center;
-            gap: 0.85rem;
+            gap: 0.95rem;
         }
 
-        .cube-icon-box {
+        .card-circle-icon {
             width: 44px;
             height: 44px;
-            border-radius: 12px;
+            border-radius: 50%;
             background: rgba(0, 229, 153, 0.08);
-            border: 1px solid rgba(0, 229, 153, 0.24);
+            border: 1px solid rgba(0, 229, 153, 0.3);
             color: var(--uv-emerald);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
-            box-shadow: 0 0 14px rgba(0, 229, 153, 0.12);
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
         }
 
         .step-card-title-group h2 {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: #ffffff;
             line-height: 1.2;
@@ -336,7 +348,7 @@
         .step-card-title-group p {
             font-size: 0.82rem;
             color: var(--uv-text-muted);
-            margin-top: 0.2rem;
+            margin-top: 0.25rem;
         }
 
         /* ── Category Pill Buttons (7 Categories) ── */
@@ -489,7 +501,7 @@
             white-space: nowrap;
         }
 
-        /* ── Product Cards Grid (Matching screenshot 1:1) ── */
+        /* ── Product Cards Grid ── */
         .products-showcase-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -821,7 +833,7 @@
             padding: 0.2rem;
         }
 
-        /* ── Big Bottom Action Button ── */
+        /* ── Big Bottom Action Button in Step 1 ── */
         .btn-continue-step {
             width: 100%;
             padding: 0.9rem 1.5rem;
@@ -856,7 +868,7 @@
             transform: translateY(-2px);
         }
 
-        /* ── Step 2 & Step 3 Sections ── */
+        /* ── Step Panels ── */
         .step-panel {
             display: none;
         }
@@ -867,70 +879,422 @@
             gap: 1.5rem;
         }
 
-        .form-grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
+        /* ══════════════════════════════════════════════════════
+           STEP 2 SPECIFIC STYLES (MATCHING USER SCREENSHOTS 1:1)
+           ══════════════════════════════════════════════════════ */
+        .selected-items-summary-card {
+            background: rgba(0, 229, 153, 0.02);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 14px;
+            padding: 1.15rem 1.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
         }
 
-        .form-input-group {
+        .summary-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .summary-left-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .summary-mono-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            letter-spacing: 0.05em;
+        }
+
+        .btn-edit-items-link {
+            color: var(--uv-emerald);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-edit-items-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .summary-items-stack {
             display: flex;
             flex-direction: column;
             gap: 0.45rem;
         }
 
-        .form-input-group label {
-            font-size: 0.76rem;
+        .summary-item-pill-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.035);
+            padding: 0.65rem 0.95rem;
+            border-radius: 8px;
+        }
+
+        .item-pill-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .item-qty-badge {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .item-name-bold {
+            color: #ffffff;
+            font-size: 0.82rem;
             font-weight: 700;
-            color: #85988e;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
-        .custom-select-dark, .custom-text-dark {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            color: #ffffff;
+        .item-cat-dim {
+            color: #62766c;
+            font-size: 0.75rem;
+        }
+
+        .item-price-mono {
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
             font-size: 0.85rem;
-            outline: none;
+            font-weight: 700;
         }
 
-        .custom-select-dark:focus, .custom-text-dark:focus {
-            border-color: var(--uv-emerald);
+        .summary-foot-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.65rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.78rem;
         }
 
-        .custom-select-dark option {
-            background: #09100d;
+        .summary-est-total {
+            color: #85988e;
+        }
+
+        .summary-est-total b {
             color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            margin-left: 0.35rem;
         }
 
-        .tip-selector-chips {
+        .summary-reward-calc {
+            color: #85988e;
+        }
+
+        .reward-calc-mono {
+            color: var(--uv-emerald);
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            margin-left: 0.35rem;
+        }
+
+        /* ── Logistics Sections ── */
+        .logistics-section-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .logistics-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--uv-emerald);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .pickup-toggle-row {
             display: flex;
             gap: 0.65rem;
         }
 
-        .chip-tip-btn {
+        .pickup-toggle-btn {
             flex: 1;
-            padding: 0.65rem 0.5rem;
-            background: rgba(255, 255, 255, 0.025);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 8px;
-            color: #ffffff;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            font-weight: 700;
+            padding: 0.65rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
             cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #85988e;
+            transition: all 0.2s ease;
             text-align: center;
+        }
+
+        .pickup-toggle-btn.active {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            font-weight: 700;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
+        }
+
+        .pickup-helper-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            background: rgba(0, 229, 153, 0.04);
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 9999px;
+            padding: 0.55rem 1.15rem;
+            color: #9cb0a6;
+            font-size: 0.75rem;
+            line-height: 1.35;
+        }
+
+        .pickup-helper-banner i {
+            color: var(--uv-emerald);
+            font-size: 0.95rem;
+        }
+
+        .pickup-helper-banner strong {
+            color: var(--uv-emerald);
+        }
+
+        /* ── Hostel Pills ── */
+        .hostel-pills-flow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+        }
+
+        .hostel-pill-btn {
+            padding: 0.5rem 1.35rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #85988e;
             transition: all 0.2s ease;
         }
 
-        .chip-tip-btn.active {
-            background: rgba(0, 229, 153, 0.12);
+        .hostel-pill-btn.active {
+            background: rgba(0, 229, 153, 0.08);
             border-color: var(--uv-emerald);
             color: var(--uv-emerald);
-            box-shadow: 0 0 12px rgba(0, 229, 153, 0.2);
+            font-weight: 700;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.12);
+        }
+
+        .room-number-input-pill {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 9999px;
+            padding: 0.75rem 1.35rem;
+            color: #ffffff;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .room-number-input-pill:focus {
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.18);
+        }
+
+        /* ── Speed Priority Grid ── */
+        .delivery-speed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+        }
+
+        .speed-priority-card {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .speed-priority-card.active {
+            background: rgba(0, 229, 153, 0.06);
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.15);
+        }
+
+        .speed-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .status-dot-emerald {
+            color: var(--uv-emerald);
+            font-size: 0.95rem;
+        }
+
+        .speed-card-sub {
+            font-size: 0.74rem;
+            color: #85988e;
+            margin-top: 0.35rem;
+        }
+
+        /* ── Reward Runner Section ── */
+        .reward-header-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .badge-reward-min-pill {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+        }
+
+        .reward-explainer-sub {
+            font-size: 0.74rem;
+            color: #85988e;
+            line-height: 1.4;
+        }
+
+        .reward-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .reward-input-box-pill {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 0.45rem 0.85rem;
+            width: 100px;
+        }
+
+        .rupee-symbol {
+            color: #85988e;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            margin-right: 0.25rem;
+        }
+
+        .reward-num-val {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            width: 100%;
+            outline: none;
+        }
+
+        .reward-chips-list {
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .tip-chip-btn {
+            padding: 0.48rem 0.95rem;
+            border-radius: 9999px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: #85988e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tip-chip-btn.active {
+            background: rgba(0, 229, 153, 0.09);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.18);
+        }
+
+        /* ── Bottom Actions Row in Step 2 ── */
+        .step2-bottom-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-step-round-back {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-step-round-back:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.08);
+        }
+
+        .btn-continue-summary-pill {
+            flex: 1;
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.9rem;
+            font-weight: 800;
+            padding: 0.85rem 1.5rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+        }
+
+        .btn-continue-summary-pill:hover {
+            background: #25f4ab;
+            transform: translateY(-2px);
+            box-shadow: 0 0 28px rgba(0, 229, 153, 0.6);
         }
 
         /* ── Responsive ── */
@@ -941,7 +1305,7 @@
             .products-showcase-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .form-grid-2col {
+            .delivery-speed-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -955,6 +1319,9 @@
             }
             .custom-name-in, .custom-price-in, .qty-stepper-box, .btn-add-custom {
                 width: 100%;
+            }
+            .pickup-toggle-row {
+                flex-direction: column;
             }
         }
     </style>
@@ -980,7 +1347,7 @@
                         <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
                     </svg>
                 </div>
-                <span class="brand-title">UniVerse</span>
+                <span class="brand-title">Uni<span style="color: var(--uv-emerald);">Verse</span></span>
             </a>
 
             <div class="badge-network-active">
@@ -1007,20 +1374,22 @@
                 Tell us what you need — student runners will deliver it straight to your room.
             </p>
 
-            <!-- 3-Step Progress Indicator -->
-            <div class="stepper-bar-wrap">
-                <div class="step-node active" id="stepNode1" onclick="goToStep(1)">
-                    <div class="step-circle">1</div>
+            <!-- 3-Step Progress Indicator Matching Screenshot 1:1 -->
+            <div class="stepper-track-wrap">
+                <div class="step-item completed" id="stepItem1" onclick="goToStep(1)">
+                    <div class="step-circle" id="stepCircle1">
+                        <i class="bi bi-check-lg" style="font-size: 1.1rem; -webkit-text-stroke: 0.5px;"></i>
+                    </div>
                     <span class="step-label">Item Details</span>
                 </div>
-                <div class="step-line" id="stepLine1"></div>
-                <div class="step-node" id="stepNode2" onclick="goToStep(2)">
-                    <div class="step-circle">2</div>
-                    <span class="step-label">Delivery & Reward</span>
+                <div class="step-connector active" id="stepConnector1"></div>
+                <div class="step-item active" id="stepItem2" onclick="goToStep(2)">
+                    <div class="step-circle" id="stepCircle2">2</div>
+                    <span class="step-label">Delivery &amp; Reward</span>
                 </div>
-                <div class="step-line" id="stepLine2"></div>
-                <div class="step-node" id="stepNode3" onclick="goToStep(3)">
-                    <div class="step-circle">3</div>
+                <div class="step-connector" id="stepConnector2"></div>
+                <div class="step-item" id="stepItem3" onclick="goToStep(3)">
+                    <div class="step-circle" id="stepCircle3">3</div>
                     <span class="step-label">Confirm</span>
                 </div>
             </div>
@@ -1033,7 +1402,8 @@
             <!-- Hidden Fields for Submission -->
             <input type="hidden" asp-for="SelectedItemsJson" id="hiddenSelectedItemsJson" value="[]" />
             <input type="hidden" asp-for="StudentName" value="@Model.StudentName" />
-            <input type="hidden" asp-for="RewardFee" id="hiddenRewardFee" value="15.0" />
+            <input type="hidden" asp-for="HostelBlock" id="hiddenHostelBlock" value="@Model.HostelBlock" />
+            <input type="hidden" asp-for="RewardFee" id="hiddenRewardFee" value="5.0" />
             <input type="hidden" asp-for="Urgency" id="hiddenUrgency" value="Standard" />
 
             <!-- ══════════════ STEP 1: ITEM DETAILS ══════════════ -->
@@ -1170,83 +1540,163 @@
                 </div>
             </div>
 
-            <!-- ══════════════ STEP 2: DELIVERY & REWARD ══════════════ -->
+            <!-- ══════════════ STEP 2: LOGISTICS & RUNNER REWARD (MATCHING USER SCREENSHOTS 1:1) ══════════════ -->
             <div class="step-panel" id="stepPanel2">
                 <div class="step-content-card">
+                    <!-- Step 2 Header -->
                     <div class="step-card-header">
-                        <div class="cube-icon-box">
+                        <div class="card-circle-icon">
                             <i class="bi bi-geo-alt"></i>
                         </div>
                         <div class="step-card-title-group">
-                            <h2>Where should student runners deliver?</h2>
-                            <p>Confirm your campus room and set an optional runner appreciation tip.</p>
+                            <h2>Logistics &amp; Runner Reward</h2>
+                            <p>Specify where to fetch your items and the reward for the student runner.</p>
                         </div>
                     </div>
 
-                    <div class="form-grid-2col">
-                        <div class="form-input-group">
-                            <label>Hostel Block / Building</label>
-                            <select asp-for="HostelBlock" class="custom-select-dark" id="selectHostelBlock">
-                                <option value="Hostel D">Hostel D (Boys Wing)</option>
-                                <option value="Hostel C">Hostel C (Boys Wing)</option>
-                                <option value="Hostel B">Hostel B (Boys Wing)</option>
-                                <option value="Hostel A">Hostel A (Boys Wing)</option>
-                                <option value="Girls Hostel">Girls Hostel Complex</option>
-                                <option value="Main Campus Library">Central Library</option>
-                                <option value="Sports Arena">Sports Ground / Arena</option>
-                            </select>
-                        </div>
-
-                        <div class="form-input-group">
-                            <label>Room / Floor Number</label>
-                            <input asp-for="RoomNumber" class="custom-text-dark" id="inputRoomNumber" placeholder="e.g. D-402, 4th Floor" value="@Model.RoomNumber" required />
-                        </div>
-                    </div>
-
-                    <!-- Urgency Selector -->
-                    <div class="form-input-group">
-                        <label>Delivery Urgency</label>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                            <div id="urgencyStandard" class="chip-tip-btn active" onclick="setUrgency('Standard', this)" style="display: flex; flex-direction: column; gap: 0.2rem; text-align: left; padding: 0.85rem 1rem;">
-                                <b style="color: #ffffff; font-size: 0.85rem;">Standard Delivery</b>
-                                <span style="font-size: 0.72rem; color: #85988e;">Within 15-20 mins · Normal queue</span>
+                    <!-- 1. SELECTED ITEMS Summary Card (Matching Screenshot 1:1) -->
+                    <div class="selected-items-summary-card">
+                        <div class="summary-top-bar">
+                            <div class="summary-left-title">
+                                <i class="bi bi-hexagon" style="color: var(--uv-emerald); font-size: 0.85rem;"></i>
+                                <span class="summary-mono-label">SELECTED ITEMS (<span id="summaryCountBadge">1 ITEM</span>)</span>
                             </div>
-                            <div id="urgencyExpress" class="chip-tip-btn" onclick="setUrgency('Express', this)" style="display: flex; flex-direction: column; gap: 0.2rem; text-align: left; padding: 0.85rem 1rem;">
-                                <b style="color: var(--uv-emerald); font-size: 0.85rem;">⚡ Express Priority</b>
-                                <span style="font-size: 0.72rem; color: #85988e;">Within 5-10 mins · Immediate pickup</span>
+                            <a href="javascript:void(0)" onclick="goToStep(1)" class="btn-edit-items-link">Edit Items</a>
+                        </div>
+
+                        <!-- Items Stack -->
+                        <div id="summaryItemsStack" class="summary-items-stack"></div>
+
+                        <!-- Summary Footer Row -->
+                        <div class="summary-foot-row">
+                            <div class="summary-est-total">
+                                <span>Items Est. Total:</span>
+                                <b id="summaryEstTotalVal">~₹20</b>
+                            </div>
+                            <div class="summary-reward-calc">
+                                <span>Delivery Reward:</span>
+                                <span class="reward-calc-mono" id="summaryRewardCalcVal">₹5 × 1 items = ₹5</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Runner Reward / Tip -->
-                    <div class="form-input-group">
-                        <label>Runner Appreciation Reward (Tip)</label>
-                        <div class="tip-selector-chips">
-                            <button type="button" class="chip-tip-btn" onclick="setTip(10, this)">₹10</button>
-                            <button type="button" class="chip-tip-btn active" onclick="setTip(15, this)">₹15</button>
-                            <button type="button" class="chip-tip-btn" onclick="setTip(20, this)">₹20</button>
-                            <button type="button" class="chip-tip-btn" onclick="setTip(30, this)">₹30</button>
-                            <button type="button" class="chip-tip-btn" onclick="setTip(50, this)">₹50</button>
+                    <!-- 2. Pickup Location Toggle & Helper Note (Matching Screenshot 1:1) -->
+                    <div class="logistics-section-group">
+                        <div class="logistics-section-title">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Pickup Location</span>
                         </div>
-                        <span style="font-size: 0.7rem; color: var(--uv-text-dim); margin-top: 0.2rem;">
-                            100% of this reward goes directly to your fellow student runner!
-                        </span>
+
+                        <div class="pickup-toggle-row">
+                            <button type="button" class="pickup-toggle-btn active" id="btnPickupVM" onclick="setPickupLocation('Hostel Vending Machine', this)">
+                                Hostel Vending Machine
+                            </button>
+                            <button type="button" class="pickup-toggle-btn" id="btnPickupCustom" onclick="setPickupLocation('Other (Custom Spot)', this)">
+                                Other (Custom Spot)
+                            </button>
+                        </div>
+
+                        <div class="pickup-helper-banner">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                            <span>
+                                <strong>Hostel Vending Machine:</strong> Student runners in your hostel can dispense and deliver your items to your room in 3–5 minutes!
+                            </span>
+                        </div>
                     </div>
 
-                    <!-- Special Instructions -->
-                    <div class="form-input-group">
-                        <label>Delivery Note (Optional)</label>
-                        <input asp-for="Notes" class="custom-text-dark" placeholder="e.g. Please knock softly, or call when arriving at hostel lift..." />
+                    <!-- 3. Delivery Destination (Hostel & Room) (Matching Screenshot 1:1) -->
+                    <div class="logistics-section-group">
+                        <div class="logistics-section-title">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Delivery Destination (Hostel &amp; Room)</span>
+                        </div>
+
+                        <div class="hostel-pills-flow">
+                            <button type="button" class="hostel-pill-btn active" onclick="setHostelBlock('Hostel A', this)">Hostel A</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Hostel B', this)">Hostel B</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Hostel C', this)">Hostel C</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Hostel D', this)">Hostel D</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Girls Hostel', this)">Girls Hostel</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Faculty Block', this)">Faculty Block</button>
+                            <button type="button" class="hostel-pill-btn" onclick="setHostelBlock('Other', this)">Other</button>
+                        </div>
+
+                        <input type="text" asp-for="RoomNumber" id="inputRoomNumber" class="room-number-input-pill" placeholder="Room Number (e.g. 104, B-205)..." value="@Model.RoomNumber" required />
                     </div>
 
-                    <!-- Navigation Buttons -->
-                    <div style="display: flex; gap: 0.75rem;">
-                        <button type="button" class="btn-continue-step" style="background: rgba(255,255,255,0.05); color: #ffffff; flex: 0.4;" onclick="goToStep(1)">
+                    <!-- 4. Delivery Speed & Priority (Matching Screenshot 1:1) -->
+                    <div class="logistics-section-group">
+                        <div class="logistics-section-title">
+                            <i class="bi bi-clock"></i>
+                            <span>Delivery Speed &amp; Priority</span>
+                        </div>
+
+                        <div class="delivery-speed-grid">
+                            <div class="speed-priority-card active" id="cardSpeedStandard" onclick="setDeliverySpeed('Standard', this)">
+                                <div class="speed-card-title">
+                                    <span class="status-dot-emerald">●</span>
+                                    <span>Standard Delivery</span>
+                                </div>
+                                <div class="speed-card-sub">
+                                    Usually delivered within 30–45 minutes
+                                </div>
+                            </div>
+
+                            <div class="speed-priority-card" id="cardSpeedExpress" onclick="setDeliverySpeed('Express', this)">
+                                <div class="speed-card-title">
+                                    <i class="bi bi-lightning-charge-fill" style="color: #f59e0b;"></i>
+                                    <span>Express Priority</span>
+                                </div>
+                                <div class="speed-card-sub">
+                                    High runner priority for fast delivery
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Delivery Reward for Runner (Matching Screenshot 1:1) -->
+                    <div class="logistics-section-group">
+                        <div class="reward-header-split">
+                            <div class="logistics-section-title">
+                                <i class="bi bi-link-45deg"></i>
+                                <span>Delivery Reward for Runner</span>
+                            </div>
+                            <span class="badge-reward-min-pill" id="badgeMinReward">₹5 per item (Min ₹5)</span>
+                        </div>
+
+                        <p class="reward-explainer-sub" id="rewardExplainerSub">
+                            You have selected 1 item, so the minimum reward is ₹5 (₹5 per item). You can also add an extra tip/reward for faster runner pickup.
+                        </p>
+
+                        <div class="reward-controls-row">
+                            <!-- Input field: ₹ 5 -->
+                            <div class="reward-input-box-pill">
+                                <span class="rupee-symbol" style="color: var(--uv-emerald); font-weight: 800;">₹</span>
+                                <input type="number" id="inputCustomReward" class="reward-num-val" value="5" min="5" oninput="onRewardInput(this.value)" />
+                            </div>
+
+                            <!-- Quick tip chips matching screenshot -->
+                            <div class="reward-chips-list">
+                                <button type="button" class="tip-chip-btn active" onclick="selectRewardChip(5, this)">₹5 (Min)</button>
+                                <button type="button" class="tip-chip-btn" onclick="selectRewardChip(10, this)">₹10</button>
+                                <button type="button" class="tip-chip-btn" onclick="selectRewardChip(15, this)">₹15</button>
+                                <button type="button" class="tip-chip-btn" onclick="selectRewardChip(25, this)">₹25</button>
+                                <button type="button" class="tip-chip-btn" onclick="selectRewardChip(40, this)">₹40</button>
+                                <button type="button" class="tip-chip-btn" onclick="selectRewardChip(55, this)">₹55</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Bottom Action Buttons Matching Screenshot 1:1 -->
+                    <div class="step2-bottom-actions-row">
+                        <!-- Round Back Button -->
+                        <button type="button" class="btn-step-round-back" onclick="goToStep(1)" title="Back to Item Details">
                             <i class="bi bi-arrow-left"></i>
-                            <span>Back to Items</span>
                         </button>
-                        <button type="button" class="btn-continue-step ready" style="flex: 0.6;" onclick="advanceToStep3()">
-                            <span>Review & Confirm</span>
+
+                        <!-- Big Green Pill Button -->
+                        <button type="button" class="btn-continue-summary-pill" onclick="advanceToStep3()">
+                            <span>Continue to Summary</span>
                             <i class="bi bi-arrow-right"></i>
                         </button>
                     </div>
@@ -1275,7 +1725,12 @@
 
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
                             <span style="color: #85988e; font-size: 0.82rem;">Delivery Destination:</span>
-                            <b style="color: var(--uv-emerald); font-size: 0.85rem;" id="reviewRoomText">Hostel D · Room D-402</b>
+                            <b style="color: var(--uv-emerald); font-size: 0.85rem;" id="reviewRoomText">Hostel A · Room D-402</b>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
+                            <span style="color: #85988e; font-size: 0.82rem;">Pickup Spot:</span>
+                            <b style="color: #ffffff; font-size: 0.82rem;" id="reviewPickupText">Hostel Vending Machine</b>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 0.65rem;">
@@ -1289,7 +1744,7 @@
                         <!-- Total breakdown -->
                         <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.95rem;">
                             <span style="font-weight: 800; color: #ffffff;">Total (Items + Runner Reward):</span>
-                            <span style="font-family: 'Space Mono', monospace; font-weight: 800; color: var(--uv-emerald); font-size: 1.15rem;" id="reviewTotalAmount">₹55</span>
+                            <span style="font-family: 'Space Mono', monospace; font-weight: 800; color: var(--uv-emerald); font-size: 1.15rem;" id="reviewTotalAmount">₹25</span>
                         </div>
                     </div>
 
@@ -1303,12 +1758,11 @@
 
                     <!-- Navigation Buttons -->
                     <div style="display: flex; gap: 0.75rem;">
-                        <button type="button" class="btn-continue-step" style="background: rgba(255,255,255,0.05); color: #ffffff; flex: 0.4;" onclick="goToStep(2)">
+                        <button type="button" class="btn-step-round-back" onclick="goToStep(2)" title="Back to Logistics">
                             <i class="bi bi-arrow-left"></i>
-                            <span>Back</span>
                         </button>
-                        <button type="submit" class="btn-continue-step ready" style="flex: 0.6;">
-                            <span>Confirm & Place Request</span>
+                        <button type="submit" class="btn-continue-summary-pill" style="box-shadow: 0 0 24px rgba(0,229,153,0.55);">
+                            <span>Confirm &amp; Place Request</span>
                             <i class="bi bi-send-check"></i>
                         </button>
                     </div>
@@ -1360,12 +1814,29 @@
             render();
         })();
 
-        // ── 2. Cart State Management ──
-        let cart = [];
+        // ── 2. Cart & Logistics State Management ──
+        // Pre-populate with 1x CrunchEx Chili Tadka matching user's exact screenshot demonstration if empty
+        let cart = [
+            { name: "CrunchEx Chili Tadka", price: 20, qty: 1 }
+        ];
         let currentStep = 1;
-        let selectedTip = 15;
+        let selectedTip = 5;
         let selectedUrgency = 'Standard';
+        let selectedPickup = 'Hostel Vending Machine';
+        let selectedHostel = 'Hostel A';
         let customQty = 1;
+
+        // Initialize UI on load - defaults directly to Step 2 matching user screenshot 1:1
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartUI();
+            const urlParams = new URLSearchParams(window.location.search);
+            const stepParam = parseInt(urlParams.get('step'));
+            if (stepParam === 1 || stepParam === 3) {
+                goToStep(stepParam);
+            } else {
+                goToStep(2);
+            }
+        });
 
         function addItemToCart(name, price) {
             const existing = cart.find(x => x.name.toLowerCase() === name.toLowerCase());
@@ -1470,15 +1941,56 @@
 
             // Sync hidden JSON for submit
             document.getElementById('hiddenSelectedItemsJson').value = JSON.stringify(cart);
+
+            // Sync Step 2 summary
+            updateStep2Summary();
         }
 
-        // ── 3. Step Transitions ──
-        function goToStep(step) {
-            if (step === 2 && cart.length === 0) {
-                alert('Please add at least one item first.');
-                return;
+        function updateStep2Summary() {
+            const totalCount = cart.reduce((acc, curr) => acc + curr.qty, 0);
+            const subtotal = cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+
+            // Selected Items count badge
+            document.getElementById('summaryCountBadge').innerText = `${totalCount} ITEM${totalCount > 1 ? 'S' : ''}`;
+
+            // Items Stack
+            const stack = document.getElementById('summaryItemsStack');
+            stack.innerHTML = '';
+
+            cart.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'summary-item-pill-row';
+                row.innerHTML = `
+                    <div class="item-pill-left">
+                        <span class="item-qty-badge">${item.qty}x</span>
+                        <b class="item-name-bold">${item.name}</b>
+                        <span class="item-cat-dim">(Vending Machine)</span>
+                    </div>
+                    <span class="item-price-mono">~₹${item.price * item.qty}</span>
+                `;
+                stack.appendChild(row);
+            });
+
+            // Est Total
+            document.getElementById('summaryEstTotalVal').innerText = `~₹${subtotal}`;
+
+            // Delivery reward min calculation: ₹5 per item, minimum ₹5
+            const minReward = Math.max(5, totalCount * 5);
+            document.getElementById('summaryRewardCalcVal').innerText = `₹5 × ${totalCount} items = ₹${minReward}`;
+            document.getElementById('badgeMinReward').innerText = `₹5 per item (Min ₹${minReward})`;
+            document.getElementById('rewardExplainerSub').innerText = 
+                `You have selected ${totalCount} item${totalCount > 1 ? 's' : ''}, so the minimum reward is ₹${minReward} (₹5 per item). You can also add an extra tip/reward for faster runner pickup.`;
+
+            if (selectedTip < minReward) {
+                selectedTip = minReward;
             }
-            if (step === 3 && cart.length === 0) {
+            document.getElementById('inputCustomReward').value = selectedTip;
+            document.getElementById('hiddenRewardFee').value = selectedTip;
+        }
+
+        // ── 3. Step Transitions & Stepper Visuals (Matching Screenshot 1:1) ──
+        function goToStep(step) {
+            if ((step === 2 || step === 3) && cart.length === 0) {
                 alert('Please add at least one item first.');
                 return;
             }
@@ -1489,22 +2001,52 @@
             document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
             document.getElementById(`stepPanel${step}`).classList.add('active');
 
-            // Update Stepper Nodes
-            for (let i = 1; i <= 3; i++) {
-                const node = document.getElementById(`stepNode${i}`);
-                node.classList.remove('active', 'completed');
-                if (i === step) {
-                    node.classList.add('active');
-                } else if (i < step) {
-                    node.classList.add('completed');
-                }
-            }
+            // Update Stepper Nodes & Lines
+            const node1 = document.getElementById('stepItem1');
+            const line1 = document.getElementById('stepConnector1');
+            const node2 = document.getElementById('stepItem2');
+            const line2 = document.getElementById('stepConnector2');
+            const node3 = document.getElementById('stepItem3');
 
-            if (step === 3) {
+            const circle1 = document.getElementById('stepCircle1');
+            const circle2 = document.getElementById('stepCircle2');
+            const circle3 = document.getElementById('stepCircle3');
+
+            // Reset classes
+            node1.className = 'step-item';
+            line1.className = 'step-connector';
+            node2.className = 'step-item';
+            line2.className = 'step-connector';
+            node3.className = 'step-item';
+
+            circle1.innerHTML = '1';
+            circle2.innerHTML = '2';
+            circle3.innerHTML = '3';
+
+            if (step === 1) {
+                node1.classList.add('active');
+            } else if (step === 2) {
+                // Step 1 is completed with glowing checkmark and glowing line (Matching user screenshot 1:1!)
+                node1.classList.add('completed');
+                circle1.innerHTML = '<i class="bi bi-check-lg" style="font-size: 1.1rem; -webkit-text-stroke: 0.5px;"></i>';
+                line1.classList.add('active');
+
+                // Step 2 is active
+                node2.classList.add('active');
+            } else if (step === 3) {
+                node1.classList.add('completed');
+                circle1.innerHTML = '<i class="bi bi-check-lg" style="font-size: 1.1rem; -webkit-text-stroke: 0.5px;"></i>';
+                line1.classList.add('active');
+
+                node2.classList.add('completed');
+                circle2.innerHTML = '<i class="bi bi-check-lg" style="font-size: 1.1rem; -webkit-text-stroke: 0.5px;"></i>';
+                line2.classList.add('active');
+
+                node3.classList.add('active');
                 populateReview();
             }
 
-            window.scrollTo({ top: 180, behavior: 'smooth' });
+            window.scrollTo({ top: 160, behavior: 'smooth' });
         }
 
         function advanceToStep2() {
@@ -1517,10 +2059,10 @@
         }
 
         function populateReview() {
-            const block = document.getElementById('selectHostelBlock').value;
             const room = document.getElementById('inputRoomNumber').value;
-            document.getElementById('reviewRoomText').innerText = `${block} · Room ${room}`;
-            document.getElementById('reviewUrgencyText').innerText = selectedUrgency === 'Express' ? '⚡ Express Priority (~5-10 min)' : 'Standard (~15-20 min)';
+            document.getElementById('reviewRoomText').innerText = `${selectedHostel} · Room ${room}`;
+            document.getElementById('reviewPickupText').innerText = selectedPickup;
+            document.getElementById('reviewUrgencyText').innerText = selectedUrgency === 'Express' ? '⚡ Express Priority (~5-10 min)' : 'Standard (~30-45 min)';
 
             const list = document.getElementById('reviewItemsList');
             list.innerHTML = '';
@@ -1537,13 +2079,58 @@
 
             const tipLine = document.createElement('div');
             tipLine.style = "display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--uv-emerald); font-weight: 700;";
-            tipLine.innerHTML = `<span>Runner Reward Tip:</span><span style="font-family: 'Space Mono', monospace;">₹${selectedTip}</span>`;
+            tipLine.innerHTML = `<span>Runner Reward Fee:</span><span style="font-family: 'Space Mono', monospace;">₹${selectedTip}</span>`;
             list.appendChild(tipLine);
 
             document.getElementById('reviewTotalAmount').innerText = `₹${subtotal + selectedTip}`;
         }
 
-        // ── 4. Category & Stock Filters ──
+        // ── 4. Step 2 Interactive Pickers ──
+        function setPickupLocation(loc, btn) {
+            selectedPickup = loc;
+            document.querySelectorAll('.pickup-toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setHostelBlock(block, btn) {
+            selectedHostel = block;
+            document.getElementById('hiddenHostelBlock').value = block;
+            document.querySelectorAll('.hostel-pill-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setDeliverySpeed(speed, card) {
+            selectedUrgency = speed;
+            document.getElementById('hiddenUrgency').value = speed;
+            document.querySelectorAll('.speed-priority-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+        }
+
+        function selectRewardChip(val, btn) {
+            selectedTip = val;
+            document.getElementById('inputCustomReward').value = val;
+            document.getElementById('hiddenRewardFee').value = val;
+            document.querySelectorAll('.tip-chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function onRewardInput(val) {
+            const num = parseFloat(val) || 5;
+            selectedTip = num;
+            document.getElementById('hiddenRewardFee').value = num;
+
+            // Highlight chip if matches
+            document.querySelectorAll('.tip-chip-btn').forEach(b => {
+                const chipNum = parseInt(b.innerText.replace(/[^0-9]/g, ''));
+                if (chipNum === num) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+        }
+
+        // ── 5. Category & Stock Filters in Step 1 ──
         function setCategory(catName, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -1575,24 +2162,6 @@
                     tile.style.display = 'none';
                 }
             });
-        }
-
-        // ── 5. Urgency & Tip Selectors ──
-        function setUrgency(urg, el) {
-            selectedUrgency = urg;
-            document.getElementById('hiddenUrgency').value = urg;
-            document.getElementById('urgencyStandard').classList.remove('active');
-            document.getElementById('urgencyExpress').classList.remove('active');
-            el.classList.add('active');
-        }
-
-        function setTip(val, btn) {
-            selectedTip = val;
-            document.getElementById('hiddenRewardFee').value = val;
-            document.querySelectorAll('.chip-tip-btn').forEach(b => {
-                if (b.innerText.includes('₹')) b.classList.remove('active');
-            });
-            btn.classList.add('active');
         }
     </script>
 </body>
