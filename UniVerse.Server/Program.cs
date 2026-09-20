@@ -55,6 +55,12 @@ using (var scope = app.Services.CreateScope())
 
 // ─── 3. Configure HTTP Request Pipeline ──────────────────────────────────────
 
+app.UseCors("AllowAll");
+
+// Serve Default Files (index.html) and Static Web Assets from wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 // Enable Swagger UI across all environments for professor grading
 app.UseSwagger();
 app.UseSwaggerUI(c =>
@@ -62,11 +68,6 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "UniVerse Campus API v1");
     c.RoutePrefix = "swagger";
 });
-
-app.UseCors("AllowAll");
-
-// Optional: Redirect root URL "/" to Swagger UI for instant visual demonstration
-app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseAuthorization();
 
