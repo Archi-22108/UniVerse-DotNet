@@ -1,0 +1,1315 @@
+@model UniVerse.Web.Models.MyRequestsViewModel
+@{
+    Layout = null; // Immersive full desktop layout matching screenshot 1:1
+    ViewData["Title"] = "My Requests · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.7);
+            --uv-card-border: rgba(0, 229, 153, 0.18);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .req-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .badge-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .dot-pulse-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .wallet-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-foot {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #ef4444;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN VIEWPORT CONTAINER
+           ══════════════════════════════════════════════════════ */
+        .requests-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 2rem 2.5rem 5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.65rem;
+            max-width: 1240px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Page Header Bar ── */
+        .requests-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .req-head-left h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            letter-spacing: -0.5px;
+        }
+
+        .sparkle-emerald {
+            color: var(--uv-emerald);
+            font-size: 1.4rem;
+        }
+
+        .req-head-left p {
+            font-size: 0.86rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.35rem;
+        }
+
+        .req-head-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .btn-icon-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon-circle:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+        }
+
+        .btn-new-request-pill {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.84rem;
+            font-weight: 800;
+            padding: 0.55rem 1.35rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.35);
+        }
+
+        .btn-new-request-pill:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+            box-shadow: 0 0 24px rgba(0, 229, 153, 0.5);
+        }
+
+        /* ── Top 3 Stat Cards ── */
+        .top-stat-cards-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .stat-banner-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .stat-card-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .stat-tag-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .stat-tag-gray {
+            color: #85988e;
+        }
+
+        .stat-tag-cyan {
+            color: #38bdf8;
+        }
+
+        .stat-number-bold {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .stat-card-right-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        /* ── Special Live Radar Highlight Callout Card ── */
+        .live-radar-callout-banner {
+            background: rgba(8, 14, 11, 0.85);
+            border: 1px solid var(--uv-emerald);
+            border-radius: 18px;
+            padding: 1.15rem 1.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            box-shadow: 0 0 24px rgba(0, 229, 153, 0.14);
+            flex-wrap: wrap;
+        }
+
+        .callout-left-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-broadcast-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .callout-texts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .callout-tags-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .badge-radar-active-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.64rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 9999px;
+            letter-spacing: 0.04em;
+        }
+
+        .callout-req-id {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            color: #85988e;
+        }
+
+        .callout-item-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .callout-sub-desc {
+            font-size: 0.78rem;
+            color: #85988e;
+        }
+
+        .btn-open-radar-huge {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0.65rem 1.45rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+            white-space: nowrap;
+        }
+
+        .btn-open-radar-huge:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+            box-shadow: 0 0 28px rgba(0, 229, 153, 0.6);
+        }
+
+        /* ── Filter Tabs & Search Controls ── */
+        .filter-tabs-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #85988e;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-pill-btn:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            color: #ffffff;
+        }
+
+        .tab-pill-btn.active {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            font-weight: 700;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
+        }
+
+        .tab-counter-badge {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            color: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        .tab-pill-btn.active .tab-counter-badge {
+            background: var(--uv-emerald);
+            color: #020806;
+        }
+
+        .search-sort-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input-pill {
+            flex: 1;
+            max-width: 460px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 0.65rem 1.25rem;
+            color: #ffffff;
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input-pill:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .sort-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .btn-sort-dropdown {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            cursor: pointer;
+        }
+
+        .btn-filter-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           REQUESTS CARDS LIST
+           ══════════════════════════════════════════════════════ */
+        .requests-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .request-order-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.5rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .request-order-card:hover {
+            border-color: var(--uv-card-border-hover);
+        }
+
+        /* Card Top Row */
+        .req-card-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .req-item-left-block {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .cube-circle-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.12);
+        }
+
+        .req-name-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .req-title-bold {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-width: 240px;
+        }
+
+        .req-time-ago {
+            font-size: 0.72rem;
+            color: #85988e;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .req-tags-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            margin-top: 0.1rem;
+        }
+
+        .tag-status-active {
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 0.12rem 0.5rem;
+            border-radius: 9999px;
+            letter-spacing: 0.04em;
+        }
+
+        .tag-status-live {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 0.12rem 0.45rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        /* 5-Stage Stepper */
+        .stages-stepper-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .stage-step-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 62px;
+        }
+
+        .stage-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #54685e;
+            font-size: 0.72rem;
+        }
+
+        .stage-circle.active {
+            background: var(--uv-emerald);
+            border-color: var(--uv-emerald);
+            color: #020806;
+            box-shadow: 0 0 14px var(--uv-emerald-glow);
+        }
+
+        .stage-circle.active::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #020806;
+        }
+
+        .stage-label-text {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #54685e;
+            white-space: nowrap;
+        }
+
+        .stage-step-unit.active .stage-label-text {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .stage-line {
+            width: 26px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            margin-bottom: 1.1rem;
+        }
+
+        /* OTP Code Badge */
+        .otp-badge-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 0.4rem 0.85rem;
+            font-size: 0.76rem;
+            color: #85988e;
+        }
+
+        .otp-badge-box strong {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: #ffffff;
+            letter-spacing: 0.05em;
+        }
+
+        /* Card Bottom Row */
+        .req-card-bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .req-logistics-tags-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+        }
+
+        .log-meta-pair {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: #85988e;
+        }
+
+        .log-meta-pair i {
+            color: var(--uv-emerald);
+        }
+
+        .log-meta-pair strong {
+            color: #ffffff;
+        }
+
+        .card-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .btn-cancel-pill {
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 1.1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .btn-cancel-pill:hover {
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .btn-open-radar-sm {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.35);
+            transition: all 0.2s;
+        }
+
+        .btn-open-radar-sm:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+        }
+
+        .btn-details-pill {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-details-pill:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 992px) {
+            .req-sidebar { display: none; }
+            .top-stat-cards-grid { grid-template-columns: 1fr; }
+            .stages-stepper-wrap { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Canvas Starfield ── -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <aside class="req-sidebar">
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav>
+                <ul class="sidebar-menu-list">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Requests" class="sidebar-nav-item active">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>My Req...</span>
+                            </div>
+                            <span class="badge-live-pill">
+                                <span class="dot-pulse-green"></span>
+                                <span>@Model.ActiveCount live</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <span class="wallet-indicator-dot"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bag"></i>
+                                <span>Marketplace</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-gear"></i>
+                                <span>Setting</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-foot">
+            <a asp-controller="Account" asp-action="Login" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN VIEWPORT CONTAINER
+       ══════════════════════════════════════════════════════ -->
+    <main class="requests-main-viewport">
+        <!-- ── Page Header Bar ── -->
+        <div class="requests-header-row">
+            <div class="req-head-left">
+                <h1>
+                    <span>My Requests</span>
+                    <span class="sparkle-emerald">✦</span>
+                </h1>
+                <p>View, track, and manage your campus delivery orders in real time.</p>
+            </div>
+
+            <div class="req-head-right-actions">
+                <button type="button" class="btn-icon-circle" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                </button>
+                <button type="button" class="btn-icon-circle" title="Refresh" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-new-request-pill">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>New Request</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Top 3 Stat Cards ── -->
+        <div class="top-stat-cards-grid">
+            <!-- Active In-Flight -->
+            <div class="stat-banner-card">
+                <div class="stat-card-left">
+                    <span class="stat-tag-mono">ACTIVE IN-FLIGHT</span>
+                    <span class="stat-number-bold">@Model.ActiveCount Orders</span>
+                </div>
+                <div class="stat-card-right-circle" style="border-color: rgba(0, 229, 153, 0.3);">
+                    <i class="bi bi-truck" style="color: var(--uv-emerald);"></i>
+                </div>
+            </div>
+
+            <!-- Delivered Safely -->
+            <div class="stat-banner-card">
+                <div class="stat-card-left">
+                    <span class="stat-tag-mono stat-tag-gray">DELIVERED SAFELY</span>
+                    <span class="stat-number-bold">@Model.DeliveredCount Orders</span>
+                </div>
+                <div class="stat-card-right-circle">
+                    <i class="bi bi-check2" style="color: #85988e;"></i>
+                </div>
+            </div>
+
+            <!-- Avg Delivery -->
+            <div class="stat-banner-card">
+                <div class="stat-card-left">
+                    <span class="stat-tag-mono stat-tag-cyan">AVG. DELIVERY</span>
+                    <span class="stat-number-bold">@Model.AvgDeliveryTime</span>
+                    <span style="font-size: 0.7rem; color: #85988e;">Verified Peers</span>
+                </div>
+                <div class="stat-card-right-circle" style="border-color: rgba(56, 189, 248, 0.3);">
+                    <i class="bi bi-shield-check" style="color: #38bdf8;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Special Live Radar Highlight Callout Card ── -->
+        @if (Model.HighlightedActiveRequest != null)
+        {
+            <div class="live-radar-callout-banner">
+                <div class="callout-left-group">
+                    <div class="icon-broadcast-circle">
+                        <i class="bi bi-broadcast"></i>
+                    </div>
+                    <div class="callout-texts">
+                        <div class="callout-tags-row">
+                            <span class="badge-radar-active-pill">
+                                <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                                <span>LIVE RADAR ACTIVE</span>
+                            </span>
+                            <span class="callout-req-id">ID: @Model.HighlightedActiveRequest.FormattedId</span>
+                        </div>
+                        <h3 class="callout-item-name">@Model.HighlightedActiveRequest.ItemTitle</h3>
+                        <p class="callout-sub-desc">Broadcasting on campus radar... Tap to view live radar &amp; see if any student runner accepts.</p>
+                    </div>
+                </div>
+
+                <a asp-controller="Dashboard" asp-action="LiveRadar" asp-route-id="@Model.HighlightedActiveRequest.Id" class="btn-open-radar-huge">
+                    <i class="bi bi-broadcast"></i>
+                    <span>Open Live Radar Screen</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        }
+
+        <!-- ── Filter Tabs & Search Controls ── -->
+        <div class="filter-tabs-row">
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="active" class="tab-pill-btn @(Model.ActiveTab == "active" ? "active" : "")">
+                <i class="bi bi-clock"></i>
+                <span>Active</span>
+                <span class="tab-counter-badge">@Model.ActiveCount</span>
+            </a>
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="completed" class="tab-pill-btn @(Model.ActiveTab == "completed" ? "active" : "")">
+                <i class="bi bi-check-circle"></i>
+                <span>Completed</span>
+                <span class="tab-counter-badge">@Model.DeliveredCount</span>
+            </a>
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="cancelled" class="tab-pill-btn @(Model.ActiveTab == "cancelled" ? "active" : "")">
+                <i class="bi bi-exclamation-circle"></i>
+                <span>Cancelled</span>
+                <span class="tab-counter-badge">@Model.CancelledCount</span>
+            </a>
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="all" class="tab-pill-btn @(Model.ActiveTab == "all" ? "active" : "")">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <span>All</span>
+                <span class="tab-counter-badge">@Model.TotalCount</span>
+            </a>
+        </div>
+
+        <div class="search-sort-bar">
+            <input type="text" class="search-input-pill" placeholder="Search category, pickup, or dropoff location..." oninput="filterOrders(this.value)" />
+
+            <div class="sort-actions-group">
+                <button type="button" class="btn-sort-dropdown">
+                    <span>Sort by Newest</span>
+                    <i class="bi bi-chevron-down" style="font-size: 0.72rem;"></i>
+                </button>
+                <button type="button" class="btn-filter-icon" title="Filter Options">
+                    <i class="bi bi-sliders"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+           REQUESTS CARDS LIST (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <div class="requests-stack" id="ordersStack">
+            @foreach (var req in Model.Requests)
+            {
+                <div class="request-order-card" data-title="@req.ItemTitle.ToLowerInvariant()">
+                    <!-- Top Row -->
+                    <div class="req-card-top-row">
+                        <div class="req-item-left-block">
+                            <div class="cube-circle-icon">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div class="req-name-group">
+                                <h3 class="req-title-bold">@req.ItemTitle</h3>
+                                <span class="req-time-ago">
+                                    <i class="bi bi-clock"></i>
+                                    <span>@req.TimeAgo</span>
+                                </span>
+                                <div class="req-tags-strip">
+                                    <span class="tag-status-active">ACTIVE</span>
+                                    <span class="tag-status-live">
+                                        <span class="dot-pulse-green" style="width: 4px; height: 4px;"></span>
+                                        <span>LIVE</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5-Stage Stepper -->
+                        <div class="stages-stepper-wrap">
+                            <div class="stage-step-unit active">
+                                <div class="stage-circle active"></div>
+                                <span class="stage-label-text">Requested</span>
+                            </div>
+                            <div class="stage-line"></div>
+                            <div class="stage-step-unit">
+                                <div class="stage-circle"><i class="bi bi-check2"></i></div>
+                                <span class="stage-label-text">Accepted</span>
+                            </div>
+                            <div class="stage-line"></div>
+                            <div class="stage-step-unit">
+                                <div class="stage-circle"><i class="bi bi-box"></i></div>
+                                <span class="stage-label-text">Picked Up</span>
+                            </div>
+                            <div class="stage-line"></div>
+                            <div class="stage-step-unit">
+                                <div class="stage-circle"><i class="bi bi-truck"></i></div>
+                                <span class="stage-label-text">In Transit</span>
+                            </div>
+                            <div class="stage-line"></div>
+                            <div class="stage-step-unit">
+                                <div class="stage-circle"><i class="bi bi-geo-alt"></i></div>
+                                <span class="stage-label-text">Delivered</span>
+                            </div>
+                        </div>
+
+                        <!-- OTP Code -->
+                        <div class="otp-badge-box">
+                            <i class="bi bi-ticket-perforated" style="color: #f59e0b;"></i>
+                            <span>OTP:</span>
+                            <strong>@req.OtpCode</strong>
+                            <i class="bi bi-copy" style="cursor: pointer;" onclick="copyOtp('@req.OtpCode')" title="Copy OTP"></i>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row -->
+                    <div class="req-card-bottom-row">
+                        <div class="req-logistics-tags-left">
+                            <div class="log-meta-pair">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>FROM</span>
+                                <strong>@req.PickupSpot</strong>
+                            </div>
+
+                            <div class="log-meta-pair">
+                                <i class="bi bi-geo-alt"></i>
+                                <span>TO</span>
+                                <strong>@req.Destination</strong>
+                            </div>
+
+                            <div class="log-meta-pair">
+                                <i class="bi bi-box-seam"></i>
+                                <span>ITEMS</span>
+                                <strong>@req.ItemCount item</strong>
+                            </div>
+                        </div>
+
+                        <div class="card-actions-right">
+                            <button type="button" class="btn-cancel-pill" onclick="cancelOrder(@req.Id)">
+                                <i class="bi bi-x-lg"></i>
+                                <span>Cancel</span>
+                            </button>
+
+                            <a asp-controller="Dashboard" asp-action="LiveRadar" asp-route-id="@req.Id" class="btn-open-radar-sm">
+                                <i class="bi bi-broadcast"></i>
+                                <span>Open Live Radar</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+
+                            <button type="button" class="btn-details-pill" onclick="showDetails('@req.FormattedId', '@req.ItemTitle')">
+                                <span>Details</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </main>
+
+    <!-- ── Interactive JavaScript ── -->
+    <script>
+        // ── 1. Starfield Background ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 60;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        function copyOtp(code) {
+            navigator.clipboard.writeText(code);
+            alert(`📋 Delivery OTP ${code} copied to clipboard! Share with student runner upon item delivery.`);
+        }
+
+        function cancelOrder(id) {
+            if (confirm('Cancel this campus delivery request?')) {
+                alert('Request has been cancelled.');
+                location.reload();
+            }
+        }
+
+        function showDetails(id, title) {
+            alert(`Order ${id}: ${title}\nEstimated Delivery: 15 mins\nHandover OTP required.`);
+        }
+
+        function filterOrders(query) {
+            const q = query.trim().toLowerCase();
+            const cards = document.querySelectorAll('.request-order-card');
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                if (!q || title.includes(q)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

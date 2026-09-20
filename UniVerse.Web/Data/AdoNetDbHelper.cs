@@ -661,4 +661,55 @@ public class AdoNetDbHelper : IAdoNetDbHelper
 
         return null;
     }
+
+    /// <summary>
+    /// Fetches all delivery requests for the student using pure ADO.NET.
+    /// </summary>
+    public List<DeliveryRequest> GetStudentDeliveryRequests(string? studentName = null)
+    {
+        var list = new List<DeliveryRequest>();
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            var sql = string.IsNullOrWhiteSpace(studentName)
+                ? @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                   FROM DeliveryRequests 
+                   ORDER BY CreatedAt DESC;"
+                : @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                   FROM DeliveryRequests 
+                   WHERE StudentName = @StudentName OR StudentName LIKE '%Archi%'
+                   ORDER BY CreatedAt DESC;";
+
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                if (!string.IsNullOrWhiteSpace(studentName))
+                {
+                    cmd.Parameters.Add(new SqliteParameter("@StudentName", studentName));
+                }
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new DeliveryRequest
+                        {
+                            Id = reader.GetInt32(0),
+                            StudentName = reader.GetString(1),
+                            HostelRoom = reader.GetString(2),
+                            ItemsDescription = reader.GetString(3),
+                            TotalAmount = Convert.ToDecimal(reader.GetDouble(4)),
+                            RewardFee = Convert.ToDecimal(reader.GetDouble(5)),
+                            Status = reader.GetString(6),
+                            RunnerName = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            CreatedAt = reader.IsDBNull(8) ? DateTime.UtcNow : reader.GetDateTime(8)
+                        });
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
 }

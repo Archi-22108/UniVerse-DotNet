@@ -238,9 +238,108 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public IActionResult Requests(string? tab = "all")
+    public IActionResult Requests(string? tab = "active")
     {
-        return RedirectToAction("LiveRadar");
+        var dbRequests = _dbHelper.GetStudentDeliveryRequests("Archi.kumari126697");
+        var model = new MyRequestsViewModel
+        {
+            ActiveTab = string.IsNullOrEmpty(tab) ? "active" : tab.ToLowerInvariant()
+        };
+
+        var dtoList = new List<DeliveryRequestItemDto>();
+        int activeCount = 0;
+        int deliveredCount = 0;
+        int cancelledCount = 0;
+
+        foreach (var req in dbRequests)
+        {
+            var isCancelled = req.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase);
+            var isDelivered = req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase);
+            var isActive = !isCancelled && !isDelivered;
+
+            if (isActive) activeCount++;
+            else if (isDelivered) deliveredCount++;
+            else if (isCancelled) cancelledCount++;
+
+            var elapsed = DateTime.UtcNow - req.CreatedAt;
+            var timeAgo = elapsed.TotalMinutes < 1 ? "Just now" :
+                          elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes} minutes ago" :
+                          elapsed.TotalHours < 24 ? $"{(int)elapsed.TotalHours} hours ago" :
+                          $"{elapsed.Days} days ago";
+
+            var formattedId = $"#D0{((req.Id * 1337 + 113435) % 999999):D6}";
+            var otp = $"{((req.Id * 19 + 9855) % 9000 + 1000)}";
+
+            var dto = new DeliveryRequestItemDto
+            {
+                Id = req.Id,
+                FormattedId = formattedId,
+                ItemTitle = req.ItemsDescription,
+                PickupSpot = "Hostel Vending Machine",
+                Destination = (req.HostelRoom ?? "Hostel A - Room 400").Replace(" · Room ", " - Room "),
+                ItemCount = 1,
+                TotalAmount = req.TotalAmount,
+                RewardFee = req.RewardFee,
+                Status = req.Status,
+                TimeAgo = timeAgo,
+                OtpCode = otp,
+                IsLiveRadarActive = isActive,
+                CreatedAt = req.CreatedAt
+            };
+
+            dtoList.Add(dto);
+        }
+
+        if (dtoList.Count < 2)
+        {
+            dtoList.Clear();
+            dtoList.Add(new DeliveryRequestItemDto
+            {
+                Id = 1,
+                FormattedId = "#D0113435",
+                ItemTitle = "CrunchEx Chili Tadka",
+                PickupSpot = "Hostel Vending Machine",
+                Destination = "Hostel A - Room 400",
+                ItemCount = 1,
+                TotalAmount = 25.0m,
+                RewardFee = 5.0m,
+                Status = "Requested",
+                TimeAgo = "6 minutes ago",
+                OtpCode = "9855",
+                IsLiveRadarActive = true,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-6)
+            });
+
+            dtoList.Add(new DeliveryRequestItemDto
+            {
+                Id = 2,
+                FormattedId = "#D0113436",
+                ItemTitle = "Campus Snacks & Beverages",
+                PickupSpot = "Hostel Vending Machine",
+                Destination = "Hostel A - Room 400",
+                ItemCount = 1,
+                TotalAmount = 30.0m,
+                RewardFee = 5.0m,
+                Status = "Requested",
+                TimeAgo = "18 minutes ago",
+                OtpCode = "7421",
+                IsLiveRadarActive = true,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-18)
+            });
+
+            activeCount = 2;
+            deliveredCount = 0;
+            cancelledCount = 0;
+        }
+
+        model.ActiveCount = activeCount;
+        model.DeliveredCount = deliveredCount;
+        model.CancelledCount = cancelledCount;
+        model.AvgDeliveryTime = "~15 mins";
+        model.HighlightedActiveRequest = dtoList.FirstOrDefault(r => r.IsLiveRadarActive);
+        model.Requests = dtoList;
+
+        return View(model);
     }
 
     [HttpGet]

@@ -20,4 +20,5 @@ public interface IAdoNetDbHelper
     int CreateDeliveryRequest(DeliveryRequest request);
     DeliveryRequest? GetDeliveryRequestById(int id);
     DeliveryRequest? GetLatestDeliveryRequest(string? studentName = null);
+    List<DeliveryRequest> GetStudentDeliveryRequests(string? studentName = null);
 }
