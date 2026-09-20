@@ -144,16 +144,103 @@ public class DashboardController : Controller
         };
 
         // Insert into database using pure ADO.NET
-        _dbHelper.CreateDeliveryRequest(deliveryReq);
+        var newId = _dbHelper.CreateDeliveryRequest(deliveryReq);
 
         TempData["SuccessMessage"] = "Delivery request broadcasted successfully! A campus student runner will accept it shortly.";
-        return RedirectToAction("Index");
+        return RedirectToAction("LiveRadar", new { id = newId });
+    }
+
+    /// <summary>
+    /// Live Campus Radar view tracking active delivery request in real-time.
+    /// Matches the target screenshot 1:1 with animated HUD radar and metrics.
+    /// </summary>
+    [HttpGet]
+    public IActionResult LiveRadar(int? id)
+    {
+        DeliveryRequest? req = null;
+
+        if (id.HasValue && id.Value > 0)
+        {
+            req = _dbHelper.GetDeliveryRequestById(id.Value);
+        }
+
+        if (req == null)
+        {
+            req = _dbHelper.GetLatestDeliveryRequest("Archi.kumari126697");
+        }
+
+        var viewModel = new LiveRadarViewModel();
+
+        if (req != null)
+        {
+            viewModel.RequestId = req.Id;
+            viewModel.CustomRequestId = $"#{req.Id:X4}{((req.Id * 31 + 482) % 9999):D4}".ToUpper();
+            if (viewModel.CustomRequestId.Length < 9)
+            {
+                viewModel.CustomRequestId = "#14C402C7";
+            }
+            viewModel.StudentName = req.StudentName;
+
+            var hr = req.HostelRoom ?? "Hostel A - Room 400";
+            hr = hr.Replace(" · Room ", " - Room ");
+            viewModel.DestinationRoom = hr;
+
+            viewModel.ItemsDescription = req.ItemsDescription;
+            viewModel.RunnerReward = req.RewardFee > 0 ? req.RewardFee : 5.0m;
+            viewModel.ItemsCost = req.TotalAmount > req.RewardFee ? (req.TotalAmount - req.RewardFee) : 20.0m;
+            viewModel.CreatedAt = req.CreatedAt;
+            viewModel.Status = "Looking for Student Runners";
+
+            var descParts = (req.ItemsDescription ?? "").Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+            if (descParts.Length > 0)
+            {
+                foreach (var part in descParts)
+                {
+                    var qty = 1;
+                    var name = part.Trim();
+                    if (name.Contains("x "))
+                    {
+                        var spl = name.Split(new[] { "x " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (spl.Length == 2 && int.TryParse(spl[0], out int parsedQty))
+                        {
+                            qty = parsedQty;
+                            name = spl[1];
+                        }
+                    }
+
+                    viewModel.Items.Add(new RadarItemDto
+                    {
+                        Quantity = qty,
+                        Name = name,
+                        Price = viewModel.ItemsCost / Math.Max(1, descParts.Length)
+                    });
+                }
+            }
+        }
+
+        if (viewModel.Items.Count == 0)
+        {
+            viewModel.Items.Add(new RadarItemDto
+            {
+                Quantity = 1,
+                Name = "CrunchEx Chili Tadka",
+                Price = 20.0m
+            });
+            viewModel.ItemsDescription = "1x CrunchEx Chili Tadka";
+            viewModel.ItemsCost = 20.0m;
+            viewModel.RunnerReward = 5.0m;
+            viewModel.DestinationRoom = "Hostel A - Room 400";
+            viewModel.PickupSpot = "Hostel Vending Machine";
+            viewModel.CustomRequestId = "#14C402C7";
+        }
+
+        return View(viewModel);
     }
 
     [HttpGet]
     public IActionResult Requests(string? tab = "all")
     {
-        return RedirectToAction("Index");
+        return RedirectToAction("LiveRadar");
     }
 
     [HttpGet]

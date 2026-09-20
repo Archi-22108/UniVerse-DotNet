@@ -18,4 +18,6 @@ public interface IAdoNetDbHelper
     DashboardViewModel GetStudentDashboardData(string studentEmail);
     List<Product> GetAllProducts(string? category = null);
     int CreateDeliveryRequest(DeliveryRequest request);
+    DeliveryRequest? GetDeliveryRequestById(int id);
+    DeliveryRequest? GetLatestDeliveryRequest(string? studentName = null);
 }

@@ -1,0 +1,1520 @@
+@model UniVerse.Web.Models.LiveRadarViewModel
+@{
+    Layout = null; // Immersive full desktop layout matching target screenshot 1:1
+    ViewData["Title"] = "Live Campus Radar · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.7);
+            --uv-card-border: rgba(0, 229, 153, 0.18);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING DASHBOARD 1:1)
+           ══════════════════════════════════════════════════════ */
+        .radar-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .badge-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .dot-pulse-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .wallet-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-foot {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #ef4444;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN VIEWPORT CONTAINER
+           ══════════════════════════════════════════════════════ */
+        .radar-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 1.5rem 2.25rem 5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Top Action Header ── */
+        .radar-top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-back-requests {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.45rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back-requests:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+        }
+
+        .top-header-right-group {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-runner-network {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(0, 229, 153, 0.06);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 0.4rem 0.85rem;
+            border-radius: 9999px;
+        }
+
+        .btn-share-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-share-link:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+        }
+
+        .btn-chime-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.4rem 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
+        }
+
+        .btn-chime-toggle:hover {
+            background: rgba(0, 229, 153, 0.18);
+        }
+
+        /* ── Subheader Title ── */
+        .radar-subheader-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           THE BIG CYBER RADAR HUD CARD
+           ══════════════════════════════════════════════════════ */
+        .radar-hud-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 20px;
+            padding: 1.75rem 2rem 2.25rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+        }
+
+        /* Corner HUD Brackets ┌ ┐ └ ┘ */
+        .hud-bracket {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+
+        .hud-tl { top: 12px; left: 12px; border-top: 2px solid var(--uv-emerald); border-left: 2px solid var(--uv-emerald); }
+        .hud-tr { top: 12px; right: 12px; border-top: 2px solid var(--uv-emerald); border-right: 2px solid var(--uv-emerald); }
+        .hud-bl { bottom: 12px; left: 12px; border-bottom: 2px solid var(--uv-emerald); border-left: 2px solid var(--uv-emerald); }
+        .hud-br { bottom: 12px; right: 12px; border-bottom: 2px solid var(--uv-emerald); border-right: 2px solid var(--uv-emerald); }
+
+        /* HUD Header Bar */
+        .hud-top-data-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--uv-emerald);
+            letter-spacing: 0.04em;
+        }
+
+        .badge-runners-nearby {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 700;
+        }
+
+        /* ── Radar Graphic & Animation ── */
+        .radar-scope-wrapper {
+            width: 320px;
+            height: 320px;
+            margin: 0.5rem auto 0;
+            position: relative;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 153, 0.04) 0%, rgba(3, 7, 8, 0.85) 75%);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            box-shadow: inset 0 0 30px rgba(0, 229, 153, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Concentric Rings */
+        .radar-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            pointer-events: none;
+        }
+
+        .radar-ring-1 { width: 100px; height: 100px; }
+        .radar-ring-2 { width: 190px; height: 190px; }
+        .radar-ring-3 { width: 270px; height: 270px; }
+
+        /* Axes */
+        .radar-axis-h {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: rgba(0, 229, 153, 0.15);
+        }
+
+        .radar-axis-v {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+            background: rgba(0, 229, 153, 0.15);
+        }
+
+        /* Compass Labels */
+        .compass-label {
+            position: absolute;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--uv-emerald);
+            opacity: 0.75;
+        }
+
+        .compass-n { top: 8px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+        .compass-s { bottom: 8px; left: 50%; transform: translateX(-50%); }
+        .compass-w { left: 8px; top: 50%; transform: translateY(-50%); }
+        .compass-e { right: 8px; top: 50%; transform: translateY(-50%); }
+
+        /* Rotating Conical Sweep Beam */
+        .radar-sweep-beam {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(0, 229, 153, 0.05) 300deg, rgba(0, 229, 153, 0.4) 360deg);
+            animation: radarSpin 4s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @@keyframes radarSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Center Store Hub */
+        .radar-center-beacon {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 28px var(--uv-emerald);
+            z-index: 6;
+        }
+
+        .radar-center-beacon i {
+            color: #020806;
+            font-size: 1.45rem;
+        }
+
+        /* Runner Blips on Radar */
+        .runner-blip {
+            position: absolute;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            transform: translate(-50%, -50%);
+        }
+
+        .blip-1 { top: 28%; left: 66%; }
+        .blip-2 { top: 72%; left: 34%; }
+        .blip-3 { top: 38%; left: 24%; }
+
+        .blip-light-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 10px var(--uv-emerald);
+            animation: pulseGlow 1.5s infinite;
+        }
+
+        .blip-cyber-tag {
+            background: rgba(3, 7, 8, 0.88);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.2);
+        }
+
+        /* ── Radar Footer Content ── */
+        .radar-bottom-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.85rem;
+            text-align: center;
+        }
+
+        .badge-broadcasting-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.3rem 0.95rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
+        }
+
+        .radar-title-huge {
+            font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        /* Route Pill Bar */
+        .route-pill-bar {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 9999px;
+            padding: 0.65rem 1.4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1.25rem;
+            max-width: 90%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .route-segment {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .route-circle-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .route-text-col {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .route-meta-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.58rem;
+            color: #85988e;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .route-place-bold {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .route-arrows {
+            color: var(--uv-emerald);
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        /* Item Pill Preview */
+        .item-summary-pill-bar {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 9999px;
+            padding: 0.45rem 1.15rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.78rem;
+            color: #d1ddd6;
+        }
+
+        .item-summary-price {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            color: var(--uv-emerald);
+        }
+
+        /* ── Live Metrics Trio ── */
+        .metrics-trio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .metric-stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .metric-title-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #85988e;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        .metric-val-huge {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .metric-sub-detail {
+            font-size: 0.72rem;
+            color: #85988e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        /* Turbocharge Banner */
+        .turbocharge-banner {
+            background: rgba(0, 229, 153, 0.035);
+            border: 1px solid rgba(0, 229, 153, 0.2);
+            border-radius: 14px;
+            padding: 1rem 1.35rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .turbo-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .turbo-left i {
+            color: var(--uv-emerald);
+            font-size: 1.25rem;
+        }
+
+        .turbo-texts h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .turbo-texts p {
+            font-size: 0.75rem;
+            color: #85988e;
+            margin-top: 0.15rem;
+        }
+
+        .turbo-btns-group {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .btn-boost-dark {
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.45rem 1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-boost-dark:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+        }
+
+        .btn-turbo-emerald {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.2s;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.35);
+        }
+
+        .btn-turbo-emerald:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+        }
+
+        .link-cancel-req {
+            color: #ef4444;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .link-cancel-req:hover {
+            opacity: 0.8;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LOWER SECTION: 2-COLUMN GRID
+           ══════════════════════════════════════════════════════ */
+        .radar-bottom-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .col-left-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .info-card-panel {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .card-head-title-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .runner-awaiting-box {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .icon-radio-pulse {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .awaiting-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .awaiting-sub {
+            font-size: 0.76rem;
+            color: #85988e;
+            max-width: 360px;
+            line-height: 1.4;
+        }
+
+        /* Logistics Route Inner Box */
+        .route-details-box {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .route-sub-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .route-sub-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            color: var(--uv-emerald);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .route-sub-val {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Right Column: Requested Items */
+        .col-right-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .items-header-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .item-row-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+        }
+
+        .item-row-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .qty-badge-emerald {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        .item-name-white {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .item-price-emerald {
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .pricing-breakdown-table {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .price-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #85988e;
+        }
+
+        .price-line b {
+            font-family: 'Space Mono', monospace;
+            color: #ffffff;
+        }
+
+        .total-amount-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .total-amount-val {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--uv-emerald);
+        }
+
+        .subfooter-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 0.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            color: #85988e;
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 992px) {
+            .radar-sidebar {
+                display: none;
+            }
+            .radar-bottom-columns {
+                grid-template-columns: 1fr;
+            }
+            .metrics-trio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Canvas Starfield ── -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR (MATCHING USER SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <aside class="radar-sidebar">
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav>
+                <ul class="sidebar-menu-list">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="LiveRadar" class="sidebar-nav-item active">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>My Req...</span>
+                            </div>
+                            <span class="badge-live-pill">
+                                <span class="dot-pulse-green"></span>
+                                <span>1 live</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <span class="wallet-indicator-dot"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bag"></i>
+                                <span>Marketplace</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-gear"></i>
+                                <span>Setting</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-foot">
+            <a asp-controller="Account" asp-action="Login" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN RADAR VIEWPORT
+       ══════════════════════════════════════════════════════ -->
+    <main class="radar-main-viewport">
+        <!-- ── Top Action Header ── -->
+        <div class="radar-top-header">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-back-requests">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to My Requests</span>
+            </a>
+
+            <div class="top-header-right-group">
+                <div class="badge-runner-network">
+                    <span class="dot-pulse-green"></span>
+                    <span>UniVerse Runner Network</span>
+                </div>
+
+                <button type="button" class="btn-share-link" onclick="copyShareLink()">
+                    <i class="bi bi-share"></i>
+                    <span>Share Link</span>
+                </button>
+
+                <button type="button" class="btn-chime-toggle" id="btnChimeToggle" onclick="toggleChime()">
+                    <i class="bi bi-volume-up"></i>
+                    <span>Chime Active</span>
+                    <span>ılı</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Subheader Title ── -->
+        <div class="radar-subheader-strip">
+            <span class="dot-pulse-green"></span>
+            <span>LIVE CAMPUS RADAR • REAL-TIME SYNC</span>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+           THE BIG CYBER RADAR HUD CARD (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <section class="radar-hud-card">
+            <!-- HUD Corner Brackets ┌ ┐ └ ┘ -->
+            <div class="hud-bracket hud-tl"></div>
+            <div class="hud-bracket hud-tr"></div>
+            <div class="hud-bracket hud-bl"></div>
+            <div class="hud-bracket hud-br"></div>
+
+            <!-- Top HUD Data Row -->
+            <div class="hud-top-data-bar">
+                <span>RADAR FREQ: 5.8 GHz // CH-04</span>
+                <span class="badge-runners-nearby">
+                    <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                    <span>@Model.NearbyRunnersCount CAMPUS RUNNERS NEARBY</span>
+                </span>
+                <span>CAMPUS MESH: ~500m</span>
+            </div>
+
+            <!-- Animated Radar Scope -->
+            <div class="radar-scope-wrapper">
+                <!-- Concentric Range Rings -->
+                <div class="radar-ring radar-ring-1"></div>
+                <div class="radar-ring radar-ring-2"></div>
+                <div class="radar-ring radar-ring-3"></div>
+
+                <!-- Axes -->
+                <div class="radar-axis-h"></div>
+                <div class="radar-axis-v"></div>
+
+                <!-- Compass Labels -->
+                <div class="compass-label compass-n">
+                    <span>N</span>
+                    <span style="font-size: 0.52rem; opacity: 0.6;">500m</span>
+                </div>
+                <div class="compass-label compass-s">S</div>
+                <div class="compass-label compass-w">W</div>
+                <div class="compass-label compass-e">E</div>
+
+                <!-- Rotating Conical Radar Sweep -->
+                <div class="radar-sweep-beam"></div>
+
+                <!-- Center Store Beacon Hub -->
+                <div class="radar-center-beacon">
+                    <i class="bi bi-shop"></i>
+                </div>
+
+                <!-- Runner Blips on Radar Scope -->
+                <div class="runner-blip blip-1">
+                    <span class="blip-light-dot"></span>
+                    <span class="blip-cyber-tag">Runner · 140m</span>
+                </div>
+
+                <div class="runner-blip blip-2">
+                    <span class="blip-light-dot"></span>
+                    <span class="blip-cyber-tag">Runner · 220m</span>
+                </div>
+
+                <div class="runner-blip blip-3">
+                    <span class="blip-light-dot" style="animation-delay: 0.7s;"></span>
+                </div>
+            </div>
+
+            <!-- Below Radar Information -->
+            <div class="radar-bottom-content">
+                <div class="badge-broadcasting-pill">
+                    <span class="dot-pulse-green"></span>
+                    <span>BROADCASTING ON CAMPUS NETWORK</span>
+                </div>
+
+                <h1 class="radar-title-huge">Looking for Student Runners</h1>
+
+                <!-- Route Pill Bar -->
+                <div class="route-pill-bar">
+                    <div class="route-segment">
+                        <div class="route-circle-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div class="route-text-col">
+                            <span class="route-meta-label">PICKUP</span>
+                            <span class="route-place-bold">@Model.PickupSpot</span>
+                        </div>
+                    </div>
+
+                    <span class="route-arrows">→ →</span>
+
+                    <div class="route-segment">
+                        <div class="route-text-col">
+                            <span class="route-meta-label">DELIVER TO</span>
+                            <span class="route-place-bold" style="color: var(--uv-emerald);">@Model.DestinationRoom</span>
+                        </div>
+                        <div class="route-circle-icon">
+                            <i class="bi bi-send-fill"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible / Preview Item Bar -->
+                <div class="item-summary-pill-bar">
+                    <span><i class="bi bi-box-seam" style="color: var(--uv-emerald); margin-right: 0.35rem;"></i> <strong>1 Item:</strong> @Model.ItemsDescription</span>
+                    <span class="item-summary-price">~₹@((int)Model.ItemsCost) <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i></span>
+                </div>
+            </div>
+
+            <!-- Live Metrics Trio (3 Cards) -->
+            <div class="metrics-trio-grid">
+                <div class="metric-stat-card">
+                    <span class="metric-title-mono"><i class="bi bi-clock"></i> DURATION</span>
+                    <span class="metric-val-huge" id="liveTimerDisplay">0:57</span>
+                    <span class="metric-sub-detail">
+                        <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                        <span>Live Timer</span>
+                    </span>
+                </div>
+
+                <div class="metric-stat-card">
+                    <span class="metric-title-mono"><i class="bi bi-lightning-charge"></i> EST. MATCH</span>
+                    <span class="metric-val-huge" style="color: var(--uv-emerald);">~2-4 min</span>
+                    <span class="metric-sub-detail">High Density</span>
+                </div>
+
+                <div class="metric-stat-card">
+                    <span class="metric-title-mono"><i class="bi bi-shield-check"></i> REWARD</span>
+                    <span class="metric-val-huge">₹@((int)Model.RunnerReward)</span>
+                    <span class="metric-sub-detail">Escrow Locked</span>
+                </div>
+            </div>
+
+            <!-- Turbocharge Speed Banner -->
+            <div class="turbocharge-banner">
+                <div class="turbo-left">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <div class="turbo-texts">
+                        <h4>Turbocharge Matching Speed</h4>
+                        <p>Add an extra tip to move your order to the top of nearby runners' screens.</p>
+                    </div>
+                </div>
+
+                <div class="turbo-btns-group">
+                    <button type="button" class="btn-boost-dark" onclick="addTurboTip(5)">+₹5 Boost</button>
+                    <button type="button" class="btn-turbo-emerald" onclick="addTurboTip(10)">
+                        <span>+₹10 Turbo</span>
+                        <i class="bi bi-lightning-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cancel Request Link -->
+            <div style="text-align: center;">
+                <a href="javascript:void(0)" onclick="cancelRequest()" class="link-cancel-req">Cancel this request</a>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+           LOWER SECTION: 2-COLUMN GRID (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <section class="radar-bottom-columns">
+            <!-- Left Column -->
+            <div class="col-left-stack">
+                <!-- Assigned Runner Card -->
+                <div class="info-card-panel">
+                    <div class="card-head-title-mono">
+                        <i class="bi bi-person"></i>
+                        <span>ASSIGNED STUDENT RUNNER</span>
+                    </div>
+
+                    <div class="runner-awaiting-box">
+                        <div class="icon-radio-pulse">
+                            <i class="bi bi-broadcast"></i>
+                        </div>
+                        <h3 class="awaiting-title">Awaiting Runner Pickup</h3>
+                        <p class="awaiting-sub">
+                            Nearby campus runners have received your request notification. You will hear an instant audio chime when matched.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Logistics Route Card -->
+                <div class="info-card-panel">
+                    <div class="card-head-title-mono">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>LOGISTICS ROUTE</span>
+                    </div>
+
+                    <div class="route-details-box">
+                        <div class="route-sub-item">
+                            <span class="route-sub-label">
+                                <i class="bi bi-geo-alt"></i> PICKUP SPOT
+                            </span>
+                            <span class="route-sub-val">@Model.PickupSpot</span>
+                        </div>
+
+                        <div style="height: 1px; background: rgba(255, 255, 255, 0.04);"></div>
+
+                        <div class="route-sub-item">
+                            <span class="route-sub-label">
+                                <i class="bi bi-send"></i> DESTINATION ROOM
+                            </span>
+                            <span class="route-sub-val">@Model.DestinationRoom</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-right-stack">
+                <div class="info-card-panel">
+                    <div class="items-header-split">
+                        <div class="card-head-title-mono">
+                            <i class="bi bi-box-seam"></i>
+                            <span>REQUESTED ITEMS (@Model.Items.Count)</span>
+                        </div>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 0.76rem; color: #85988e;">
+                            Est. ~₹@((int)Model.ItemsCost)
+                        </span>
+                    </div>
+
+                    <!-- Items List -->
+                    <div style="display: flex; flex-direction: column; gap: 0.45rem;">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="item-row-pill">
+                                <div class="item-row-left">
+                                    <span class="qty-badge-emerald">@(item.Quantity)x</span>
+                                    <span class="item-name-white">@item.Name</span>
+                                </div>
+                                <span class="item-price-emerald">~₹@((int)(item.Price * item.Quantity))</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Pricing Breakdown -->
+                    <div class="pricing-breakdown-table">
+                        <div class="price-line">
+                            <span>Estimated Items Cost</span>
+                            <b>~₹@((int)Model.ItemsCost)</b>
+                        </div>
+                        <div class="price-line">
+                            <span>Campus Runner Reward</span>
+                            <b id="rewardDisplayVal">₹@((int)Model.RunnerReward)</b>
+                        </div>
+                    </div>
+
+                    <!-- Total Expected Amount -->
+                    <div class="total-amount-line">
+                        <span>Total Expected Amount</span>
+                        <span class="total-amount-val" id="totalAmountDisplay">~₹@((int)Model.TotalAmount)</span>
+                    </div>
+                </div>
+
+                <!-- Subfooter Meta Row (Request ID & Timestamp) -->
+                <div class="subfooter-meta-row">
+                    <span>Request ID: <strong style="color: #ffffff;">@Model.CustomRequestId</strong></span>
+                    <span>@Model.CreatedAt.ToString("MMM dd, h:mm tt")</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ── Interactive JavaScript for Real-Time Timer, Audio Chime, and Radar ── -->
+    <script>
+        // ── 1. Starfield Twinkle ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 65;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Live Stopwatch Timer (Starting from 0:57 as in screenshot!) ──
+        let totalSeconds = 57;
+        const timerElem = document.getElementById('liveTimerDisplay');
+
+        setInterval(() => {
+            totalSeconds++;
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            if (timerElem) {
+                timerElem.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+        }, 1000);
+
+        // ── 3. Synthetic Audio Chime (Web Audio API) ──
+        let chimeActive = true;
+        function playChime() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+                osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.15); // A6 note
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {
+                console.log('AudioContext not allowed yet:', e);
+            }
+        }
+
+        function toggleChime() {
+            chimeActive = !chimeActive;
+            const btn = document.getElementById('btnChimeToggle');
+            if (chimeActive) {
+                btn.innerHTML = '<i class="bi bi-volume-up"></i> <span>Chime Active</span> <span>ılı</span>';
+                btn.style.opacity = '1';
+                playChime();
+            } else {
+                btn.innerHTML = '<i class="bi bi-volume-mute"></i> <span>Chime Muted</span>';
+                btn.style.opacity = '0.6';
+            }
+        }
+
+        // ── 4. Turbocharge Reward Boost ──
+        let currentReward = @((int)Model.RunnerReward);
+        let itemsCost = @((int)Model.ItemsCost);
+
+        function addTurboTip(extra) {
+            currentReward += extra;
+            document.getElementById('rewardDisplayVal').innerText = `₹${currentReward}`;
+            document.getElementById('totalAmountDisplay').innerText = `~₹${itemsCost + currentReward}`;
+            alert(`⚡ Added +₹${extra} extra runner tip! Your request has been moved to priority broadcast on the campus mesh.`);
+            playChime();
+        }
+
+        function cancelRequest() {
+            if (confirm('Are you sure you want to cancel this delivery request?')) {
+                window.location.href = '@Url.Action("Index", "Dashboard")';
+            }
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('📋 Live radar tracking link copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
