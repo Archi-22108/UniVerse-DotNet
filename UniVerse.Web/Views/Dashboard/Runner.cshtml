@@ -845,71 +845,142 @@
         /* ══════════════════════════════════════════════════════
            LOWER SECTION: GUIDE ACCORDION & LEVEL CARD
            ══════════════════════════════════════════════════════ */
-        .runner-guide-banner {
-            background: rgba(255, 255, 255, 0.015);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 0.85rem 1.25rem;
+        /* ══════════════════════════════════════════════════════
+           LOWER SECTION: PLAYBOOK (MATCHING media_1789930543051.png 1:1)
+           ══════════════════════════════════════════════════════ */
+        .runner-playbook-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 20px;
+            padding: 1.85rem 2rem;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 1.35rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .playbook-header-row {
+            display: flex;
+            align-items: flex-end;
             justify-content: space-between;
-            font-size: 0.78rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .runner-guide-banner:hover {
-            border-color: rgba(0, 229, 153, 0.25);
-        }
-
-        .guide-left {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #85988e;
-        }
-
-        .guide-tag-emerald {
-            font-family: 'Space Mono', monospace;
-            font-weight: 700;
-            color: var(--uv-emerald);
-        }
-
-        .guide-expand-link {
-            color: #ffffff;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .guide-content-panel {
-            background: rgba(255, 255, 255, 0.015);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.25rem;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
-            margin-top: -0.85rem;
+            flex-wrap: wrap;
         }
 
-        .guide-step-box {
+        .playbook-head-left {
             display: flex;
             flex-direction: column;
             gap: 0.35rem;
         }
 
-        .guide-step-title {
-            color: var(--uv-emerald);
-            font-size: 0.82rem;
+        .playbook-tag-pill {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
             font-weight: 700;
+            color: var(--uv-emerald);
+            letter-spacing: 0.08em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            text-transform: uppercase;
         }
 
-        .guide-step-desc {
+        .playbook-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .playbook-subtitle-right {
+            font-size: 0.8rem;
             color: #85988e;
-            font-size: 0.74rem;
-            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .playbook-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.15rem;
+        }
+
+        .playbook-step-box {
+            background: rgba(4, 10, 8, 0.6);
+            border: 1px solid rgba(0, 229, 153, 0.16);
+            border-radius: 16px;
+            padding: 1.35rem 1.45rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .playbook-step-box:hover {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: rgba(4, 12, 9, 0.8);
+        }
+
+        .step-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .pill-step-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.28);
+            padding: 0.18rem 0.65rem;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+
+        .step-icon-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .step-title-bold {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .step-desc-text {
+            font-size: 0.78rem;
+            color: #85988e;
+            line-height: 1.5;
+        }
+
+        .step-footer-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-top: auto;
+            padding-top: 0.75rem;
+        }
+
+        .step-footer-mono.emerald {
+            color: var(--uv-emerald);
+        }
+
+        .step-footer-mono.cyan {
+            color: #38bdf8;
         }
 
         /* Level 1 Starter Runner Card */
@@ -1478,35 +1549,70 @@
         <!-- ══════════════════════════════════════════════════════
            LOWER SECTION: RUNNER GUIDE & LEVEL CARD (MATCHING SCREENSHOT 1:1)
            ══════════════════════════════════════════════════════ -->
-        <div id="runnerLowerSection" style="display: @(Model.IsOnline ? "flex" : "none"); flex-direction: column; gap: 1.15rem;">
-            <!-- Runner Guide Collapsible Banner -->
-            <div class="runner-guide-banner" onclick="toggleGuide()">
-                <div class="guide-left">
-                    <span class="dot-pulse-green"></span>
-                    <span class="guide-tag-emerald">RUNNER GUIDE</span>
-                    <span>· Earn cash on campus walks</span>
+        <!-- ══════════════════════════════════════════════════════
+           LOWER SECTION: RUNNER PLAYBOOK & LEVEL CARD (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <div id="runnerLowerSection" style="display: flex; flex-direction: column; gap: 1.15rem;">
+            <!-- Campus Runner Playbook (Matching media_1789930543051.png 1:1) -->
+            <section class="runner-playbook-card">
+                <div class="playbook-header-row">
+                    <div class="playbook-head-left">
+                        <div class="playbook-tag-pill">
+                            <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                            <span>CAMPUS RUNNER PLAYBOOK</span>
+                        </div>
+                        <h2 class="playbook-title">How UniVerse Runner Works</h2>
+                    </div>
+                    <span class="playbook-subtitle-right">Earn instant pocket cash during your daily campus walks</span>
                 </div>
-                <span class="guide-expand-link">
-                    <span>How it Works (3 Steps)</span>
-                    <i class="bi bi-chevron-down" id="guideChevronIcon"></i>
-                </span>
-            </div>
 
-            <!-- Collapsible Content -->
-            <div class="guide-content-panel" id="guidePanel" style="display: none;">
-                <div class="guide-step-box">
-                    <span class="guide-step-title">1. Accept Available Order</span>
-                    <span class="guide-step-desc">Pick up requests when you're already walking near the vending machine or student canteen.</span>
+                <div class="playbook-steps-grid">
+                    <!-- Step 1 -->
+                    <div class="playbook-step-box">
+                        <div class="step-top-row">
+                            <span class="pill-step-tag">STEP 1</span>
+                            <div class="step-icon-badge">
+                                <i class="bi bi-broadcast"></i>
+                            </div>
+                        </div>
+                        <h3 class="step-title-bold">Go Online When Free</h3>
+                        <p class="step-desc-text">
+                            Jab aap canteen, nescafe ya gate se hostel ja rahe hon, Runner Mode ON karein. Jab class me hon, to Offline rakhein.
+                        </p>
+                        <span class="step-footer-mono emerald">Zero pressure · Your own schedule</span>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="playbook-step-box">
+                        <div class="step-top-row">
+                            <span class="pill-step-tag">STEP 2</span>
+                            <div class="step-icon-badge">
+                                <i class="bi bi-lightning-charge"></i>
+                            </div>
+                        </div>
+                        <h3 class="step-title-bold">Accept Nearby Mission</h3>
+                        <p class="step-desc-text">
+                            Pickup location aur hostel dropoff check karke order accept karein. Har delivery ka cash payout pehle hi dikhta hai.
+                        </p>
+                        <span class="step-footer-mono cyan">Earn ₹10 – ₹100 per quick pickup</span>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="playbook-step-box">
+                        <div class="step-top-row">
+                            <span class="pill-step-tag">STEP 3</span>
+                            <div class="step-icon-badge">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                        </div>
+                        <h3 class="step-title-bold">Handover &amp; Instant Cash</h3>
+                        <p class="step-desc-text">
+                            Item deliver karke student se 4-digit PIN lein. PIN verify hote hi paise seedha aapke UniVerse Wallet me transfer ho jayenge!
+                        </p>
+                        <span class="step-footer-mono emerald">100% tips kept · Instant Wallet payout</span>
+                    </div>
                 </div>
-                <div class="guide-step-box">
-                    <span class="guide-step-title">2. Deliver to Hostel Room</span>
-                    <span class="guide-step-desc">Deliver the item straight to your peer's hostel door. Fast delivery yields extra tips.</span>
-                </div>
-                <div class="guide-step-box">
-                    <span class="guide-step-title">3. Enter OTP &amp; Earn</span>
-                    <span class="guide-step-desc">Verify delivery OTP from the student and receive 100% of the runner reward directly!</span>
-                </div>
-            </div>
+            </section>
 
             <!-- Level 1 Starter Runner Card (Matching Screenshot 1:1) -->
             <div class="runner-level-card">
@@ -1604,7 +1710,6 @@
                 }
                 if (onlineState) onlineState.style.display = 'block';
                 if (offlineState) offlineState.style.display = 'none';
-                if (lowerSection) lowerSection.style.display = 'flex';
             } else {
                 if (wrap) wrap.classList.add('offline');
                 if (label) {
@@ -1612,8 +1717,9 @@
                 }
                 if (onlineState) onlineState.style.display = 'none';
                 if (offlineState) offlineState.style.display = 'flex';
-                if (lowerSection) lowerSection.style.display = 'none';
             }
+
+            if (lowerSection) lowerSection.style.display = 'flex';
 
             try {
                 const newUrl = new URL(window.location.href);
