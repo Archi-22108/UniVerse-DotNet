@@ -323,8 +323,9 @@
         }
 
         .online-toggle-pill-wrap.offline {
-            border-color: rgba(255, 255, 255, 0.12);
-            box-shadow: none;
+            background: rgba(18, 14, 8, 0.9);
+            border-color: rgba(245, 158, 11, 0.45);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.18);
         }
 
         .switch-capsule {
@@ -347,23 +348,26 @@
             background: var(--uv-emerald);
             box-shadow: 0 0 10px var(--uv-emerald);
             transform: translateX(16px);
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
         }
 
         .online-toggle-pill-wrap.offline .switch-capsule {
-            background: rgba(255, 255, 255, 0.08);
+            background: #1c1c1e;
             border-color: rgba(255, 255, 255, 0.2);
         }
 
         .online-toggle-pill-wrap.offline .switch-capsule-thumb {
             transform: translateX(0);
-            background: #85988e;
-            box-shadow: none;
+            background: #8e8e93;
+            box-shadow: inset 0 0 0 2.5px #2c2c2e;
         }
 
         .online-status-label {
             font-size: 0.82rem;
             color: #85988e;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .online-status-label strong {
@@ -372,7 +376,7 @@
         }
 
         .online-toggle-pill-wrap.offline .online-status-label strong {
-            color: #ef4444;
+            color: #fbbf24;
         }
 
         /* ── 3 Filter Tabs (Available / Active / History) ── */
@@ -576,6 +580,116 @@
             font-family: 'Space Mono', monospace;
             font-size: 0.72rem;
             color: #85988e;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           OFFLINE PAUSED STATE (EXACT MATCH FOR media_1789930271242.png)
+           ══════════════════════════════════════════════════════ */
+        .radar-offline-state-card {
+            background: var(--uv-card-bg);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 20px;
+            padding: 3.8rem 2.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1.15rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+            position: relative;
+        }
+
+        .moon-beacon-circle {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-paused-runner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.38);
+            color: #fbbf24;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.25rem 0.95rem;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+
+        .dot-amber {
+            color: #f59e0b;
+            font-size: 0.65rem;
+        }
+
+        .offline-empty-heading {
+            font-size: clamp(1.5rem, 2.5vw, 1.85rem);
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+            margin-top: 0.2rem;
+        }
+
+        .offline-explainer-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            max-width: 630px;
+            text-align: center;
+        }
+
+        .offline-p-muted {
+            font-size: 0.85rem;
+            color: #8b9d93;
+            line-height: 1.55;
+        }
+
+        .offline-p-highlight {
+            font-size: 0.85rem;
+            color: #00e599;
+            font-weight: 600;
+            line-height: 1.55;
+        }
+
+        .btn-go-online-cta {
+            background: var(--uv-emerald);
+            color: #020806;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 0.88rem;
+            padding: 0.75rem 1.85rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(0, 229, 153, 0.45);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1rem;
+        }
+
+        .btn-go-online-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(0, 229, 153, 0.7);
+        }
+
+        .btn-go-online-cta:active {
+            transform: scale(0.98);
         }
 
         /* ── Active Orders List (When Orders Exist) ── */
@@ -1061,11 +1175,15 @@
                     <span class="online-status-label" id="onlineStatusLabel">
                         @if (Model.IsOnline)
                         {
-                            <span>● <strong>Online</strong> · Accepting Orders</span>
+                            <span style="color: var(--uv-emerald);">●</span>
+                            <strong style="color: var(--uv-emerald);">Online</strong>
+                            <span style="color: #85988e;"> · Accepting Orders</span>
                         }
                         else
                         {
-                            <span>● <strong>Offline</strong> · On Break</span>
+                            <span class="dot-amber" style="color: #f59e0b;">●</span>
+                            <strong style="color: #fbbf24;">Offline</strong>
+                            <span style="color: #85988e;"> · Mode Paused</span>
                         }
                     </span>
                 </div>
@@ -1149,9 +1267,44 @@
         <!-- ══════════════════════════════════════════════════════
            MAIN RUNNER ORDERS / RADAR STATE (MATCHING SCREENSHOT 1:1)
            ══════════════════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════════════════
+           OFFLINE PAUSED STATE (MATCHING media_1789930271242.png 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <section class="radar-offline-state-card" id="radarOfflineState" style="display: @(Model.IsOnline ? "none" : "flex");">
+            <div class="moon-beacon-circle">
+                <i class="bi bi-moon"></i>
+            </div>
+
+            <div class="badge-paused-runner">
+                <span class="dot-amber">●</span>
+                <span>RUNNER MODE IS PAUSED</span>
+            </div>
+
+            <h2 class="offline-empty-heading">You are Currently Offline</h2>
+
+            <div class="offline-explainer-group">
+                <p class="offline-p-muted">
+                    Jab aap class me hon, library me study kar rahe hon ya rest kar rahe hon, to Runner Mode ko Paused rakhein taaki koi order notification disturb na kare.
+                </p>
+                <p class="offline-p-highlight">
+                    Jab bhi aap campus me walk kar rahe hon (Canteen, Gate ya Hostel ke raste), 1-click me Online ho kar orders deliver karein aur pocket money kamayein!
+                </p>
+            </div>
+
+            <button type="button" class="btn-go-online-cta" onclick="toggleOnlineStatus(true)">
+                <i class="bi bi-broadcast"></i>
+                <span>Go Online &amp; Start Accepting Orders</span>
+                <i class="bi bi-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════
+           ONLINE STATE (RADAR OR AVAILABLE / ACTIVE / HISTORY)
+           ══════════════════════════════════════════════════════ -->
+        <div id="radarOnlineState" style="display: @(Model.IsOnline ? "block" : "none");">
         @if (Model.ActiveTab == "available")
         {
-            if (Model.AvailableOrders.Count == 0 || !Model.IsOnline)
+            if (Model.AvailableOrders.Count == 0)
             {
                 <!-- EXACT 1:1 Empty State from User Screenshot -->
                 <section class="radar-empty-state-card">
@@ -1161,22 +1314,15 @@
 
                     <div class="badge-listening-radar">
                         <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
-                        <span>@(Model.IsOnline ? "CAMPUS RADAR ACTIVE · LISTENING FOR ORDERS" : "RUNNER MODE OFFLINE")</span>
+                        <span>CAMPUS RADAR ACTIVE · LISTENING FOR ORDERS</span>
                     </div>
 
                     <h2 class="radar-empty-heading">
-                        @(Model.IsOnline ? "No Active Requests on Radar Right Now" : "You are currently Offline")
+                        No Active Requests on Radar Right Now
                     </h2>
 
                     <p class="radar-empty-explainer">
-                        @if (Model.IsOnline)
-                        {
-                            <span>Aapka Runner Mode <strong>ONLINE</strong> hai! Jaise hi campus me koi student food, snacks ya notes order karega, yaha instant sound &amp; visual alert aayega.</span>
-                        }
-                        else
-                        {
-                            <span>Toggle your status to <strong>Online</strong> at the top right to start receiving instant campus food, snack, and note delivery requests!</span>
-                        }
+                        Aapka Runner Mode <strong>ONLINE</strong> hai! Jaise hi campus me koi student food, snacks ya notes order karega, yaha instant sound &amp; visual alert aayega.
                     </p>
 
                     <div class="peak-times-pill-box">
@@ -1327,63 +1473,66 @@
                 </div>
             }
         }
+        </div>
 
         <!-- ══════════════════════════════════════════════════════
            LOWER SECTION: RUNNER GUIDE & LEVEL CARD (MATCHING SCREENSHOT 1:1)
            ══════════════════════════════════════════════════════ -->
-        <!-- Runner Guide Collapsible Banner -->
-        <div class="runner-guide-banner" onclick="toggleGuide()">
-            <div class="guide-left">
-                <span class="dot-pulse-green"></span>
-                <span class="guide-tag-emerald">RUNNER GUIDE</span>
-                <span>· Earn cash on campus walks</span>
-            </div>
-            <span class="guide-expand-link">
-                <span>How it Works (3 Steps)</span>
-                <i class="bi bi-chevron-down" id="guideChevronIcon"></i>
-            </span>
-        </div>
-
-        <!-- Collapsible Content -->
-        <div class="guide-content-panel" id="guidePanel" style="display: none;">
-            <div class="guide-step-box">
-                <span class="guide-step-title">1. Accept Available Order</span>
-                <span class="guide-step-desc">Pick up requests when you're already walking near the vending machine or student canteen.</span>
-            </div>
-            <div class="guide-step-box">
-                <span class="guide-step-title">2. Deliver to Hostel Room</span>
-                <span class="guide-step-desc">Deliver the item straight to your peer's hostel door. Fast delivery yields extra tips.</span>
-            </div>
-            <div class="guide-step-box">
-                <span class="guide-step-title">3. Enter OTP &amp; Earn</span>
-                <span class="guide-step-desc">Verify delivery OTP from the student and receive 100% of the runner reward directly!</span>
-            </div>
-        </div>
-
-        <!-- Level 1 Starter Runner Card (Matching Screenshot 1:1) -->
-        <div class="runner-level-card">
-            <div class="level-left-block">
-                <div class="level-badge-circle">
-                    <i class="bi bi-stars"></i>
+        <div id="runnerLowerSection" style="display: @(Model.IsOnline ? "flex" : "none"); flex-direction: column; gap: 1.15rem;">
+            <!-- Runner Guide Collapsible Banner -->
+            <div class="runner-guide-banner" onclick="toggleGuide()">
+                <div class="guide-left">
+                    <span class="dot-pulse-green"></span>
+                    <span class="guide-tag-emerald">RUNNER GUIDE</span>
+                    <span>· Earn cash on campus walks</span>
                 </div>
+                <span class="guide-expand-link">
+                    <span>How it Works (3 Steps)</span>
+                    <i class="bi bi-chevron-down" id="guideChevronIcon"></i>
+                </span>
+            </div>
 
-                <div class="level-details-col">
-                    <div class="level-tags-row">
-                        <span class="pill-starter-level">@Model.BadgeLevel</span>
-                        <span class="level-sub-meta">● @Model.CompletedDeliveriesCount completed deliveries (100% Tips kept)</span>
-                    </div>
-
-                    <div class="level-progress-track">
-                        <div class="level-progress-fill" style="width: @(Math.Max(15, Model.CompletedDeliveriesCount * 20))%;"></div>
-                    </div>
+            <!-- Collapsible Content -->
+            <div class="guide-content-panel" id="guidePanel" style="display: none;">
+                <div class="guide-step-box">
+                    <span class="guide-step-title">1. Accept Available Order</span>
+                    <span class="guide-step-desc">Pick up requests when you're already walking near the vending machine or student canteen.</span>
+                </div>
+                <div class="guide-step-box">
+                    <span class="guide-step-title">2. Deliver to Hostel Room</span>
+                    <span class="guide-step-desc">Deliver the item straight to your peer's hostel door. Fast delivery yields extra tips.</span>
+                </div>
+                <div class="guide-step-box">
+                    <span class="guide-step-title">3. Enter OTP &amp; Earn</span>
+                    <span class="guide-step-desc">Verify delivery OTP from the student and receive 100% of the runner reward directly!</span>
                 </div>
             </div>
 
-            <a href="javascript:void(0)" onclick="alert('⚡ Level 1 Starter: You keep 100% of runner tips! Complete 5 deliveries to unlock Silver Runner badge.')" class="btn-view-performance">
-                <i class="bi bi-activity"></i>
-                <span>View Performance &amp; Tips</span>
-                <i class="bi bi-arrow-right"></i>
-            </a>
+            <!-- Level 1 Starter Runner Card (Matching Screenshot 1:1) -->
+            <div class="runner-level-card">
+                <div class="level-left-block">
+                    <div class="level-badge-circle">
+                        <i class="bi bi-stars"></i>
+                    </div>
+
+                    <div class="level-details-col">
+                        <div class="level-tags-row">
+                            <span class="pill-starter-level">@Model.BadgeLevel</span>
+                            <span class="level-sub-meta">● @Model.CompletedDeliveriesCount completed deliveries (100% Tips kept)</span>
+                        </div>
+
+                        <div class="level-progress-track">
+                            <div class="level-progress-fill" style="width: @(Math.Max(15, Model.CompletedDeliveriesCount * 20))%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="javascript:void(0)" onclick="alert('⚡ Level 1 Starter: You keep 100% of runner tips! Complete 5 deliveries to unlock Silver Runner badge.')" class="btn-view-performance">
+                    <i class="bi bi-activity"></i>
+                    <span>View Performance &amp; Tips</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
         </div>
     </main>
 
@@ -1428,24 +1577,60 @@
             render();
         })();
 
-        // ── 2. Interactive Online/Offline Toggle ──
+        // ── 2. Interactive Online/Offline Toggle (Instant Responsive Switch & Persistence) ──
         let isOnline = @(Model.IsOnline ? "true" : "false");
 
-        function toggleOnlineStatus() {
-            isOnline = !isOnline;
+        function toggleOnlineStatus(forceState) {
+            if (typeof forceState === 'boolean') {
+                isOnline = forceState;
+            } else {
+                isOnline = !isOnline;
+            }
+            updateRunnerModeUI(isOnline);
+        }
+
+        function updateRunnerModeUI(online) {
+            isOnline = online;
             const wrap = document.getElementById('runnerToggleWrap');
             const label = document.getElementById('onlineStatusLabel');
+            const onlineState = document.getElementById('radarOnlineState');
+            const offlineState = document.getElementById('radarOfflineState');
+            const lowerSection = document.getElementById('runnerLowerSection');
 
-            if (isOnline) {
-                wrap.className = 'online-toggle-pill-wrap';
-                label.innerHTML = '<span>● <strong>Online</strong> · Accepting Orders</span>';
-                window.location.href = '@Url.Action("Runner", "Dashboard", new { tab = Model.ActiveTab, isOnline = true })';
+            if (online) {
+                if (wrap) wrap.classList.remove('offline');
+                if (label) {
+                    label.innerHTML = '<span style="color: var(--uv-emerald);">●</span> <strong style="color: var(--uv-emerald);">Online</strong> <span style="color: #85988e;"> · Accepting Orders</span>';
+                }
+                if (onlineState) onlineState.style.display = 'block';
+                if (offlineState) offlineState.style.display = 'none';
+                if (lowerSection) lowerSection.style.display = 'flex';
             } else {
-                wrap.className = 'online-toggle-pill-wrap offline';
-                label.innerHTML = '<span>● <strong>Offline</strong> · On Break</span>';
-                window.location.href = '@Url.Action("Runner", "Dashboard", new { tab = Model.ActiveTab, isOnline = false })';
+                if (wrap) wrap.classList.add('offline');
+                if (label) {
+                    label.innerHTML = '<span class="dot-amber" style="color: #f59e0b;">●</span> <strong style="color: #fbbf24;">Offline</strong> <span style="color: #85988e;"> · Mode Paused</span>';
+                }
+                if (onlineState) onlineState.style.display = 'none';
+                if (offlineState) offlineState.style.display = 'flex';
+                if (lowerSection) lowerSection.style.display = 'none';
+            }
+
+            try {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('isOnline', online);
+                window.history.replaceState({}, '', newUrl.toString());
+                localStorage.setItem('runner_mode_online', online ? 'true' : 'false');
+            } catch (e) {
+                console.error(e);
             }
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParam = new URLSearchParams(window.location.search).get('isOnline');
+            if (urlParam !== null) {
+                updateRunnerModeUI(urlParam === 'true');
+            }
+        });
 
         // ── 3. Runner Guide Accordion Toggle ──
         let guideOpen = false;
