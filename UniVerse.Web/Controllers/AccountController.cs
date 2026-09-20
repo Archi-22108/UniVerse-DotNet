@@ -210,7 +210,7 @@ public class AccountController : Controller
 
         _logger.LogInformation("New student registered successfully via ADO.NET: {Email}", user.Email);
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Dashboard");
     }
 
     [HttpPost]
@@ -252,7 +252,7 @@ public class AccountController : Controller
             new ClaimsPrincipal(claimsIdentity),
             new AuthenticationProperties { IsPersistent = true, ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7) });
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Dashboard");
     }
 
     [HttpGet]
@@ -268,6 +268,6 @@ public class AccountController : Controller
         {
             return Redirect(returnUrl);
         }
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", "Dashboard");
     }
 }

@@ -15,4 +15,5 @@ public interface IAdoNetDbHelper
     bool RegisterUser(string fullName, string email, string password, out string errorMessage);
     List<Product> GetFeaturedProducts(int limit = 6);
     HomeViewModel GetHomeMetrics();
+    DashboardViewModel GetStudentDashboardData(string studentEmail);
 }

@@ -1,0 +1,1280 @@
+@model UniVerse.Web.Models.DashboardViewModel
+@{
+    Layout = null; // Immersive full-screen dashboard matching the uploaded screenshot exactly
+    ViewData["Title"] = "Dashboard · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-card-bg: rgba(10, 16, 14, 0.65);
+            --uv-card-border: rgba(255, 255, 255, 0.08);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.35);
+            --uv-text-muted: rgba(255, 255, 255, 0.6);
+            --uv-text-dim: rgba(255, 255, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Cosmic Ambient Glows & Planet ── */
+        .cosmic-nebula {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .nebula-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: 20%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(0, 229, 153, 0.14) 0%, transparent 70%);
+            filter: blur(120px);
+        }
+
+        .nebula-glow-2 {
+            position: absolute;
+            top: 40%;
+            right: -5%;
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            filter: blur(130px);
+        }
+
+        /* Subtle glowing planet in the upper right matching screenshot */
+        .celestial-planet {
+            position: absolute;
+            top: 140px;
+            left: 62%;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #10b981, #064e3b 80%, #022c22 100%);
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.45);
+            opacity: 0.75;
+            pointer-events: none;
+        }
+
+        /* ── Navbar ── */
+        .dash-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: rgba(3, 7, 8, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+        }
+
+        .brand-monogram {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1.5px solid var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-bell {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-bell:hover {
+            border-color: var(--uv-emerald);
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+        }
+
+        .btn-new-request {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--uv-emerald);
+            color: #030708;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0.6rem 1.15rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 20px var(--uv-emerald-glow);
+        }
+
+        .btn-new-request:hover {
+            background: #22f2aa;
+            transform: translateY(-1px);
+            box-shadow: 0 0 28px rgba(0, 229, 153, 0.55);
+        }
+
+        .btn-menu {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-menu:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ── Main Layout ── */
+        .dash-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem 4rem;
+        }
+
+        /* ── Welcome Header ── */
+        .welcome-block {
+            margin-bottom: 1.75rem;
+        }
+
+        .greeting-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 9999px;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            font-size: 0.76rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            box-shadow: 0 0 15px rgba(0, 229, 153, 0.15);
+        }
+
+        .welcome-title {
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .student-name-highlight {
+            color: var(--uv-emerald);
+        }
+
+        .welcome-sub {
+            font-size: 0.85rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.4rem;
+        }
+
+        .welcome-sub span {
+            color: rgba(0, 229, 153, 0.4);
+            margin: 0 0.35rem;
+        }
+
+        /* ── 2-Column Grid Layout (Main Content + Sidebar) ── */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.75rem;
+        }
+
+        @@media (min-width: 1080px) {
+            .dash-grid {
+                grid-template-columns: 1fr 340px;
+                align-items: start;
+            }
+        }
+
+        /* ── Glass Cards Generic ── */
+        .glass-panel {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.25s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(0, 229, 153, 0.25);
+        }
+
+        /* ── 4 Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @@media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: rgba(10, 16, 14, 0.55);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.15rem 1.25rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 112px;
+            transition: all 0.25s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--uv-text-muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-icon-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .stat-value {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin: 0.35rem 0 0.2rem;
+        }
+
+        .stat-sub {
+            font-size: 0.72rem;
+            color: var(--uv-text-dim);
+        }
+
+        /* ── Section Header ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.85rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .count-pill {
+            background: var(--uv-emerald);
+            color: #030708;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.15rem 0.55rem;
+            border-radius: 9999px;
+        }
+
+        .filter-dropdown-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            padding: 0.35rem 0.85rem;
+            color: #ffffff;
+            font-size: 0.76rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-dropdown-btn:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ── Empty State ── */
+        .empty-state-box {
+            text-align: center;
+            padding: 2.25rem 1rem;
+            color: var(--uv-text-dim);
+            font-size: 0.84rem;
+            font-weight: 500;
+        }
+
+        /* ── Overview Analytics Chart ── */
+        .analytics-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .analytics-sub {
+            font-size: 0.76rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .chart-container {
+            margin-top: 1.5rem;
+            position: relative;
+            height: 120px;
+            width: 100%;
+        }
+
+        .chart-y-axis {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--uv-text-dim);
+        }
+
+        .chart-content {
+            margin-left: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .chart-svg-box {
+            flex: 1;
+            width: 100%;
+            position: relative;
+        }
+
+        .chart-svg-box svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .chart-x-axis {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 0.5rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--uv-text-muted);
+        }
+
+        /* ── Requests by Status ── */
+        .status-overview-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .status-content-row {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .donut-container {
+            width: 110px;
+            height: 110px;
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .donut-center-text {
+            position: absolute;
+            text-align: center;
+        }
+
+        .donut-number {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .donut-sub {
+            font-size: 0.62rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--uv-text-dim);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 0.2rem;
+        }
+
+        .status-items-list {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .status-row-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.55rem 0.85rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-green { background: #00e599; box-shadow: 0 0 6px #00e599; }
+        .dot-amber { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+        .dot-red { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+        .status-pct {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--uv-text-muted);
+        }
+
+        /* ── Recent Completed Table ── */
+        .recent-completed-card {
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .table-responsive-wrapper {
+            width: 100%;
+            min-width: 600px;
+        }
+
+        .table-custom-headers {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 1fr 1fr;
+            padding: 0.5rem 0.5rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--uv-text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* ── Sidebar Panels ── */
+        .sidebar-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* Quick Actions Card */
+        .quick-actions-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .btn-create-request-wide {
+            width: 100%;
+            background: var(--uv-emerald);
+            color: #030708;
+            font-size: 0.88rem;
+            font-weight: 800;
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 20px var(--uv-emerald-glow);
+        }
+
+        .btn-create-request-wide:hover {
+            background: #22f2aa;
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .action-row-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 0.85rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .action-row-link:hover {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: rgba(0, 229, 153, 0.25);
+            color: #ffffff;
+            transform: translateX(2px);
+        }
+
+        .action-row-link .left-content {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .action-row-link i.icon-symbol {
+            color: var(--uv-emerald);
+            font-size: 1rem;
+        }
+
+        .action-row-link i.chevron-icon {
+            color: var(--uv-text-dim);
+            font-size: 0.8rem;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .profile-header-row {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .avatar-circle-large {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #00e599 0%, #059669 100%);
+            color: #030708;
+            font-size: 1.25rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+            flex-shrink: 0;
+        }
+
+        .profile-name-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .profile-student-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            width: fit-content;
+        }
+
+        .profile-contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            padding-top: 0.65rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.74rem;
+            color: var(--uv-text-muted);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .contact-item i {
+            color: var(--uv-emerald);
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .btn-edit-profile {
+            width: 100%;
+            background: transparent;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            border-radius: 12px;
+            padding: 0.6rem;
+            color: var(--uv-emerald);
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-edit-profile:hover {
+            background: rgba(0, 229, 153, 0.1);
+            border-color: var(--uv-emerald);
+        }
+
+        /* Recent Activity Card */
+        .activity-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Cosmic Glows & Celestial Planet ── -->
+    <div class="cosmic-nebula">
+        <div class="nebula-glow-1"></div>
+        <div class="nebula-glow-2"></div>
+        <div class="celestial-planet"></div>
+    </div>
+
+    <!-- ── Top Navbar ── -->
+    <header class="dash-nav">
+        <a asp-controller="Home" asp-action="Index" class="nav-brand">
+            <div class="brand-monogram">
+                <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 6V14C7 17.866 10.134 21 14 21C17.866 21 21 17.866 21 14V6" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+                    <circle cx="14" cy="14" r="2.2" fill="#00e599" />
+                </svg>
+            </div>
+            <span class="brand-name">UniVerse</span>
+        </a>
+
+        <div class="nav-actions">
+            <!-- Notification Bell -->
+            <button class="btn-bell" onclick="showNotice('Notifications', 'No new campus announcements right now.')" aria-label="Notifications">
+                <i class="bi bi-bell"></i>
+            </button>
+
+            <!-- New Request Pill Button -->
+            <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-new-request">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Request</span>
+            </a>
+
+            <!-- Menu Button -->
+            <button class="btn-menu" onclick="toggleNavMenu()" aria-label="Menu">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Main Dashboard Body ── -->
+    <main class="dash-container">
+        <!-- ── Welcome Header Section ── -->
+        <div class="welcome-block">
+            <!-- Time-based Greeting Pill -->
+            <div class="greeting-pill" id="greetingPill">
+                <i class="bi bi-stars"></i>
+                <span id="greetingText">Good night 🌙</span>
+            </div>
+
+            <!-- Welcome Title matching screenshot -->
+            <h1 class="welcome-title">
+                <span>Welcome back,</span>
+                <span class="student-name-highlight">@Model.DisplayName</span>
+                <span>👋</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="welcome-sub">
+                @Model.UniversityName <span>•</span> Your campus deliveries, your UniVerse.
+            </p>
+        </div>
+
+        <!-- ── 2-Column Responsive Grid ── -->
+        <div class="dash-grid">
+            <!-- ── LEFT COLUMN: Metrics, Charts, Deliveries & Tables ── -->
+            <div class="main-column-stack">
+                <!-- ── 4 Stats Grid ── -->
+                <div class="stats-grid">
+                    <!-- Stat 1: Total Requests -->
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-label">TOTAL REQUESTS</span>
+                            <div class="stat-icon-badge">
+                                <i class="bi bi-globe"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-value">@Model.TotalRequests</div>
+                            <div class="stat-sub">All time</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2: Active Requests -->
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-label">ACTIVE REQUESTS</span>
+                            <div class="stat-icon-badge">
+                                <i class="bi bi-bicycle"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-value">@Model.ActiveRequests</div>
+                            <div class="stat-sub">In progress</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 3: Completed -->
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-label">COMPLETED</span>
+                            <div class="stat-icon-badge">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-value">@Model.CompletedRequests</div>
+                            <div class="stat-sub">Delivered</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 4: Cancelled -->
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-label">CANCELLED</span>
+                            <div class="stat-icon-badge">
+                                <i class="bi bi-info-circle"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-value">@Model.CancelledRequests</div>
+                            <div class="stat-sub">All clean · 0 issues</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Active Deliveries Section ── -->
+                <section style="margin-bottom: 1.5rem;">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <span>Active Deliveries</span>
+                            <span class="count-pill">@Model.ActiveRequests</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel">
+                        @if (Model.ActiveDeliveries.Count == 0)
+                        {
+                            <div class="empty-state-box">
+                                No active deliveries right now. Tap &ldquo;New Request&rdquo; to order snacks!
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                                @foreach (var req in Model.ActiveDeliveries)
+                                {
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+                                        <div>
+                                            <b style="color: #ffffff; font-size: 0.9rem;">@req.ItemsDescription</b>
+                                            <div style="color: var(--uv-text-dim); font-size: 0.75rem;">To: @req.HostelRoom</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="color: #f59e0b; font-size: 0.75rem; font-weight: 700;">● @req.Status</span>
+                                            <div style="color: var(--uv-emerald); font-weight: 800; font-family: monospace;">₹@req.TotalAmount</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- ── Overview Analytics Chart Card ── -->
+                <section class="glass-panel analytics-card">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-title" style="margin-bottom: 0;">Overview Analytics</div>
+                            <div class="analytics-sub">Campus delivery activity this week</div>
+                        </div>
+                        <button class="filter-dropdown-btn">
+                            <span>This Week</span>
+                            <i class="bi bi-chevron-down" style="font-size: 0.65rem;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Sparkline Chart Area -->
+                    <div class="chart-container">
+                        <!-- Y Axis -->
+                        <div class="chart-y-axis">
+                            <span>1</span>
+                            <span>0</span>
+                        </div>
+
+                        <!-- Chart SVG & Grid -->
+                        <div class="chart-content">
+                            <div class="chart-svg-box">
+                                <svg viewBox="0 0 700 80" preserveAspectRatio="none">
+                                    <!-- Subtle Horizontal Grid Lines -->
+                                    <line x1="0" y1="10" x2="700" y2="10" stroke="rgba(255, 255, 255, 0.05)" stroke-dasharray="4,4" />
+                                    <line x1="0" y1="75" x2="700" y2="75" stroke="rgba(255, 255, 255, 0.08)" />
+
+                                    <!-- Chart Sparkline Line -->
+                                    <path d="M 30 75 L 120 75 L 220 75 L 320 75 L 420 75 L 530 75 L 670 75" 
+                                          fill="none" 
+                                          stroke="#00e599" 
+                                          stroke-width="2" 
+                                          style="filter: drop-shadow(0 0 6px rgba(0, 229, 153, 0.6));" />
+
+                                    <!-- Chart Data Points -->
+                                    <circle cx="30" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="120" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="220" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="320" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="420" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="530" cy="75" r="3.5" fill="#00e599" />
+                                    <circle cx="670" cy="75" r="3.5" fill="#00e599" />
+                                </svg>
+                            </div>
+
+                            <!-- X Axis Days of Week -->
+                            <div class="chart-x-axis">
+                                <span>Mon</span>
+                                <span>Tue</span>
+                                <span>Wed</span>
+                                <span>Thu</span>
+                                <span>Fri</span>
+                                <span>Sat</span>
+                                <span>Sun</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── Requests by Status ── -->
+                <section class="glass-panel status-overview-card">
+                    <div class="section-header">
+                        <div class="section-title">Requests by Status</div>
+                        <span style="border: 1px solid rgba(0, 229, 153, 0.3); color: var(--uv-emerald); font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.65rem; border-radius: 9999px; background: rgba(0, 229, 153, 0.08);">
+                            @Model.TotalRequests Total
+                        </span>
+                    </div>
+
+                    <div class="status-content-row">
+                        <!-- Left Donut Ring Chart -->
+                        <div class="donut-container">
+                            <svg class="donut-svg" viewBox="0 0 36 36">
+                                <path stroke="rgba(255, 255, 255, 0.08)" stroke-width="3" fill="none"
+                                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path stroke="#00e599" stroke-width="3.2" stroke-linecap="round" fill="none"
+                                      stroke-dasharray="@Model.CompletedPercentage, 100"
+                                      style="filter: drop-shadow(0 0 6px rgba(0, 229, 153, 0.7));"
+                                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div class="donut-center-text">
+                                <div class="donut-number">@Model.TotalRequests</div>
+                                <div class="donut-sub">TOTAL</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Status Rows -->
+                        <div class="status-items-list">
+                            <div class="status-row-item">
+                                <div class="status-left">
+                                    <span class="status-dot dot-green"></span>
+                                    <span>Completed</span>
+                                </div>
+                                <span class="status-pct">@Model.CompletedPercentage%</span>
+                            </div>
+
+                            <div class="status-row-item">
+                                <div class="status-left">
+                                    <span class="status-dot dot-amber"></span>
+                                    <span>In Progress</span>
+                                </div>
+                                <span class="status-pct">@Model.InProgressPercentage%</span>
+                            </div>
+
+                            <div class="status-row-item">
+                                <div class="status-left">
+                                    <span class="status-dot dot-red"></span>
+                                    <span>Cancelled</span>
+                                </div>
+                                <span class="status-pct">@Model.CancelledPercentage%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ── Recent Completed Table ── -->
+                <section class="glass-panel recent-completed-card">
+                    <div class="section-header" style="margin-bottom: 0.5rem;">
+                        <div class="section-title">Recent Completed</div>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <!-- Table Headers -->
+                        <div class="table-custom-headers">
+                            <span>ITEM</span>
+                            <span>FROM</span>
+                            <span>TO</span>
+                            <span>RUNNER</span>
+                            <span>TIME</span>
+                            <span>STATUS</span>
+                            <span style="text-align: right;">PRICE</span>
+                        </div>
+
+                        @if (Model.RecentCompleted.Count == 0)
+                        {
+                            <div class="empty-state-box" style="padding: 2.5rem 1rem;">
+                                No completed requests yet.
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="display: flex; flex-direction: column;">
+                                @foreach (var item in Model.RecentCompleted)
+                                {
+                                    <div style="display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 1fr 1fr; padding: 0.85rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.78rem; align-items: center;">
+                                        <b style="color: #ffffff;">@item.ItemsDescription</b>
+                                        <span style="color: var(--uv-text-muted);">@item.PickupLocation</span>
+                                        <span style="color: var(--uv-text-muted);">@item.DropoffLocation</span>
+                                        <span style="color: #ffffff;">@(item.RunnerName ?? "Assigned")</span>
+                                        <span style="color: var(--uv-text-dim); font-family: monospace;">@item.CreatedAt.ToString("MMM dd")</span>
+                                        <span><span style="background: rgba(0,229,153,0.1); color: var(--uv-emerald); padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700;">● Delivered</span></span>
+                                        <span style="text-align: right; color: var(--uv-emerald); font-weight: 800; font-family: monospace;">₹@item.TotalAmount</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </section>
+            </div>
+
+            <!-- ── RIGHT SIDEBAR: Quick Actions, Profile, Activity ── -->
+            <div class="sidebar-stack">
+                <!-- 1. Quick Actions -->
+                <div class="glass-panel quick-actions-card">
+                    <div class="section-header" style="margin-bottom: 0;">
+                        <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">Quick Actions</span>
+                        <span style="color: var(--uv-emerald); font-size: 0.72rem; font-family: 'Space Mono', monospace; font-weight: 700;">✦ Shortcuts</span>
+                    </div>
+
+                    <!-- Wide Create New Request Button -->
+                    <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-create-request-wide">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create New Request</span>
+                    </a>
+
+                    <!-- Action Links Stack -->
+                    <div style="display: flex; flex-direction: column; gap: 0.45rem;">
+                        <a asp-controller="Dashboard" asp-action="Requests" class="action-row-link">
+                            <div class="left-content">
+                                <i class="bi bi-file-text icon-symbol"></i>
+                                <span>My Requests</span>
+                            </div>
+                            <i class="bi bi-chevron-right chevron-icon"></i>
+                        </a>
+
+                        <a asp-controller="Dashboard" asp-action="Runner" class="action-row-link">
+                            <div class="left-content">
+                                <i class="bi bi-bicycle icon-symbol"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                            <i class="bi bi-chevron-right chevron-icon"></i>
+                        </a>
+
+                        <a asp-controller="Dashboard" asp-action="Wallet" class="action-row-link">
+                            <div class="left-content">
+                                <i class="bi bi-wallet2 icon-symbol"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <i class="bi bi-chevron-right chevron-icon"></i>
+                        </a>
+
+                        <a asp-controller="Dashboard" asp-action="Chat" class="action-row-link">
+                            <div class="left-content">
+                                <i class="bi bi-chat-dots icon-symbol"></i>
+                                <span>Chat Support</span>
+                            </div>
+                            <i class="bi bi-chevron-right chevron-icon"></i>
+                        </a>
+
+                        <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="analytics" class="action-row-link">
+                            <div class="left-content">
+                                <i class="bi bi-bar-chart-line icon-symbol"></i>
+                                <span>Analytics</span>
+                            </div>
+                            <i class="bi bi-chevron-right chevron-icon"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. Student Profile Card -->
+                <div class="glass-panel profile-card">
+                    <div class="profile-header-row">
+                        <!-- Monogram Avatar 'A' -->
+                        <div class="avatar-circle-large">
+                            @Model.Initial
+                        </div>
+
+                        <!-- Name & Verified Pill -->
+                        <div class="profile-name-block">
+                            <span class="profile-student-name">@Model.DisplayName</span>
+                            <span class="verified-badge">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Verified Student</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="profile-contact-list">
+                        <div class="contact-item">
+                            <i class="bi bi-envelope"></i>
+                            <span>@Model.Email</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="bi bi-telephone"></i>
+                            <a href="javascript:void(0)" onclick="promptPhone()" style="color: var(--uv-text-muted); text-decoration: none;">
+                                @(Model.PhoneNumber ?? "Add phone number")
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Button -->
+                    <a asp-controller="Dashboard" asp-action="Profile" class="btn-edit-profile">
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Edit Profile</span>
+                    </a>
+                </div>
+
+                <!-- 3. Recent Activity -->
+                <div class="glass-panel activity-card">
+                    <div class="section-header" style="margin-bottom: 0;">
+                        <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">Recent Activity</span>
+                    </div>
+
+                    @if (Model.Activities.Count == 0)
+                    {
+                        <div class="empty-state-box" style="padding: 1.5rem 0.5rem;">
+                            No recent activity.
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display: flex; flex-direction: column; gap: 0.85rem; padding-top: 0.5rem;">
+                            @foreach (var act in Model.Activities)
+                            {
+                                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                                    <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(0,229,153,0.15); color: var(--uv-emerald); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; margin-top: 2px;">
+                                        <i class="bi @act.IconType"></i>
+                                    </div>
+                                    <div style="font-size: 0.76rem;">
+                                        <p style="color: #ffffff; margin-bottom: 0.15rem;">@act.Description</p>
+                                        <span style="color: var(--uv-text-dim); font-size: 0.68rem;">@act.TimeAgo</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Interactive JavaScript Logic ── -->
+    <script>
+        // ── 1. Dynamic Client Time Greeting (Good night 🌙 / Good morning ☀️) ──
+        (function updateGreeting() {
+            const hours = new Date().getHours();
+            let text = "Good night 🌙";
+            if (hours >= 5 && hours < 12) {
+                text = "Good morning ☀️";
+            } else if (hours >= 12 && hours < 17) {
+                text = "Good afternoon 🌤️";
+            } else if (hours >= 17 && hours < 21) {
+                text = "Good evening 🌇";
+            } else {
+                text = "Good night 🌙";
+            }
+            const el = document.getElementById('greetingText');
+            if (el) el.innerText = text;
+        })();
+
+        // ── 2. Notification Alert Demo ──
+        function showNotice(title, message) {
+            alert(title + ":\n" + message);
+        }
+
+        // ── 3. Phone Number Prompt Demo ──
+        function promptPhone() {
+            const phone = prompt("Enter your campus WhatsApp / mobile number for runner contact:");
+            if (phone) {
+                alert("Phone number updated to: " + phone);
+            }
+        }
+
+        // ── 4. Toggle Navigation Menu ──
+        function toggleNavMenu() {
+            window.location.href = '@Url.Action("Index", "Home")';
+        }
+    </script>
+</body>
+</html>

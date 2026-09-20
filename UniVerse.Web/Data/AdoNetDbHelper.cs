@@ -336,4 +336,106 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             return false;
         }
     }
+
+    /// <summary>
+    /// Fetches all dynamic dashboard metrics, delivery requests, and activity feed
+    /// for a student using pure ADO.NET parameterized queries.
+    /// </summary>
+    public DashboardViewModel GetStudentDashboardData(string studentEmail)
+    {
+        var model = new DashboardViewModel
+        {
+            Email = !string.IsNullOrEmpty(studentEmail) ? studentEmail.Trim().ToLowerInvariant() : "archi.kumari126697@marwadiuniversity.ac.in"
+        };
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            // 1. Fetch Student User Profile Info via ADO.NET
+            var userSql = "SELECT FullName, Email, Role, HostelBlock, RoomNumber FROM Users WHERE LOWER(Email) = LOWER(@Email) LIMIT 1;";
+            using (var userCmd = new SqliteCommand(userSql, connection))
+            {
+                userCmd.Parameters.Add(new SqliteParameter("@Email", model.Email));
+                using (var reader = userCmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        model.DisplayName = reader.GetString(0);
+                        model.Email = reader.GetString(1);
+                    }
+                    else
+                    {
+                        model.DisplayName = "Archi.kumari126697";
+                    }
+                }
+            }
+
+            // 2. Query Student Delivery Requests using ADO.NET
+            var reqSql = @"
+                SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                FROM DeliveryRequests 
+                ORDER BY CreatedAt DESC;
+            ";
+
+            using (var reqCmd = new SqliteCommand(reqSql, connection))
+            {
+                using (var reader = reqCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var req = new DeliveryRequest
+                        {
+                            Id = reader.GetInt32(0),
+                            StudentName = reader.GetString(1),
+                            HostelRoom = reader.GetString(2),
+                            ItemsDescription = reader.GetString(3),
+                            TotalAmount = Convert.ToDecimal(reader.GetDouble(4)),
+                            RewardFee = Convert.ToDecimal(reader.GetDouble(5)),
+                            Status = reader.GetString(6),
+                            RunnerName = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            CreatedAt = reader.IsDBNull(8) ? DateTime.UtcNow : reader.GetDateTime(8)
+                        };
+
+                        // Check if this request belongs to the current student or demo student
+                        var isMyRequest = req.StudentName.Equals(model.DisplayName, StringComparison.OrdinalIgnoreCase) ||
+                                          req.StudentName.Contains("Archi", StringComparison.OrdinalIgnoreCase);
+
+                        if (isMyRequest)
+                        {
+                            model.TotalRequests++;
+
+                            if (req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+                            {
+                                model.CompletedRequests++;
+                                model.RecentCompleted.Add(req);
+                            }
+                            else if (req.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                            {
+                                model.CancelledRequests++;
+                            }
+                            else
+                            {
+                                model.ActiveRequests++;
+                                model.ActiveDeliveries.Add(req);
+                            }
+
+                            // Add Activity Item
+                            model.Activities.Add(new DashboardActivityItem
+                            {
+                                Id = req.Id.ToString(),
+                                Title = $"Request #{req.Id}",
+                                Description = $"Your request for {req.ItemsDescription} status is {req.Status}.",
+                                TimeAgo = "Recently",
+                                ColorHex = req.Status == "Delivered" ? "#00e599" : "#f59e0b",
+                                Timestamp = req.CreatedAt
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return model;
+    }
 }
