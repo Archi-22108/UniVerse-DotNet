@@ -13,11 +13,13 @@ public class DashboardController : Controller
 {
     private readonly IAdoNetDbHelper _dbHelper;
     private readonly ILogger<DashboardController> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public DashboardController(IAdoNetDbHelper dbHelper, ILogger<DashboardController> logger)
+    public DashboardController(IAdoNetDbHelper dbHelper, ILogger<DashboardController> logger, IWebHostEnvironment env)
     {
         _dbHelper = dbHelper;
         _logger = logger;
+        _env = env;
     }
 
     [HttpGet]
@@ -436,21 +438,167 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public IActionResult Marketplace()
+    public IActionResult Marketplace(string? category, string? search, string? sort, string? view)
     {
-        return RedirectToAction("Index");
+        var currentUser = "Archi.kumari126697";
+        var selectedCategory = string.IsNullOrWhiteSpace(category) ? "All Items" : category;
+        var selectedSort = string.IsNullOrWhiteSpace(sort) ? "Newest" : sort;
+        var selectedView = string.IsNullOrWhiteSpace(view) ? "all" : view.ToLowerInvariant();
+
+        var items = _dbHelper.GetMarketplaceItems(selectedCategory, search, selectedSort, selectedView, currentUser);
+        var allItems = _dbHelper.GetMarketplaceItems("All Items", null, null, null, currentUser);
+
+        var model = new MarketplaceViewModel
+        {
+            Items = items,
+            ActiveCategory = selectedCategory,
+            SearchQuery = search,
+            ActiveSort = selectedSort,
+            ActiveView = selectedView,
+            TotalListingsCount = items.Count,
+            SavedCount = allItems.Count(i => i.IsSaved),
+            MyListingsCount = allItems.Count(i => i.SellerName.Contains("Archi", StringComparison.OrdinalIgnoreCase))
+        };
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SellItem(MarketplaceItem item)
+    {
+        if (string.IsNullOrWhiteSpace(item.Title))
+        {
+            TempData["ErrorMessage"] = "Item title is required.";
+            return RedirectToAction("Marketplace");
+        }
+
+        item.SellerName = "Archi.kumari126697";
+        item.SellerHostel = "Hostel D · Room 304";
+        item.CreatedAt = DateTime.UtcNow;
+        item.Rating = "No ratings yet";
+
+        if (string.IsNullOrWhiteSpace(item.ImageUrl))
+        {
+            item.ImageUrl = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop";
+        }
+
+        _dbHelper.CreateMarketplaceItem(item);
+        TempData["SuccessMessage"] = $"Listing '{item.Title}' has been published to the university marketplace!";
+        return RedirectToAction("Marketplace");
+    }
+
+    [HttpPost]
+    public IActionResult ToggleSaveItem(int id)
+    {
+        _dbHelper.ToggleSaveMarketplaceItem(id);
+        return Json(new { success = true });
+    }
+
+    [HttpPost]
+    public IActionResult MarkSold(int id)
+    {
+        _dbHelper.MarkMarketplaceItemSold(id);
+        TempData["SuccessMessage"] = "Item marked as sold!";
+        return RedirectToAction("Marketplace");
+    }
+
+    [HttpPost]
+    public IActionResult DeleteItem(int id)
+    {
+        _dbHelper.DeleteMarketplaceItem(id);
+        TempData["SuccessMessage"] = "Listing removed!";
+        return RedirectToAction("Marketplace");
     }
 
     [HttpGet]
-    public IActionResult Analytics()
+    public IActionResult Analytics(string range = "7d")
     {
-        return RedirectToAction("Index");
+        var studentEmail = User.Identity?.Name ?? "student@marwadiuniversity.ac.in";
+        var model = _dbHelper.GetAnalyticsData(studentEmail, range);
+        return View(model);
+    }
+
+    [HttpGet]
+    public IActionResult ExportAnalyticsCsv(string range = "7d")
+    {
+        var studentEmail = User.Identity?.Name ?? "student@marwadiuniversity.ac.in";
+        var model = _dbHelper.GetAnalyticsData(studentEmail, range);
+
+        var builder = new System.Text.StringBuilder();
+        builder.AppendLine("Date,Spending (INR),Requests Created,Requests Completed,Requests Cancelled");
+        for (int i = 0; i < model.DailyLabels.Count; i++)
+        {
+            var spending = i < model.DailySpending.Count ? model.DailySpending[i] : 0m;
+            var created = i < model.DailyCreated.Count ? model.DailyCreated[i] : 0;
+            var completed = i < model.DailyCompleted.Count ? model.DailyCompleted[i] : 0;
+            var cancelled = i < model.DailyCancelled.Count ? model.DailyCancelled[i] : 0;
+            builder.AppendLine($"{model.DailyLabels[i]},{spending},{created},{completed},{cancelled}");
+        }
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+        return File(bytes, "text/csv", $"UniVerse_Analytics_Report_{range}_{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
     [HttpGet]
     public IActionResult Profile()
     {
-        return RedirectToAction("Index");
+        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var model = _dbHelper.GetUserProfile(studentEmail);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProfile(ProfileViewModel model, IFormFile? photoFile)
+    {
+        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        model.Email = studentEmail; // Tied to university identity
+
+        // Handle photo removal
+        if (model.RemovePhoto)
+        {
+            model.ProfilePictureUrl = null;
+        }
+
+        // Handle photo upload
+        if (photoFile != null && photoFile.Length > 0)
+        {
+            var allowedExts = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var ext = Path.GetExtension(photoFile.FileName).ToLowerInvariant();
+            if (!allowedExts.Contains(ext))
+            {
+                TempData["ErrorMessage"] = "Only JPG, PNG or WebP images are allowed.";
+                return RedirectToAction("Profile");
+            }
+
+            if (photoFile.Length > 2 * 1024 * 1024)
+            {
+                TempData["ErrorMessage"] = "Image size exceeds the 2MB maximum limit.";
+                return RedirectToAction("Profile");
+            }
+
+            var rootPath = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+            var uploadsFolder = Path.Combine(rootPath, "uploads", "profiles");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var uniqueFileName = $"profile_{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await photoFile.CopyToAsync(stream);
+            }
+
+            model.ProfilePictureUrl = $"/uploads/profiles/{uniqueFileName}";
+        }
+
+        _dbHelper.UpdateUserProfile(model);
+        TempData["SuccessMessage"] = "Profile changes saved successfully!";
+        return RedirectToAction("Profile");
     }
 
     [HttpGet]

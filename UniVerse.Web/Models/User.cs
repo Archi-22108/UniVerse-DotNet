@@ -14,4 +14,7 @@ public class User : BaseEntity
     public string Role { get; set; } = "Student"; // Student or Runner
     public string HostelBlock { get; set; } = string.Empty;
     public string RoomNumber { get; set; } = string.Empty;
+    public string? ProfilePictureUrl { get; set; }
+    public string? Department { get; set; }
+    public string? Semester { get; set; }
 }

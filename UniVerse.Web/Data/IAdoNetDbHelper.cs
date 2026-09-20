@@ -25,4 +25,12 @@ public interface IAdoNetDbHelper
     bool AcceptDeliveryOrder(int requestId, string runnerName);
     bool UpdateOrderStatus(int requestId, string newStatus);
     decimal GetRunnerTotalEarnings(string runnerName);
+    List<MarketplaceItem> GetMarketplaceItems(string? category, string? search, string? sort, string? viewFilter, string currentUser);
+    int CreateMarketplaceItem(MarketplaceItem item);
+    bool ToggleSaveMarketplaceItem(int itemId);
+    bool MarkMarketplaceItemSold(int itemId);
+    bool DeleteMarketplaceItem(int itemId);
+    AnalyticsViewModel GetAnalyticsData(string? studentName = null, string range = "7d");
+    ProfileViewModel GetUserProfile(string email);
+    bool UpdateUserProfile(ProfileViewModel profile);
 }

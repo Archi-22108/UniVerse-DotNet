@@ -1,0 +1,829 @@
+@model UniVerse.Web.Models.ProfileViewModel
+@{
+    Layout = null; // Full custom layout matching screenshot 1:1
+    ViewData["Title"] = "Edit Profile · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-card-bg: rgba(7, 14, 11, 0.82);
+            --uv-card-border: rgba(0, 229, 153, 0.18);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+            --uv-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Cinematic Blurred Backdrop Matching Screenshot ── */
+        .cinematic-backdrop-layer {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 85% 15%, rgba(59, 130, 246, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 15% 30%, rgba(239, 68, 68, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(0, 229, 153, 0.12) 0%, transparent 50%),
+                linear-gradient(180deg, rgba(3, 7, 8, 0.85) 0%, rgba(3, 7, 8, 0.95) 100%),
+                url('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+            filter: blur(2px);
+            opacity: 0.65;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Floating Header Brand ── */
+        .profile-page-viewport {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 2.5rem;
+            max-width: 1300px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .top-brand-strip {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .brand-link-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Main Edit Profile Area ── */
+        .profile-content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+            width: 100%;
+        }
+
+        /* Top Bar Above Card */
+        .profile-top-control-bar {
+            width: 100%;
+            max-width: 620px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .profile-top-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .btn-back-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back-circle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            transform: translateX(-2px);
+        }
+
+        .profile-heading-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .pill-ratings-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #85988e;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            backdrop-filter: blur(8px);
+        }
+
+        /* ── Centered Glassmorphic Form Card (Matching Screenshot 1:1) ── */
+        .profile-edit-card {
+            width: 100%;
+            max-width: 620px;
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 24px;
+            padding: 2.2rem 2.4rem;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 229, 153, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        /* ── Profile Photo Section ── */
+        .photo-upload-row {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+        }
+
+        .avatar-circle-wrap {
+            position: relative;
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+            overflow: visible;
+        }
+
+        .avatar-initial-text {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #020806;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .avatar-uploaded-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: @(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "none" : "block");
+        }
+
+        .avatar-camera-badge {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #020806;
+            border: 2px solid var(--uv-bg);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .photo-actions-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex: 1;
+        }
+
+        .photo-actions-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .photo-actions-sub {
+            font-size: 0.8rem;
+            color: var(--uv-text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .photo-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-photo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.42rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            outline: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-photo-upload {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+        }
+
+        .btn-photo-upload:hover {
+            background: rgba(0, 229, 153, 0.1);
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .btn-photo-remove {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+        }
+
+        .btn-photo-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--uv-red);
+            color: #ef4444;
+        }
+
+        .photo-specs-note {
+            font-size: 0.72rem;
+            color: #6b7280;
+            font-family: 'Space Mono', monospace;
+            margin-top: 0.15rem;
+        }
+
+        /* ── Input Fields ── */
+        .form-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-field-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .input-icon-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-prefix-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .form-input-pill {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 2.65rem;
+            font-size: 0.86rem;
+            color: #ffffff;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input-pill:focus {
+            border-color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.02);
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.15);
+        }
+
+        .form-input-pill.readonly-field {
+            background: rgba(255, 255, 255, 0.015);
+            color: #9ca3af;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .field-helper-note {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* ── 2-Column Row for Branch & Semester ── */
+        .form-grid-2cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.15rem;
+        }
+
+        @@media (max-width: 600px) {
+            .form-grid-2cols {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-select-pill {
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 12px;
+            padding: 0.75rem 2.2rem 0.75rem 2.65rem;
+            font-size: 0.86rem;
+            color: #ffffff;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-select-pill:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .select-caret-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        /* ── Form Footer Actions ── */
+        .profile-form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding-top: 0.5rem;
+        }
+
+        .btn-cancel-text {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 0.55rem 1rem;
+            transition: color 0.2s;
+        }
+
+        .btn-cancel-text:hover {
+            color: #ffffff;
+        }
+
+        .btn-save-changes {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--uv-emerald);
+            border: none;
+            color: #020806;
+            font-size: 0.86rem;
+            font-weight: 800;
+            padding: 0.65rem 1.45rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.45);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-save-changes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.65);
+        }
+
+        /* ── Bottom Security Notice ── */
+        .bottom-security-notice {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            color: #54685e;
+            margin-top: 1rem;
+        }
+
+        /* ── Bottom Left Logout ── */
+        .bottom-left-logout-strip {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .btn-bottom-logout {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .btn-bottom-logout:hover {
+            color: #f87171;
+        }
+
+        /* ── Toast Notification ── */
+        .profile-toast-alert {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+            padding: 0.65rem 1rem;
+            border-radius: 12px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="cinematic-backdrop-layer"></div>
+    <canvas id="starCanvas"></canvas>
+
+    <div class="profile-page-viewport">
+        <!-- ── Top Brand Strip ── -->
+        <header class="top-brand-strip">
+            <a asp-controller="Dashboard" asp-action="Index" class="brand-link-wrap">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+        </header>
+
+        <!-- ── Main Edit Profile Area ── -->
+        <div class="profile-content-container">
+            <!-- Top Bar Above Card -->
+            <div class="profile-top-control-bar">
+                <div class="profile-top-left">
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn-back-circle" title="Back to Dashboard">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h1 class="profile-heading-title">Edit Profile</h1>
+                </div>
+
+                <div class="pill-ratings-tag">
+                    <i class="bi bi-star"></i>
+                    <span>@Model.RatingText</span>
+                </div>
+            </div>
+
+            <!-- Centered Edit Profile Card (Matching Screenshot 1:1) -->
+            <div class="profile-edit-card">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="profile-toast-alert">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>@TempData["SuccessMessage"]</span>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="profile-toast-alert" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.35); color: #f87171;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>@TempData["ErrorMessage"]</span>
+                    </div>
+                }
+
+                <form asp-controller="Dashboard" asp-action="UpdateProfile" method="post" enctype="multipart/form-data" id="profileForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Email" value="@Model.Email" />
+                    <input type="hidden" name="RemovePhoto" id="removePhotoInput" value="false" />
+                    <input type="file" name="photoFile" id="photoFileInput" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="onPhotoSelected(this)" />
+
+                    <!-- Profile Photo Row -->
+                    <div class="photo-upload-row">
+                        <div class="avatar-circle-wrap" onclick="document.getElementById('photoFileInput').click()" title="Click to upload profile photo">
+                            <span class="avatar-initial-text" id="avatarInitial">@Model.Initial</span>
+                            <img src="@Model.ProfilePictureUrl" alt="Profile" class="avatar-uploaded-img" id="avatarImgPreview" />
+                            <div class="avatar-camera-badge">
+                                <i class="bi bi-camera-fill"></i>
+                            </div>
+                        </div>
+
+                        <div class="photo-actions-col">
+                            <div class="photo-actions-title">Profile Photo</div>
+                            <div class="photo-actions-sub">Upload a clear photo so others can recognize you.</div>
+                            
+                            <div class="photo-btn-group">
+                                <button type="button" class="btn-photo-pill btn-photo-upload" onclick="document.getElementById('photoFileInput').click()">
+                                    <i class="bi bi-upload"></i>
+                                    <span>Upload Photo</span>
+                                </button>
+
+                                <button type="button" class="btn-photo-pill btn-photo-remove" onclick="removePhotoAction()">
+                                    <i class="bi bi-trash3"></i>
+                                    <span>Remove Photo</span>
+                                </button>
+                            </div>
+
+                            <div class="photo-specs-note">JPG, PNG or WebP. Max size 2MB.</div>
+                        </div>
+                    </div>
+
+                    <!-- University Email (Readonly) -->
+                    <div class="form-field-group" style="margin-top: 1.35rem;">
+                        <label class="form-field-label">University Email</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-envelope input-prefix-icon"></i>
+                            <input type="email" class="form-input-pill readonly-field" value="@Model.Email" readonly disabled />
+                        </div>
+                        <span class="field-helper-note">Your email cannot be changed as it is tied to your university identity.</span>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="form-field-group" style="margin-top: 1.15rem;">
+                        <label class="form-field-label">Full Name</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-person input-prefix-icon"></i>
+                            <input type="text" name="FullName" class="form-input-pill" value="@Model.FullName" required placeholder="Enter full name" />
+                        </div>
+                        <span class="field-helper-note">Enter your full name as it appears on your university records.</span>
+                    </div>
+
+                    <!-- Department / Branch & Semester (2 Column Grid) -->
+                    <div class="form-grid-2cols" style="margin-top: 1.15rem;">
+                        <!-- Department / Branch -->
+                        <div class="form-field-group">
+                            <label class="form-field-label">Department / Branch</label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-book input-prefix-icon"></i>
+                                <select name="Department" id="deptSelect" class="form-select-pill">
+                                    <option value="">Select your branch</option>
+                                    <option value="Computer Science & Engineering">Computer Science &amp; Engineering</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Electronics & Communication">Electronics &amp; Communication</option>
+                                    <option value="Chemical Engineering">Chemical Engineering</option>
+                                    <option value="Master of Business Administration (MBA)">Master of Business Administration (MBA)</option>
+                                    <option value="Faculty of Pharmacy">Faculty of Pharmacy</option>
+                                    <option value="Faculty of Law">Faculty of Law</option>
+                                    <option value="Faculty of Architecture">Faculty of Architecture</option>
+                                    <option value="Other Department">Other Department</option>
+                                </select>
+                                <i class="bi bi-chevron-down select-caret-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Semester -->
+                        <div class="form-field-group">
+                            <label class="form-field-label">Semester</label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-mortarboard input-prefix-icon"></i>
+                                <select name="Semester" id="semesterSelect" class="form-select-pill">
+                                    <option value="">Select your semester</option>
+                                    <option value="Semester 1">Semester 1</option>
+                                    <option value="Semester 2">Semester 2</option>
+                                    <option value="Semester 3">Semester 3</option>
+                                    <option value="Semester 4">Semester 4</option>
+                                    <option value="Semester 5">Semester 5</option>
+                                    <option value="Semester 6">Semester 6</option>
+                                    <option value="Semester 7">Semester 7</option>
+                                    <option value="Semester 8">Semester 8</option>
+                                </select>
+                                <i class="bi bi-chevron-down select-caret-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        // Restore saved dropdown selections from server-side model
+                        (function() {
+                            var savedDept = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Department ?? ""));
+                            var savedSem  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semester ?? ""));
+                            if (savedDept) { var ds = document.getElementById('deptSelect'); if (ds) ds.value = savedDept; }
+                            if (savedSem)  { var ss = document.getElementById('semesterSelect'); if (ss) ss.value = savedSem; }
+                        })();
+                    </script>
+
+                    <!-- Form Actions Footer -->
+                    <div class="profile-form-footer" style="margin-top: 1.5rem;">
+                        <a asp-controller="Dashboard" asp-action="Index" class="btn-cancel-text">Cancel</a>
+                        <button type="submit" class="btn-save-changes">
+                            <i class="bi bi-floppy"></i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Bottom Security Note -->
+            <div class="bottom-security-notice">
+                <i class="bi bi-shield-check" style="color: var(--uv-emerald);"></i>
+                <span>Your information is secure and encrypted.</span>
+            </div>
+        </div>
+
+        <!-- ── Bottom Left Logout ── -->
+        <footer class="bottom-left-logout-strip">
+            <a asp-controller="Account" asp-action="Login" class="btn-bottom-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </footer>
+    </div>
+
+    <!-- ── Interactive Client Script for Instant Photo Preview & Removal ── -->
+    <script>
+        // ── 1. Starfield particles animation ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 55;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Live Photo Upload Preview ──
+        function onPhotoSelected(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validate size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Image size exceeds 2MB maximum limit. Please choose a smaller image.');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('avatarImgPreview');
+                    const initial = document.getElementById('avatarInitial');
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                    if (initial) {
+                        initial.style.display = 'none';
+                    }
+                    document.getElementById('removePhotoInput').value = 'false';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ── 3. Remove Photo Action ──
+        function removePhotoAction() {
+            const preview = document.getElementById('avatarImgPreview');
+            const initial = document.getElementById('avatarInitial');
+            const fileInput = document.getElementById('photoFileInput');
+            const removeInput = document.getElementById('removePhotoInput');
+
+            if (preview) {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+            if (initial) {
+                initial.style.display = 'block';
+            }
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            if (removeInput) {
+                removeInput.value = 'true';
+            }
+        }
+    </script>
+</body>
+</html>

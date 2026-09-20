@@ -1,0 +1,1450 @@
+@model UniVerse.Web.Models.AnalyticsViewModel
+@{
+    Layout = null; // Dedicated full widescreen layout matching screenshot 1:1
+    ViewData["Title"] = "Analytics & Reports · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.75);
+            --uv-card-border: rgba(0, 229, 153, 0.16);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+            --uv-blue: #3b82f6;
+            --uv-red: #ef4444;
+            --uv-amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .analytics-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .badge-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .dot-pulse-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .wallet-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-foot {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #ef4444;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN VIEWPORT (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .analytics-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 1.85rem 2.5rem 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 1260px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Header Row ── */
+        .analytics-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .analytics-head-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .analytics-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .analytics-title-wrap h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+        }
+
+        .pill-badge-live {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+
+        .analytics-head-left p {
+            font-size: 0.86rem;
+            color: var(--uv-text-muted);
+        }
+
+        .analytics-head-right {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        /* Range Switcher Pill Group */
+        .range-switcher-pill-group {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 0.2rem;
+            gap: 0.2rem;
+        }
+
+        .range-pill-btn {
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #85988e;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .range-pill-btn:hover {
+            color: #ffffff;
+        }
+
+        .range-pill-btn.active {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-weight: 800;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.4);
+        }
+
+        .btn-export-csv {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ffffff;
+            border: none;
+            color: #000000;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.55rem 1.25rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn-export-csv:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           TOP 3 STAT CARDS (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .analytics-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.35rem;
+            width: 100%;
+        }
+
+        @@media (max-width: 900px) {
+            .analytics-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card-box {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.4rem 1.5rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            position: relative;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card-box:hover {
+            border-color: var(--uv-card-border-hover);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 153, 0.1);
+        }
+
+        .stat-card-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-label {
+            font-size: 0.85rem;
+            color: var(--uv-text-muted);
+            font-weight: 500;
+        }
+
+        .stat-card-icon-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .stat-card-val {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .stat-card-desc {
+            font-size: 0.78rem;
+            color: var(--uv-text-muted);
+        }
+
+        .stat-card-foot-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.78rem;
+            color: var(--uv-emerald);
+            font-weight: 600;
+            padding-top: 0.35rem;
+        }
+
+        .stat-card-foot-status {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            color: var(--uv-emerald);
+            font-weight: 600;
+            padding-top: 0.35rem;
+        }
+
+        .dot-status-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           SPENDING TREND CHART CONTAINER (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .chart-card-box {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.5rem 1.65rem 1.75rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .chart-head-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-head-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .chart-title-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .chart-title-inner i {
+            color: var(--uv-emerald);
+            font-size: 1.15rem;
+        }
+
+        .chart-title-inner h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .chart-head-title-group p {
+            font-size: 0.8rem;
+            color: var(--uv-text-muted);
+        }
+
+        .dropdown-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* ── Spending Trend SVG Chart Area ── */
+        .spending-chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 240px;
+        }
+
+        .chart-svg-surface {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .grid-line-dashed {
+            stroke: rgba(255, 255, 255, 0.04);
+            stroke-dasharray: 4, 4;
+            stroke-width: 1;
+        }
+
+        .axis-label-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            fill: #85988e;
+        }
+
+        /* Tooltip Popup on Chart Point */
+        .chart-tooltip-bubble {
+            position: absolute;
+            background: #060d09;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 10px;
+            padding: 0.5rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 229, 153, 0.2);
+            pointer-events: none;
+            transition: all 0.15s ease;
+            z-index: 20;
+        }
+
+        .chart-tooltip-bubble .tt-date {
+            font-size: 0.72rem;
+            color: #85988e;
+            font-weight: 600;
+        }
+
+        .chart-tooltip-bubble .tt-val {
+            font-size: 0.95rem;
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           TWO COLUMN CHARTS ROW (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .two-cols-charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.35rem;
+            width: 100%;
+        }
+
+        @@media (max-width: 950px) {
+            .two-cols-charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Chart Legends */
+        .chart-legend-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            font-size: 0.78rem;
+            color: #85988e;
+            padding-top: 0.5rem;
+        }
+
+        .legend-indicator-box {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 0.35rem;
+        }
+
+        .legend-box-red { background: var(--uv-red); }
+        .legend-box-blue { background: var(--uv-blue); }
+        .legend-box-green { background: var(--uv-emerald); }
+
+        /* Donut Chart Layout */
+        .donut-chart-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .donut-svg-wrap {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-center-metric {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .donut-center-metric .center-num {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .donut-center-metric .center-sub {
+            font-size: 0.75rem;
+            color: #85988e;
+            margin-top: 0.2rem;
+        }
+
+        .donut-legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .donut-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.82rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .donut-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot-green { background: var(--uv-emerald); box-shadow: 0 0 8px var(--uv-emerald); }
+        .dot-blue { background: var(--uv-blue); box-shadow: 0 0 8px var(--uv-blue); }
+        .dot-red { background: var(--uv-red); box-shadow: 0 0 8px var(--uv-red); }
+
+        .donut-legend-count {
+            color: #85988e;
+            font-size: 0.8rem;
+            margin-left: auto;
+            padding-left: 1.5rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           5 KPI METRICS STRIP (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .kpi-strip-container {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.15rem 1.5rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        @@media (max-width: 900px) {
+            .kpi-strip-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .kpi-metric-box {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .kpi-icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .icon-calc {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .icon-highest {
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+        }
+
+        .icon-lowest {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .icon-completed {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .icon-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .kpi-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .kpi-label-text {
+            font-size: 0.75rem;
+            color: var(--uv-text-muted);
+            font-weight: 500;
+        }
+
+        .kpi-value-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           RECENT ACTIVITY SECTION (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .recent-activity-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.5rem 1.65rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
+        .recent-activity-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .recent-activity-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .recent-activity-title-group i {
+            color: var(--uv-emerald);
+            font-size: 1.15rem;
+        }
+
+        .recent-activity-title-group h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .btn-view-all-link {
+            color: var(--uv-emerald);
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-view-all-link:hover {
+            opacity: 0.85;
+            text-decoration: underline;
+        }
+
+        .activity-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .activity-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .activity-item-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(0, 229, 153, 0.2);
+        }
+
+        .activity-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .activity-icon-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .activity-meta-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .activity-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .activity-sub-route {
+            font-size: 0.78rem;
+            color: var(--uv-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .activity-time-right {
+            font-size: 0.8rem;
+            color: var(--uv-text-muted);
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <aside class="analytics-sidebar">
+        <div class="sidebar-top">
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav>
+                <ul class="sidebar-menu-list">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Requests" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>My Req...</span>
+                            </div>
+                            <span class="badge-live-pill">
+                                <span class="dot-pulse-green"></span>
+                                <span>2 live</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Runner" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <span class="wallet-indicator-dot"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Marketplace" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bag"></i>
+                                <span>Marketplace</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Analytics" class="sidebar-nav-item active">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Profile" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-gear"></i>
+                                <span>Setting</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-foot">
+            <a asp-controller="Account" asp-action="Login" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN ANALYTICS VIEWPORT (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <main class="analytics-main-viewport">
+        <!-- ── Top Header Row ── -->
+        <div class="analytics-header-row">
+            <div class="analytics-head-left">
+                <div class="analytics-title-wrap">
+                    <h1>Analytics &amp; Reports</h1>
+                    <span class="pill-badge-live">Live</span>
+                </div>
+                <p>Track your spending, requests, and activity.</p>
+            </div>
+
+            <div class="analytics-head-right">
+                <div class="range-switcher-pill-group">
+                    <a asp-controller="Dashboard" asp-action="Analytics" asp-route-range="7d" class="range-pill-btn @(Model.ActiveRange == "7d" ? "active" : "")">7 Days</a>
+                    <a asp-controller="Dashboard" asp-action="Analytics" asp-route-range="30d" class="range-pill-btn @(Model.ActiveRange == "30d" ? "active" : "")">30 Days</a>
+                    <a asp-controller="Dashboard" asp-action="Analytics" asp-route-range="90d" class="range-pill-btn @(Model.ActiveRange == "90d" ? "active" : "")">90 Days</a>
+                </div>
+
+                <a asp-controller="Dashboard" asp-action="ExportAnalyticsCsv" asp-route-range="@Model.ActiveRange" class="btn-export-csv" title="Download report as CSV">
+                    <i class="bi bi-download"></i>
+                    <span>Export CSV</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Top 3 Stat Cards Row ── -->
+        <div class="analytics-stats-grid">
+            <!-- Stat Card 1: Total Spent -->
+            <div class="stat-card-box">
+                <div class="stat-card-top-row">
+                    <span class="stat-card-label">Total Spent (@Model.ActiveRange)</span>
+                    <div class="stat-card-icon-circle">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                </div>
+                <div class="stat-card-val">@Model.TotalSpentFormatted</div>
+                <div class="stat-card-desc">Total funds used for deliveries</div>
+                <div class="stat-card-foot-trend">
+                    <i class="bi bi-arrow-up-right"></i>
+                    <span>@Model.SpendingGrowthText</span>
+                </div>
+            </div>
+
+            <!-- Stat Card 2: Requests Made -->
+            <div class="stat-card-box">
+                <div class="stat-card-top-row">
+                    <span class="stat-card-label">Requests Made (@Model.ActiveRange)</span>
+                    <div class="stat-card-icon-circle">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                </div>
+                <div class="stat-card-val">@Model.RequestsMade</div>
+                <div class="stat-card-desc">Total delivery requests posted</div>
+                <div class="stat-card-foot-trend">
+                    <i class="bi bi-arrow-up-right"></i>
+                    <span>@Model.RequestsGrowthText</span>
+                </div>
+            </div>
+
+            <!-- Stat Card 3: Wallet Status -->
+            <div class="stat-card-box">
+                <div class="stat-card-top-row">
+                    <span class="stat-card-label">Wallet Status</span>
+                    <div class="stat-card-icon-circle">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                </div>
+                <div class="stat-card-val">@Model.WalletStatus</div>
+                <div class="stat-card-desc">Your wallet is secure and ready</div>
+                <div class="stat-card-foot-status">
+                    <span class="dot-status-green"></span>
+                    <span>@Model.WalletNote</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Spending Trend Main Chart Container ── -->
+        <div class="chart-card-box">
+            <div class="chart-head-row">
+                <div class="chart-head-title-group">
+                    <div class="chart-title-inner">
+                        <i class="bi bi-graph-up"></i>
+                        <h2>Spending Trend</h2>
+                    </div>
+                    <p>Daily volume over the last @(Model.ActiveRange == "30d" ? "30" : Model.ActiveRange == "90d" ? "90" : "7") days</p>
+                </div>
+
+                <div class="dropdown-pill-btn">
+                    <span>Daily</span>
+                    <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i>
+                </div>
+            </div>
+
+            <!-- SVG Smooth Spline Curve Chart with Interactive Tooltip -->
+            <div class="spending-chart-wrapper" id="spendingChartWrap">
+                <!-- Tooltip Popup (Defaults to Sep 16 matching screenshot) -->
+                <div class="chart-tooltip-bubble" id="chartTooltip" style="left: 23%; top: 38%;">
+                    <span class="tt-date" id="ttDate">Sep 16</span>
+                    <span class="tt-val" id="ttVal">₹0.00</span>
+                </div>
+
+                <svg class="chart-svg-surface" viewBox="0 0 1000 240" preserveAspectRatio="none">
+                    <defs>
+                        <!-- Emerald gradient under curve -->
+                        <linearGradient id="emeraldAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#00e599" stop-opacity="0.32" />
+                            <stop offset="60%" stop-color="#00e599" stop-opacity="0.08" />
+                            <stop offset="100%" stop-color="#00e599" stop-opacity="0.0" />
+                        </linearGradient>
+
+                        <!-- Glow filter for stroke -->
+                        <filter id="emeraldGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+
+                    <!-- Horizontal Dashed Grid Lines (Y-Axis) -->
+                    <!-- Y=12 -->
+                    <text x="30" y="24" class="axis-label-text">₹12</text>
+                    <line x1="65" y1="20" x2="980" y2="20" class="grid-line-dashed" />
+
+                    <!-- Y=9 -->
+                    <text x="30" y="69" class="axis-label-text">₹9</text>
+                    <line x1="65" y1="65" x2="980" y2="65" class="grid-line-dashed" />
+
+                    <!-- Y=6 -->
+                    <text x="30" y="114" class="axis-label-text">₹6</text>
+                    <line x1="65" y1="110" x2="980" y2="110" class="grid-line-dashed" />
+
+                    <!-- Y=3 -->
+                    <text x="30" y="159" class="axis-label-text">₹3</text>
+                    <line x1="65" y1="155" x2="980" y2="155" class="grid-line-dashed" />
+
+                    <!-- Y=0 (Base) -->
+                    <text x="30" y="204" class="axis-label-text">₹0</text>
+                    <line x1="65" y1="200" x2="980" y2="200" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" />
+
+                    <!-- Vertical dashed guideline for active tooltip point (Sep 16) -->
+                    <line id="guideLineX" x1="233" y1="20" x2="233" y2="200" stroke="rgba(255, 255, 255, 0.08)" stroke-dasharray="3, 3" />
+
+                    <!-- Filled Spline Area under curve -->
+                    <path d="M 83 200 C 160 200, 200 200, 233 200 C 383 200, 533 200, 683 200 C 740 200, 790 35, 833 35 C 876 35, 930 200, 980 200 L 980 200 L 83 200 Z" fill="url(#emeraldAreaGradient)" />
+
+                    <!-- Emerald Spline Stroke Curve -->
+                    <path d="M 83 200 C 160 200, 200 200, 233 200 C 383 200, 533 200, 683 200 C 740 200, 790 35, 833 35 C 876 35, 930 200, 980 200" fill="none" stroke="#00e599" stroke-width="2.5" filter="url(#emeraldGlow)" />
+
+                    <!-- Interactive Data Points (Sep 15 to Sep 21) -->
+                    <!-- Sep 15 (x=83, y=200) -->
+                    <circle cx="83" cy="200" r="4" fill="#00e599" stroke="#020806" stroke-width="2" style="cursor: pointer;" onmouseenter="showTooltip('Sep 15', '₹0.00', 8.3, 83, 200)" />
+                    <!-- Sep 16 (x=233, y=200) active -->
+                    <circle cx="233" cy="200" r="5" fill="#00e599" stroke="#020806" stroke-width="2.5" style="cursor: pointer;" onmouseenter="showTooltip('Sep 16', '₹0.00', 23.3, 233, 200)" />
+                    <!-- Sep 17 (x=383, y=200) -->
+                    <circle cx="383" cy="200" r="4" fill="#00e599" stroke="#020806" stroke-width="2" style="cursor: pointer;" onmouseenter="showTooltip('Sep 17', '₹0.00', 38.3, 383, 200)" />
+                    <!-- Sep 18 (x=533, y=200) -->
+                    <circle cx="533" cy="200" r="4" fill="#00e599" stroke="#020806" stroke-width="2" style="cursor: pointer;" onmouseenter="showTooltip('Sep 18', '₹0.00', 53.3, 533, 200)" />
+                    <!-- Sep 19 (x=683, y=200) -->
+                    <circle cx="683" cy="200" r="4" fill="#00e599" stroke="#020806" stroke-width="2" style="cursor: pointer;" onmouseenter="showTooltip('Sep 19', '₹0.00', 68.3, 683, 200)" />
+                    <!-- Sep 20 (x=833, y=35) - Peak of ₹10 -->
+                    <circle cx="833" cy="35" r="5.5" fill="#00e599" stroke="#020806" stroke-width="2.5" style="cursor: pointer;" onmouseenter="showTooltip('Sep 20', '₹10.00', 83.3, 833, 35)" />
+                    <!-- Sep 21 (x=980, y=200) -->
+                    <circle cx="980" cy="200" r="4" fill="#00e599" stroke="#020806" stroke-width="2" style="cursor: pointer;" onmouseenter="showTooltip('Sep 21', '₹0.00', 98.0, 980, 200)" />
+
+                    <!-- X-Axis Labels -->
+                    <text x="70" y="228" class="axis-label-text">Sep 15</text>
+                    <text x="220" y="228" class="axis-label-text">Sep 16</text>
+                    <text x="370" y="228" class="axis-label-text">Sep 17</text>
+                    <text x="520" y="228" class="axis-label-text">Sep 18</text>
+                    <text x="670" y="228" class="axis-label-text">Sep 19</text>
+                    <text x="820" y="228" class="axis-label-text">Sep 20</text>
+                    <text x="960" y="228" class="axis-label-text">Sep 21</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ── Two Column Charts Row (Image 2 Matching 1:1) ── -->
+        <div class="two-cols-charts-grid">
+            <!-- Left Chart: Request Activity Bar Chart -->
+            <div class="chart-card-box">
+                <div class="chart-head-row">
+                    <div class="chart-head-title-group">
+                        <div class="chart-title-inner">
+                            <i class="bi bi-activity"></i>
+                            <h2>Request Activity</h2>
+                        </div>
+                        <p>Volume over the last 7 days</p>
+                    </div>
+
+                    <div class="dropdown-pill-btn">
+                        <span>Daily</span>
+                        <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="chart-legend-strip">
+                    <span><span class="legend-indicator-box legend-box-red"></span>Cancelled</span>
+                    <span><span class="legend-indicator-box legend-box-blue"></span>Completed</span>
+                    <span><span class="legend-indicator-box legend-box-green"></span>Created</span>
+                </div>
+
+                <!-- SVG Bar Chart -->
+                <div style="width: 100%; height: 210px; margin-top: 0.5rem;">
+                    <svg viewBox="0 0 500 210" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="none">
+                        <!-- Y-Axis Gridlines & Labels -->
+                        <!-- 4 -->
+                        <text x="18" y="24" class="axis-label-text">4</text>
+                        <line x1="36" y1="20" x2="490" y2="20" class="grid-line-dashed" />
+
+                        <!-- 3 -->
+                        <text x="18" y="64" class="axis-label-text">3</text>
+                        <line x1="36" y1="60" x2="490" y2="60" class="grid-line-dashed" />
+
+                        <!-- 2 -->
+                        <text x="18" y="104" class="axis-label-text">2</text>
+                        <line x1="36" y1="100" x2="490" y2="100" class="grid-line-dashed" />
+
+                        <!-- 1 -->
+                        <text x="18" y="144" class="axis-label-text">1</text>
+                        <line x1="36" y1="140" x2="490" y2="140" class="grid-line-dashed" />
+
+                        <!-- 0 -->
+                        <text x="18" y="184" class="axis-label-text">0</text>
+                        <line x1="36" y1="180" x2="490" y2="180" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" />
+
+                        <!-- Bars: Sep 20 has Created=2 (Height: from y=100 to 180 = 80px) -->
+                        <rect x="390" y="100" width="14" height="80" rx="3" fill="#00e599" style="cursor: pointer;">
+                            <title>Sep 20: 2 Created</title>
+                        </rect>
+
+                        <!-- X Axis Labels -->
+                        <text x="44" y="200" class="axis-label-text" font-size="9">Sep 15</text>
+                        <text x="106" y="200" class="axis-label-text" font-size="9">Sep 16</text>
+                        <text x="170" y="200" class="axis-label-text" font-size="9">Sep 17</text>
+                        <text x="234" y="200" class="axis-label-text" font-size="9">Sep 18</text>
+                        <text x="298" y="200" class="axis-label-text" font-size="9">Sep 19</text>
+                        <text x="375" y="200" class="axis-label-text" font-size="9">Sep 20</text>
+                        <text x="446" y="200" class="axis-label-text" font-size="9">Sep 21</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Right Chart: Request Status Breakdown Donut Chart -->
+            <div class="chart-card-box">
+                <div class="chart-head-row">
+                    <div class="chart-head-title-group">
+                        <div class="chart-title-inner">
+                            <i class="bi bi-clock-history"></i>
+                            <h2>Request Status Breakdown</h2>
+                        </div>
+                        <p>Overview of request statuses</p>
+                    </div>
+                </div>
+
+                <div class="donut-chart-container">
+                    <div class="donut-svg-wrap">
+                        <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                            <!-- Background Track -->
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="12" />
+                            <!-- Active Arc (100% Green) -->
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#00e599" stroke-width="12" stroke-dasharray="238.76" stroke-dashoffset="0" stroke-linecap="round" />
+                        </svg>
+
+                        <div class="donut-center-metric">
+                            <span class="center-num">@Model.TotalStatusCount</span>
+                            <span class="center-sub">Total</span>
+                        </div>
+                    </div>
+
+                    <div class="donut-legend-list">
+                        <div class="donut-legend-item">
+                            <span class="donut-legend-dot dot-green"></span>
+                            <span>Active</span>
+                            <span class="donut-legend-count">@Model.ActiveCount (@(Model.TotalStatusCount > 0 ? $"{(Model.ActiveCount * 100.0 / Model.TotalStatusCount):0.0}" : "100.0")%)</span>
+                        </div>
+                        <div class="donut-legend-item">
+                            <span class="donut-legend-dot dot-blue"></span>
+                            <span>Completed</span>
+                            <span class="donut-legend-count">@Model.CompletedCount (0.0%)</span>
+                        </div>
+                        <div class="donut-legend-item">
+                            <span class="donut-legend-dot dot-red"></span>
+                            <span>Cancelled</span>
+                            <span class="donut-legend-count">@Model.CancelledCount (0.0%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 5 KPI Metrics Strip (Image 2 Matching 1:1) ── -->
+        <div class="kpi-strip-container">
+            <!-- 1. Average Spent -->
+            <div class="kpi-metric-box">
+                <div class="kpi-icon-circle icon-calc">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <div class="kpi-text-col">
+                    <span class="kpi-label-text">Average Spent</span>
+                    <span class="kpi-value-text">&#x20B9;@Model.AverageSpent.ToString("N2")</span>
+                </div>
+            </div>
+
+            <!-- 2. Highest Cost -->
+            <div class="kpi-metric-box">
+                <div class="kpi-icon-circle icon-highest">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="kpi-text-col">
+                    <span class="kpi-label-text">Highest Cost</span>
+                    <span class="kpi-value-text">&#x20B9;@Model.HighestCost.ToString("N2")</span>
+                </div>
+            </div>
+
+            <!-- 3. Lowest Cost -->
+            <div class="kpi-metric-box">
+                <div class="kpi-icon-circle icon-lowest">
+                    <i class="bi bi-graph-down-arrow"></i>
+                </div>
+                <div class="kpi-text-col">
+                    <span class="kpi-label-text">Lowest Cost</span>
+                    <span class="kpi-value-text">&#x20B9;@Model.LowestCost.ToString("N2")</span>
+                </div>
+            </div>
+
+            <!-- 4. Completed -->
+            <div class="kpi-metric-box">
+                <div class="kpi-icon-circle icon-completed">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="kpi-text-col">
+                    <span class="kpi-label-text">Completed</span>
+                    <span class="kpi-value-text">@Model.CompletedCount</span>
+                </div>
+            </div>
+
+            <!-- 5. Cancelled -->
+            <div class="kpi-metric-box">
+                <div class="kpi-icon-circle icon-cancelled">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="kpi-text-col">
+                    <span class="kpi-label-text">Cancelled</span>
+                    <span class="kpi-value-text">@Model.CancelledCount</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Recent Activity Section (Image 2 Matching 1:1) ── -->
+        <div class="recent-activity-card">
+            <div class="recent-activity-head">
+                <div class="recent-activity-title-group">
+                    <i class="bi bi-clock"></i>
+                    <h2>Recent Activity</h2>
+                </div>
+                <a asp-controller="Dashboard" asp-action="Requests" class="btn-view-all-link">View All</a>
+            </div>
+
+            <div class="activity-items-list">
+                @foreach (var act in Model.RecentActivities)
+                {
+                    <div class="activity-item-row">
+                        <div class="activity-item-left">
+                            <div class="activity-icon-badge">
+                                <i class="bi bi-box-seam"></i>
+                            </div>
+                            <div class="activity-meta-col">
+                                <span class="activity-title">@act.Title</span>
+                                <span class="activity-sub-route">
+                                    <span>📍</span>
+                                    <span>@act.PickupLocation → @act.DropoffLocation · ₹@((int)act.Amount)</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="activity-time-right">
+                            @act.RelativeTime
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Interactive Client Script ── -->
+    <script>
+        // ── 1. Ambient Starfield Animation ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 65;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Interactive Chart Tooltip ──
+        function showTooltip(date, val, percentLeft, svgX, svgY) {
+            const tooltip = document.getElementById('chartTooltip');
+            const ttDate = document.getElementById('ttDate');
+            const ttVal = document.getElementById('ttVal');
+            const guideLine = document.getElementById('guideLineX');
+
+            if (tooltip && ttDate && ttVal) {
+                ttDate.textContent = date;
+                ttVal.textContent = val;
+                tooltip.style.left = `calc(${percentLeft}% - 35px)`;
+                tooltip.style.top = `${Math.max(10, (svgY / 240) * 100 - 30)}%`;
+            }
+
+            if (guideLine) {
+                guideLine.setAttribute('x1', svgX);
+                guideLine.setAttribute('x2', svgX);
+            }
+        }
+    </script>
+</body>
+</html>

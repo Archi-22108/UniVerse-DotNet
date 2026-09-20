@@ -1,0 +1,1409 @@
+@model UniVerse.Web.Models.MarketplaceViewModel
+@{
+    Layout = null; // Immersive full desktop layout matching screenshot 1:1
+    ViewData["Title"] = "UniVerse Resale · Campus Marketplace";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.75);
+            --uv-card-border: rgba(0, 229, 153, 0.16);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.4);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .market-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .badge-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .dot-pulse-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .wallet-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-foot {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #ef4444;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN MARKETPLACE VIEWPORT (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .market-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 1.85rem 2.5rem 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.35rem;
+            max-width: 1260px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Breadcrumb ── */
+        .market-breadcrumb-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.8rem;
+            color: var(--uv-text-muted);
+            font-weight: 500;
+        }
+
+        .market-breadcrumb-strip a {
+            color: var(--uv-text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .market-breadcrumb-strip a:hover {
+            color: #ffffff;
+        }
+
+        .market-breadcrumb-strip .sep {
+            color: #4b5563;
+        }
+
+        .market-breadcrumb-strip .active-crumb {
+            color: var(--uv-emerald);
+            font-weight: 600;
+        }
+
+        /* ── Header Row ── */
+        .market-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .market-head-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .market-circle-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.15);
+        }
+
+        .market-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .market-title-row-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .market-title-row-inner h1 {
+            font-size: 1.85rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+        }
+
+        .pill-tag-marketplace {
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.28);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .market-title-wrap p {
+            font-size: 0.84rem;
+            color: var(--uv-text-muted);
+        }
+
+        .market-head-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-market-pill-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.5rem 1.15rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-market-pill-outline:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.05);
+        }
+
+        .btn-market-pill-outline.active {
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.1);
+        }
+
+        .btn-market-sell-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--uv-emerald);
+            border: none;
+            color: #020806;
+            font-size: 0.84rem;
+            font-weight: 800;
+            padding: 0.55rem 1.35rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-market-sell-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.65);
+        }
+
+        /* ── Search Input Bar (Matching Screenshot 1:1) ── */
+        .market-search-box-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .market-search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #85988e;
+            font-size: 1.05rem;
+            pointer-events: none;
+        }
+
+        .market-search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            padding: 0.85rem 1.25rem 0.85rem 3rem;
+            font-size: 0.88rem;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .market-search-input:focus {
+            border-color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.02);
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.15);
+        }
+
+        .market-search-input::placeholder {
+            color: #54685e;
+        }
+
+        /* ── Category Pills Strip (Matching Screenshot 1:1) ── */
+        .market-categories-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            overflow-x: auto;
+            padding-bottom: 0.4rem;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+
+        .market-categories-strip::-webkit-scrollbar {
+            display: none; /* Hide scrollbar Chrome/Safari */
+        }
+
+        .cat-pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #85988e;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cat-pill-btn:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            color: #ffffff;
+        }
+
+        .cat-pill-btn.active {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.18);
+        }
+
+        /* ── Toolbar Row (Filters button & Sort dropdown) ── */
+        .market-toolbar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 0.25rem;
+        }
+
+        .btn-filters-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.95rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #85988e;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-filters-toggle:hover {
+            color: #ffffff;
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .market-toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .market-sort-select-wrap {
+            position: relative;
+        }
+
+        .market-sort-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.4rem 2rem 0.4rem 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ffffff;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .market-sort-select:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .sort-caret-icon {
+            position: absolute;
+            right: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #85988e;
+            font-size: 0.75rem;
+        }
+
+        .listings-count-label {
+            font-size: 0.8rem;
+            color: #85988e;
+            white-space: nowrap;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LISTINGS CARDS GRID (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .market-listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .market-item-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .market-item-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--uv-card-border-hover);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 229, 153, 0.15);
+        }
+
+        .item-thumb-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #020605;
+            overflow: hidden;
+        }
+
+        .item-thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .market-item-card:hover .item-thumb-img {
+            transform: scale(1.03);
+        }
+
+        /* Card Top Badges */
+        .item-thumb-badges-top {
+            position: absolute;
+            top: 0.85rem;
+            right: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            z-index: 5;
+        }
+
+        .btn-wishlist-heart {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .btn-wishlist-heart:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ef4444;
+            transform: scale(1.1);
+        }
+
+        .btn-wishlist-heart.saved {
+            color: #ef4444;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .badge-item-condition {
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(8px);
+        }
+
+        .badge-item-condition.condition-new {
+            background: #00e599;
+            color: #020806;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-item-condition.condition-like-new {
+            background: rgba(56, 189, 248, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+        }
+
+        .badge-item-condition.condition-good {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        /* Card Content Area */
+        .item-info-body {
+            padding: 1.15rem 1.25rem 1.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            flex: 1;
+        }
+
+        .item-title-h3 {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-price-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .item-price-val {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: var(--uv-emerald);
+            letter-spacing: -0.3px;
+        }
+
+        .item-negotiable-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.72rem;
+            color: #85988e;
+            font-weight: 500;
+        }
+
+        .item-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #85988e;
+            padding-top: 0.35rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: auto;
+        }
+
+        .item-rating-note {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .item-date-note {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* ── All Listings Loaded Footer ── */
+        .all-listings-loaded-footer {
+            text-align: center;
+            padding: 2.5rem 0 1rem;
+            color: #4b5563;
+            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           INTERACTIVE MODAL: SELL AN ITEM & ITEM DETAILS
+           ══════════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #070e0a;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            border-radius: 22px;
+            width: 100%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 229, 153, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.8rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-modal-close {
+            background: none;
+            border: none;
+            color: #85988e;
+            font-size: 1.35rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .btn-modal-close:hover {
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 1.5rem 1.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.15rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #85988e;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.65rem 0.85rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--uv-emerald);
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #ffffff;
+        }
+
+        .checkbox-row input {
+            accent-color: var(--uv-emerald);
+            width: 16px;
+            height: 16px;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.8rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .btn-modal-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #85988e;
+            padding: 0.55rem 1.2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+
+        .btn-modal-submit {
+            background: var(--uv-emerald);
+            border: none;
+            color: #020806;
+            padding: 0.55rem 1.4rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 0.84rem;
+            cursor: pointer;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <aside class="market-sidebar">
+        <div class="sidebar-top">
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav>
+                <ul class="sidebar-menu-list">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Requests" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>My Req...</span>
+                            </div>
+                            <span class="badge-live-pill">
+                                <span class="dot-pulse-green"></span>
+                                <span>2 live</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Runner" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <span class="wallet-indicator-dot"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Marketplace" class="sidebar-nav-item active">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bag"></i>
+                                <span>Marketplace</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Analytics" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Profile" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-gear"></i>
+                                <span>Setting</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-foot">
+            <a asp-controller="Account" asp-action="Login" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN MARKETPLACE VIEWPORT (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <main class="market-main-viewport">
+        <!-- ── Breadcrumb ── -->
+        <nav class="market-breadcrumb-strip">
+            <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+            <span class="sep">/</span>
+            <span class="active-crumb">UniVerse Resale</span>
+        </nav>
+
+        <!-- ── Top Header Row ── -->
+        <div class="market-header-row">
+            <div class="market-head-left">
+                <div class="market-circle-icon-badge">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+                <div class="market-title-wrap">
+                    <div class="market-title-row-inner">
+                        <h1>UniVerse Resale</h1>
+                        <span class="pill-tag-marketplace">CAMPUS MARKETPLACE</span>
+                    </div>
+                    <p>Buy and sell textbooks, electronics, and hostel essentials within your university.</p>
+                </div>
+            </div>
+
+            <div class="market-head-right">
+                <a asp-controller="Dashboard" asp-action="Marketplace" asp-route-view="@(Model.ActiveView == "my" ? "all" : "my")" class="btn-market-pill-outline @(Model.ActiveView == "my" ? "active" : "")">
+                    <i class="bi bi-box-seam"></i>
+                    <span>My Listings</span>
+                </a>
+
+                <a asp-controller="Dashboard" asp-action="Marketplace" asp-route-view="@(Model.ActiveView == "saved" ? "all" : "saved")" class="btn-market-pill-outline @(Model.ActiveView == "saved" ? "active" : "")">
+                    <i class="bi bi-heart"></i>
+                    <span>Saved</span>
+                </a>
+
+                <button type="button" class="btn-market-sell-cta" onclick="openSellModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Sell an Item</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Full-Width Search Input Bar ── -->
+        <form method="get" asp-controller="Dashboard" asp-action="Marketplace" id="searchForm" class="market-search-box-wrap">
+            <input type="hidden" name="category" value="@Model.ActiveCategory" />
+            <input type="hidden" name="sort" value="@Model.ActiveSort" />
+            <input type="hidden" name="view" value="@Model.ActiveView" />
+            <i class="bi bi-search market-search-icon"></i>
+            <input type="text" name="search" id="searchInput" class="market-search-input" 
+                   value="@Model.SearchQuery" 
+                   placeholder="Search books, electronics, drafters, kettles, bicycles and more..." 
+                   autocomplete="off" oninput="clientSideSearch(this.value)" />
+        </form>
+
+        <!-- ── 10 Category Filter Pills Strip (Matching Screenshot 1:1) ── -->
+        <div class="market-categories-strip">
+            @foreach (var cat in Model.Categories)
+            {
+                var isCatActive = Model.ActiveCategory.Equals(cat.Key, StringComparison.OrdinalIgnoreCase);
+                <a asp-controller="Dashboard" asp-action="Marketplace" 
+                   asp-route-category="@cat.Key" 
+                   asp-route-search="@Model.SearchQuery" 
+                   asp-route-sort="@Model.ActiveSort" 
+                   asp-route-view="@Model.ActiveView" 
+                   class="cat-pill-btn @(isCatActive ? "active" : "")">
+                    <i class="@cat.Icon"></i>
+                    <span>@cat.Name</span>
+                </a>
+            }
+        </div>
+
+        <!-- ── Toolbar Row (Filters button & Sort dropdown) ── -->
+        <div class="market-toolbar-row">
+            <button type="button" class="btn-filters-toggle" onclick="alert('Filters: Price range (₹50 – ₹5000), verified sellers, hostel delivery available.')">
+                <i class="bi bi-sliders"></i>
+                <span>Filters</span>
+            </button>
+
+            <div class="market-toolbar-right">
+                <div class="market-sort-select-wrap">
+                    <select class="market-sort-select" onchange="changeSort(this.value)">
+                        <option value="Newest" selected="@(Model.ActiveSort == "Newest" ? "selected" : null)">Newest</option>
+                        <option value="Price: Low to High" selected="@(Model.ActiveSort == "Price: Low to High" ? "selected" : null)">Price: Low to High</option>
+                        <option value="Price: High to Low" selected="@(Model.ActiveSort == "Price: High to Low" ? "selected" : null)">Price: High to Low</option>
+                        <option value="Most Popular" selected="@(Model.ActiveSort == "Most Popular" ? "selected" : null)">Most Popular</option>
+                    </select>
+                    <i class="bi bi-chevron-down sort-caret-icon"></i>
+                </div>
+
+                <span class="listings-count-label" id="listingsCountDisplay">
+                    @Model.TotalListingsCount listing@(Model.TotalListingsCount == 1 ? "" : "s")
+                </span>
+            </div>
+        </div>
+
+        <!-- ── Listings Grid ── -->
+        @if (Model.Items.Count == 0)
+        {
+            <div style="text-align: center; padding: 4rem 1rem; color: #85988e;">
+                <i class="bi bi-search" style="font-size: 2.5rem; color: #54685e; display: block; margin-bottom: 1rem;"></i>
+                <h3 style="color: #ffffff; margin-bottom: 0.5rem;">No Listings Found</h3>
+                <p style="font-size: 0.85rem;">Try changing your search keywords or category filter.</p>
+            </div>
+        }
+        else
+        {
+            <div class="market-listings-grid" id="listingsGrid">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="market-item-card" data-title="@item.Title.ToLowerInvariant()" data-desc="@(item.Description?.ToLowerInvariant() ?? "")" onclick="openDetailsModal('@item.Title', '@item.Price', '@item.Condition', '@(item.IsNegotiable ? "Negotiable" : "Fixed Price")', '@item.Description', '@item.SellerName', '@item.SellerHostel', '@item.ImageUrl')">
+                        <div class="item-thumb-container">
+                            <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop" : item.ImageUrl)" alt="@item.Title" class="item-thumb-img" loading="lazy" />
+                            
+                            <div class="item-thumb-badges-top">
+                                <button type="button" class="btn-wishlist-heart @(item.IsSaved ? "saved" : "")" onclick="event.stopPropagation(); toggleWishlist(@item.Id, this)" title="Save to wishlist">
+                                    <i class="bi @(item.IsSaved ? "bi-heart-fill" : "bi-heart")"></i>
+                                </button>
+
+                                <span class="badge-item-condition @(item.Condition.Equals("New", StringComparison.OrdinalIgnoreCase) ? "condition-new" : item.Condition.Contains("Like New", StringComparison.OrdinalIgnoreCase) ? "condition-like-new" : "condition-good")">
+                                    @item.Condition
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="item-info-body">
+                            <h3 class="item-title-h3" title="@item.Title">@item.Title</h3>
+
+                            <div class="item-price-row">
+                                <span class="item-price-val">₹@((int)item.Price)</span>
+                                <span class="item-negotiable-tag">
+                                    <i class="bi bi-tag"></i>
+                                    <span>@(item.IsNegotiable ? "Negotiable" : "Fixed")</span>
+                                </span>
+                            </div>
+
+                            <div class="item-meta-row">
+                                <span class="item-rating-note">
+                                    <i class="bi bi-star"></i>
+                                    <span>@item.Rating</span>
+                                </span>
+                                <span class="item-date-note">
+                                    <i class="bi bi-clock"></i>
+                                    <span>@item.FormattedDate</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- ── Centered Bottom Indicator (Matching Screenshot 1:1) ── -->
+        <div class="all-listings-loaded-footer">
+            All listings loaded
+        </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════
+       MODAL 1: SELL AN ITEM (POST TO DATABASE VIA ADO.NET)
+       ══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="sellModalOverlay" onclick="if(event.target === this) closeSellModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>
+                    <i class="bi bi-plus-circle" style="color: var(--uv-emerald);"></i>
+                    <span>List Item on UniVerse Resale</span>
+                </h2>
+                <button type="button" class="btn-modal-close" onclick="closeSellModal()">&times;</button>
+            </div>
+
+            <form asp-controller="Dashboard" asp-action="SellItem" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Item Title *</label>
+                        <input type="text" name="Title" class="form-input" placeholder="e.g. Higher Engineering Mathematics B.S. Grewal" required />
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Category *</label>
+                            <select name="Category" class="form-select" required>
+                                <option value="Books">Books</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Study Notes">Study Notes</option>
+                                <option value="Hostel Life">Hostel Life</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Furniture">Furniture</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Gaming">Gaming</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Price (₹) *</label>
+                            <input type="number" name="Price" class="form-input" placeholder="100" min="10" max="50000" required />
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Condition *</label>
+                            <select name="Condition" class="form-select" required>
+                                <option value="New">New</option>
+                                <option value="Used - Like New" selected>Used - Like New</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="justify-content: flex-end; padding-bottom: 0.5rem;">
+                            <label class="checkbox-row">
+                                <input type="checkbox" name="IsNegotiable" value="true" checked />
+                                <span>Price is Negotiable</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Item Image URL</label>
+                        <input type="url" name="ImageUrl" class="form-input" placeholder="Paste image link or leave blank for default campus illustration" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description &amp; Handover Location</label>
+                        <textarea name="Description" rows="3" class="form-textarea" placeholder="Describe the item condition, edition, or hostel handover spot..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeSellModal()">Cancel</button>
+                    <button type="submit" class="btn-modal-submit">Publish Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+       MODAL 2: ITEM DETAILS & CONTACT SELLER
+       ══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="detailsModalOverlay" onclick="if(event.target === this) closeDetailsModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalDetailTitle">Item Details</h2>
+                <button type="button" class="btn-modal-close" onclick="closeDetailsModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div style="height: 220px; border-radius: 12px; overflow: hidden; background: #000;">
+                    <img id="modalDetailImg" src="" alt="Detail" style="width: 100%; height: 100%; object-fit: cover;" />
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                    <div>
+                        <span style="font-size: 1.6rem; font-weight: 900; color: var(--uv-emerald);" id="modalDetailPrice">₹100</span>
+                        <span style="font-size: 0.8rem; color: #85988e; margin-left: 0.5rem;" id="modalDetailNegotiable">Negotiable</span>
+                    </div>
+                    <span class="badge-item-condition condition-new" id="modalDetailCondition">New</span>
+                </div>
+
+                <p id="modalDetailDesc" style="font-size: 0.85rem; color: #d1d5db; line-height: 1.5;"></p>
+
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: #85988e; text-transform: uppercase;">Verified Peer Seller</div>
+                        <div style="font-weight: 700; color: #ffffff;" id="modalDetailSeller">Archi.kumari126697</div>
+                        <div style="font-size: 0.75rem; color: var(--uv-emerald);" id="modalDetailHostel">Hostel D · Room 304</div>
+                    </div>
+                    <button type="button" onclick="alert('⚡ Connecting to Campus Peer Chat with Seller...')" style="background: var(--uv-emerald); color: #020806; border: none; font-weight: 700; font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 9999px; cursor: pointer;">
+                        Chat with Seller
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Interactive Client Script ── -->
+    <script>
+        // ── 1. Starfield Animation ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 60;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Real-Time Client Side Search ──
+        function clientSideSearch(term) {
+            const query = term.toLowerCase().trim();
+            const cards = document.querySelectorAll('#listingsGrid .market-item-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const desc = card.getAttribute('data-desc') || '';
+                if (title.includes(query) || desc.includes(query)) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const countDisplay = document.getElementById('listingsCountDisplay');
+            if (countDisplay) {
+                countDisplay.textContent = visibleCount + (visibleCount === 1 ? ' listing' : ' listings');
+            }
+        }
+
+        // ── 3. Sort Select Trigger ──
+        function changeSort(sortVal) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sortVal);
+            window.location.href = url.toString();
+        }
+
+        // ── 4. Wishlist Toggle (AJAX ADO.NET) ──
+        async function toggleWishlist(itemId, btn) {
+            try {
+                const response = await fetch('@Url.Action("ToggleSaveItem", "Dashboard")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + itemId
+                });
+                if (response.ok) {
+                    btn.classList.toggle('saved');
+                    const icon = btn.querySelector('i');
+                    if (btn.classList.contains('saved')) {
+                        icon.className = 'bi bi-heart-fill';
+                    } else {
+                        icon.className = 'bi bi-heart';
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // ── 5. Sell Modal Controls ──
+        function openSellModal() {
+            document.getElementById('sellModalOverlay').classList.add('open');
+        }
+
+        function closeSellModal() {
+            document.getElementById('sellModalOverlay').classList.remove('open');
+        }
+
+        // ── 6. Details Modal Controls ──
+        function openDetailsModal(title, price, condition, negotiable, desc, seller, hostel, img) {
+            document.getElementById('modalDetailTitle').textContent = title;
+            document.getElementById('modalDetailPrice').textContent = '₹' + Math.floor(price);
+            document.getElementById('modalDetailCondition').textContent = condition;
+            document.getElementById('modalDetailNegotiable').textContent = negotiable;
+            document.getElementById('modalDetailDesc').textContent = desc || 'Quality campus pre-owned item inspected and ready for handover.';
+            document.getElementById('modalDetailSeller').textContent = seller;
+            document.getElementById('modalDetailHostel').textContent = hostel || 'Hostel D · Room 304';
+            document.getElementById('modalDetailImg').src = img || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop';
+            document.getElementById('detailsModalOverlay').classList.add('open');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModalOverlay').classList.remove('open');
+        }
+    </script>
+</body>
+</html>
