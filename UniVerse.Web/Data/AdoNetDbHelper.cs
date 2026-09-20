@@ -284,4 +284,56 @@ public class AdoNetDbHelper
         model.FeaturedProducts = GetFeaturedProducts(8);
         return model;
     }
+
+    /// <summary>
+    /// Registers a new student account using ADO.NET with Parameterized Queries.
+    /// Checks for existing emails and inserts the student record.
+    /// </summary>
+    public bool RegisterUser(string fullName, string email, string password, out string errorMessage)
+    {
+        errorMessage = string.Empty;
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        try
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+
+                // 1. Check if user with this email already exists
+                var checkQuery = "SELECT COUNT(*) FROM Users WHERE LOWER(Email) = LOWER(@Email);";
+                using (var checkCmd = new SqliteCommand(checkQuery, connection))
+                {
+                    checkCmd.Parameters.Add(new SqliteParameter("@Email", normalizedEmail));
+                    var count = Convert.ToInt64(checkCmd.ExecuteScalar());
+                    if (count > 0)
+                    {
+                        errorMessage = "An account with this email already exists. Try signing in instead.";
+                        return false;
+                    }
+                }
+
+                // 2. Insert new student into Users table
+                var insertQuery = @"
+                    INSERT INTO Users (FullName, Email, Password, Role, HostelBlock, RoomNumber, CreatedAt)
+                    VALUES (@FullName, @Email, @Password, 'Student', 'Hostel D', 'Hostel Room', CURRENT_TIMESTAMP);
+                ";
+
+                using (var insertCmd = new SqliteCommand(insertQuery, connection))
+                {
+                    insertCmd.Parameters.Add(new SqliteParameter("@FullName", fullName.Trim()));
+                    insertCmd.Parameters.Add(new SqliteParameter("@Email", normalizedEmail));
+                    insertCmd.Parameters.Add(new SqliteParameter("@Password", password));
+
+                    var rowsAffected = insertCmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Registration failed due to a database error: " + ex.Message;
+            return false;
+        }
+    }
 }
