@@ -1,0 +1,30 @@
+# Visual Studio / .NET Build Artifacts
+**/[Bb]in/
+**/[Oo]bj/
+**/.vs/
+**/*.user
+**/*.userosscache
+**/*.suo
+**/*.userprefs
+
+# SQLite Databases & Logs
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.db-journal
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.env.local
+.env*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / OS
+.idea/
+.vscode/
+Thumbs.db
+[Dd]esktop.ini
