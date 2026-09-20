@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using UniVerse.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,17 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Data Source=universe.db";
 
 builder.Services.AddSingleton(new AdoNetDbHelper(connectionString));
+
+// Add ASP.NET Core Cookie Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/Login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    });
 
 var app = builder.Build();
 
@@ -32,6 +44,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Authentication & Authorization middlewares
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

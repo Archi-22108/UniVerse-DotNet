@@ -1,0 +1,775 @@
+@model UniVerse.Web.Models.LoginViewModel
+@{
+    Layout = null; // Full-screen immersive auth page
+    ViewData["Title"] = "Student Login - UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-dark-bg: #03050c;
+            --uv-emerald: #10b981;
+            --uv-teal: #14b8a6;
+            --uv-cyan: #06b6d4;
+            --uv-glow: rgba(16, 185, 129, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-dark-bg);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Spotlight Canvas Background ── */
+        #spotlightCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Tech Corner HUD Coordinates ── */
+        .hud-coord {
+            position: fixed;
+            font-family: monospace;
+            font-size: 0.72rem;
+            color: rgba(20, 184, 166, 0.38);
+            letter-spacing: 0.1em;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
+        }
+        .hud-tl { top: 2.5rem; left: 3rem; }
+        .hud-tr { top: 2.5rem; right: 3rem; }
+        .hud-bl { bottom: 2.5rem; left: 3rem; }
+        .hud-br { bottom: 2.5rem; right: 3rem; }
+
+        /* ── Main Auth Page Layout ── */
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 2rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Top Overline Gateway Badge */
+        .gateway-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.42rem 1.25rem;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            backdrop-filter: blur(12px);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .gateway-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+            animation: pulseGlow 2s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
+
+        /* ── Glass Auth Card ── */
+        .auth-card {
+            position: relative;
+            width: 100%;
+            border-radius: 28px;
+            padding: 2.25rem 2rem;
+            background: linear-gradient(180deg, rgba(8, 14, 28, 0.82) 0%, rgba(4, 7, 16, 0.92) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.95), 0 0 40px rgba(16, 185, 129, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow: hidden;
+        }
+
+        /* Laser Accent Top Line */
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 2rem;
+            right: 2rem;
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, #34d399, transparent);
+        }
+
+        /* ── Center Emblem & Brand ── */
+        .emblem-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.85rem;
+        }
+
+        .emblem-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            position: relative;
+        }
+
+        .emblem-circle::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            filter: blur(4px);
+            z-index: -1;
+        }
+
+        .brand-title {
+            text-align: center;
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+            margin-bottom: 0.35rem;
+        }
+
+        .brand-verse {
+            background: linear-gradient(90deg, #10b981, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-sub {
+            text-align: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.45);
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Quick Demo Button ── */
+        .demo-bar {
+            width: 100%;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 0.55rem 0.85rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #34d399;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .demo-bar:hover {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ── Input Fields ── */
+        .field-group {
+            margin-bottom: 1.15rem;
+        }
+
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.45rem;
+        }
+
+        .field-label .label-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .input-box {
+            position: relative;
+            width: 100%;
+            height: 48px;
+            background: rgba(4, 10, 20, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            transition: all 0.25s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+            background: rgba(4, 10, 20, 0.85);
+        }
+
+        .input-box i.input-icon {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 1.05rem;
+            margin-right: 0.75rem;
+        }
+
+        .input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 0.92rem;
+            font-family: inherit;
+        }
+
+        .input-box input::placeholder {
+            color: rgba(255, 255, 255, 0.28);
+        }
+
+        .input-action-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.45);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .input-action-btn:hover {
+            color: #34d399;
+        }
+
+        .domain-badge-btn {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 6px;
+            color: #34d399;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .domain-badge-btn:hover {
+            background: rgba(16, 185, 129, 0.25);
+            color: #ffffff;
+        }
+
+        .caps-warn {
+            color: #fbbf24;
+            font-size: 0.72rem;
+            margin-top: 0.35rem;
+            display: none;
+        }
+
+        /* ── Extras Row (Remember & Forgot) ── */
+        .extras-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin: 0.75rem 0 1.5rem;
+        }
+
+        .rem-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rem-label input[type="checkbox"] {
+            accent-color: #10b981;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #34d399;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+
+        /* ── Primary Submit Button ── */
+        .btn-submit {
+            position: relative;
+            width: 100%;
+            height: 52px;
+            background: linear-gradient(90deg, #10b981 0%, #059669 45%, #06b6d4 100%);
+            border: none;
+            border-radius: 14px;
+            color: #022616;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.45);
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 45px rgba(16, 185, 129, 0.7);
+            filter: brightness(1.05);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* ── Divider ── */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── Google Button ── */
+        .btn-google {
+            width: 100%;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+        }
+
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+
+        /* ── Footer Link ── */
+        .signup-prompt {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .signup-prompt a {
+            color: #34d399;
+            font-weight: 700;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .signup-prompt a:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+
+        /* ── Bottom Trust Pill ── */
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 0.5rem 1.4rem;
+            border-radius: 9999px;
+            background: rgba(10, 20, 15, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 1.75rem;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .trust-item i {
+            color: #34d399;
+        }
+
+        /* Error Banner */
+        .error-banner {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: #fca5a5;
+            font-size: 0.8rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @@media (max-width: 640px) {
+            .hud-coord { display: none; }
+            .auth-card { padding: 1.75rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Interactive Background Canvas -->
+    <canvas id="spotlightCanvas"></canvas>
+
+    <!-- Corner HUD Coordinates matching screenshot -->
+    <div class="hud-coord hud-tl">+ SYS_NODE.01</div>
+    <div class="hud-coord hud-tr">+ SEC_PORT.443</div>
+    <div class="hud-coord hud-bl">+ LAT_22.5.MU</div>
+    <div class="hud-coord hud-br">+ GATEWAY.OK</div>
+
+    <div class="auth-container">
+        <!-- Gateway Badge -->
+        <div class="gateway-badge">
+            <span class="gateway-dot"></span>
+            MARWADI UNIVERSITY • SECURE GATEWAY
+        </div>
+
+        <!-- Glass Auth Card -->
+        <div class="auth-card">
+            <!-- Center Emblem -->
+            <div class="emblem-wrapper">
+                <div class="emblem-circle">
+                    <!-- UniVerse Student Orbit Monogram SVG -->
+                    <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 6V14C7 17.866 10.134 21 14 21C17.866 21 21 17.866 21 14V6" stroke="white" stroke-width="2.8" stroke-linecap="round"/>
+                        <circle cx="14" cy="14" r="2.4" fill="white" />
+                        <circle cx="21" cy="7" r="1.6" fill="#A7F3D0" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Brand Header -->
+            <h1 class="brand-title">
+                Uni<span class="brand-verse">Verse</span>
+            </h1>
+            <p class="brand-sub">CAMPUS COMMERCE • STUDENT NETWORK</p>
+
+            <!-- 1-Click Quick Demo Button -->
+            <form asp-controller="Account" asp-action="QuickDemoLogin" method="post" style="width: 100%;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                <button type="submit" class="demo-bar">
+                    <span>⚡ <strong>Quick Demo:</strong> Aarav Patel (Hostel D-304)</span>
+                    <span>1-Click &rarr;</span>
+                </button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-banner">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>@Model.ErrorMessage</span>
+                </div>
+            }
+
+            <!-- Main Login Form -->
+            <form asp-controller="Account" asp-action="Login" method="post" id="loginForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <!-- Student Email Field -->
+                <div class="field-group">
+                    <label class="field-label" for="Email">
+                        <span class="label-dot"></span>
+                        STUDENT EMAIL
+                    </label>
+                    <div class="input-box">
+                        <i class="bi bi-envelope input-icon"></i>
+                        <input asp-for="Email" id="emailInput" type="email" placeholder="you@marwadiuniversity.ac.in" required autocomplete="email" />
+                        <button type="button" class="domain-badge-btn" id="domainBtn" title="Autocomplete @@marwadiuniversity.ac.in">
+                            + @@mu
+                        </button>
+                    </div>
+                    <span asp-validation-for="Email" style="color: #f87171; font-size: 0.72rem; margin-top: 0.25rem; display: block;"></span>
+                </div>
+
+                <!-- Password Field -->
+                <div class="field-group">
+                    <label class="field-label" for="Password">
+                        <span class="label-dot"></span>
+                        PASSWORD
+                    </label>
+                    <div class="input-box">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input asp-for="Password" id="passwordInput" type="password" placeholder="Enter your password" required autocomplete="current-password" />
+                        <button type="button" class="input-action-btn" id="togglePwBtn" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye" id="togglePwIcon"></i>
+                        </button>
+                    </div>
+                    <div class="caps-warn" id="capsWarn">⇪ Caps Lock is ON</div>
+                    <span asp-validation-for="Password" style="color: #f87171; font-size: 0.72rem; margin-top: 0.25rem; display: block;"></span>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="extras-row">
+                    <label class="rem-label">
+                        <input type="checkbox" asp-for="RememberMe" />
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#forgot" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <!-- Primary Submit Button -->
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span>Sign In to UniVerse</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-divider">OR</div>
+
+            <!-- Google Login Button -->
+            <button type="button" class="btn-google" onclick="demoGoogleLogin()">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continue with Student Google ID</span>
+            </button>
+
+            <!-- Sign Up Prompt -->
+            <div class="signup-prompt">
+                Don't have an account? <a href="#signup">Create student account →</a>
+            </div>
+        </div>
+
+        <!-- Trust Badges Pill -->
+        <div class="trust-pill">
+            <div class="trust-item">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>256-Bit SSL</span>
+            </div>
+            <span>•</span>
+            <div class="trust-item">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <span>MU Verified</span>
+            </div>
+            <span>•</span>
+            <div class="trust-item">
+                <i class="bi bi-layers-fill"></i>
+                <span>Campus P2P</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Canvas & Form Scripts -->
+    <script>
+        // ── 1. Spotlight Canvas Background Simulation ──
+        (function() {
+            const canvas = document.getElementById('spotlightCanvas');
+            const ctx = canvas.getContext('2d');
+            let width = (canvas.width = window.innerWidth);
+            let height = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            let mouseX = width / 2;
+            let mouseY = height * 0.45;
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            // Dust Particles
+            const particles = Array.from({ length: 65 }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 1.5 + 0.4,
+                speedY: Math.random() * 0.35 + 0.1,
+                opacity: Math.random() * 0.7 + 0.2
+            }));
+
+            let time = 0;
+            function animate() {
+                time += 0.015;
+                ctx.clearRect(0, 0, width, height);
+
+                // Draw Grid Dots
+                const spacing = 38;
+                for (let x = 0; x < width; x += spacing) {
+                    for (let y = 0; y < height; y += spacing) {
+                        const dist = Math.hypot(x - mouseX, y - mouseY);
+                        const intensity = Math.max(0, 1 - dist / 320);
+                        const radius = 1 + intensity * 1.6;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.fillStyle = intensity > 0.1 
+                            ? `rgba(16, 185, 129, ${0.15 + intensity * 0.5})` 
+                            : 'rgba(255, 255, 255, 0.035)';
+                        ctx.fill();
+                    }
+                }
+
+                // Draw Overhead Spotlight Beam
+                const beamGrad = ctx.createRadialGradient(width / 2, 0, 10, width / 2, height * 0.45, Math.min(width, 700));
+                beamGrad.addColorStop(0, 'rgba(16, 185, 129, 0.16)');
+                beamGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.06)');
+                beamGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = beamGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // Draw Floating Dust Particles
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    if (p.y > height) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(52, 211, 153, ${p.opacity * 0.6})`;
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        // ── 2. Password Show / Hide Toggle ──
+        const pwInput = document.getElementById('passwordInput');
+        const toggleBtn = document.getElementById('togglePwBtn');
+        const toggleIcon = document.getElementById('togglePwIcon');
+
+        toggleBtn.addEventListener('click', () => {
+            if (pwInput.type === 'password') {
+                pwInput.type = 'text';
+                toggleIcon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                pwInput.type = 'password';
+                toggleIcon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+
+        // ── 3. CapsLock Warning ──
+        const capsWarn = document.getElementById('capsWarn');
+        pwInput.addEventListener('keyup', (e) => {
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                capsWarn.style.display = 'block';
+            } else {
+                capsWarn.style.display = 'none';
+            }
+        });
+
+        // ── 4. Domain 1-Click Autocomplete ──
+        const emailInput = document.getElementById('emailInput');
+        const domainBtn = document.getElementById('domainBtn');
+        domainBtn.addEventListener('click', () => {
+            let val = emailInput.value.trim();
+            if (val.includes('@@')) {
+                val = val.split('@@')[0];
+            }
+            emailInput.value = (val || 'student') + '@@marwadiuniversity.ac.in';
+            pwInput.focus();
+        });
+
+        // ── 5. Demo Google Login ──
+        function demoGoogleLogin() {
+            emailInput.value = 'archi.student@@marwadiuniversity.ac.in';
+            pwInput.value = 'Password123!';
+            document.getElementById('loginForm').submit();
+        }
+    </script>
+</body>
+</html>

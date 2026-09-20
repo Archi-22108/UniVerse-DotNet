@@ -8,7 +8,7 @@ namespace UniVerse.Web.Data;
 
 /// <summary>
 /// ADO.NET Data Access Layer (DAL)
-/// Implements database operations using raw ADO.NET objects:
+/// Implements database operations using pure ADO.NET objects:
 /// - SqliteConnection
 /// - SqliteCommand
 /// - SqliteParameter (SQL Injection Prevention)
@@ -38,6 +38,7 @@ public class AdoNetDbHelper
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     FullName TEXT NOT NULL,
                     Email TEXT NOT NULL UNIQUE,
+                    Password TEXT NOT NULL DEFAULT 'Password123!',
                     Role TEXT NOT NULL,
                     HostelBlock TEXT,
                     RoomNumber TEXT,
@@ -80,9 +81,11 @@ public class AdoNetDbHelper
                 if (count == 0)
                 {
                     SeedProducts(connection);
-                    SeedSampleData(connection);
                 }
             }
+
+            // Always ensure default campus demo accounts exist with valid passwords
+            SeedDemoUsers(connection);
         }
     }
 
@@ -106,22 +109,97 @@ public class AdoNetDbHelper
         cmd.ExecuteNonQuery();
     }
 
-    private void SeedSampleData(SqliteConnection connection)
+    private void SeedDemoUsers(SqliteConnection connection)
     {
         var seedUsers = @"
-            INSERT OR IGNORE INTO Users (FullName, Email, Role, HostelBlock, RoomNumber) VALUES
-            ('Archi Kumari', 'archi.student@marwadiuniversity.ac.in', 'Student', 'Hostel D', 'D-402'),
-            ('Rohit Sharma', 'rohit.runner@marwadiuniversity.ac.in', 'Runner', 'Hostel B', 'B-108'),
-            ('Sneha Patel', 'sneha.student@marwadiuniversity.ac.in', 'Student', 'Hostel C', 'C-215'),
-            ('Aman Verma', 'aman.runner@marwadiuniversity.ac.in', 'Runner', 'Hostel D', 'D-310');
+            INSERT OR REPLACE INTO Users (Id, FullName, Email, Password, Role, HostelBlock, RoomNumber) VALUES
+            (1, 'Aarav Patel', 'aarav.patel@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel D', 'D-304'),
+            (2, 'Archi Kumari', 'archi.student@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel D', 'D-402'),
+            (3, 'Rohit Sharma', 'rohit.runner@marwadiuniversity.ac.in', 'Password123!', 'Runner', 'Hostel B', 'B-108'),
+            (4, 'Sneha Patel', 'sneha.student@marwadiuniversity.ac.in', 'Password123!', 'Student', 'Hostel C', 'C-215');
 
-            INSERT INTO DeliveryRequests (StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName) VALUES
+            INSERT OR IGNORE INTO DeliveryRequests (StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName) VALUES
             ('Sneha Patel', 'Room C-215', '2x Balaji Wafers, 1x Coca-Cola', 80.0, 15.0, 'Delivered', 'Rohit Sharma'),
-            ('Rahul Joshi', 'Room D-501', '1x Amul Kool Koko, 1x Kurkure', 50.0, 15.0, 'Delivered', 'Aman Verma');
+            ('Rahul Joshi', 'Room D-501', '1x Amul Kool Koko, 1x Kurkure', 50.0, 15.0, 'Delivered', 'Aarav Patel');
         ";
 
         using var cmd = new SqliteCommand(seedUsers, connection);
         cmd.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Authenticates a user using pure ADO.NET with Parameterized Queries to prevent SQL Injection
+    /// </summary>
+    public User? ValidateUser(string email, string password)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            var sql = "SELECT Id, FullName, Email, Password, Role, HostelBlock, RoomNumber, CreatedAt FROM Users WHERE LOWER(Email) = LOWER(@Email) AND Password = @Password LIMIT 1;";
+
+            using (var command = new SqliteCommand(sql, connection))
+            {
+                command.Parameters.Add(new SqliteParameter("@Email", email.Trim()));
+                command.Parameters.Add(new SqliteParameter("@Password", password));
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new User
+                        {
+                            Id = reader.GetInt32(0),
+                            FullName = reader.GetString(1),
+                            Email = reader.GetString(2),
+                            Password = reader.GetString(3),
+                            Role = reader.GetString(4),
+                            HostelBlock = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                            RoomNumber = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                            CreatedAt = reader.IsDBNull(7) ? DateTime.UtcNow : reader.GetDateTime(7)
+                        };
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Retrieves user details by email using ADO.NET
+    /// </summary>
+    public User? GetUserByEmail(string email)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            var sql = "SELECT Id, FullName, Email, Password, Role, HostelBlock, RoomNumber, CreatedAt FROM Users WHERE LOWER(Email) = LOWER(@Email) LIMIT 1;";
+
+            using (var command = new SqliteCommand(sql, connection))
+            {
+                command.Parameters.Add(new SqliteParameter("@Email", email.Trim()));
+
+                using (var reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return new User
+                        {
+                            Id = reader.GetInt32(0),
+                            FullName = reader.GetString(1),
+                            Email = reader.GetString(2),
+                            Password = reader.GetString(3),
+                            Role = reader.GetString(4),
+                            HostelBlock = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                            RoomNumber = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                            CreatedAt = reader.IsDBNull(7) ? DateTime.UtcNow : reader.GetDateTime(7)
+                        };
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -138,7 +216,6 @@ public class AdoNetDbHelper
 
             using (var command = new SqliteCommand(query, connection))
             {
-                // ADO.NET Parameters to prevent SQL Injection
                 command.Parameters.Add(new SqliteParameter("@InStock", 1));
                 command.Parameters.Add(new SqliteParameter("@Limit", limit));
 
