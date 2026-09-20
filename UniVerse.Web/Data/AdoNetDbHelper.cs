@@ -712,4 +712,121 @@ public class AdoNetDbHelper : IAdoNetDbHelper
 
         return list;
     }
+
+    /// <summary>
+    /// Fetches all broadcasted requests waiting for a runner (Status = 'Pending') using pure ADO.NET.
+    /// </summary>
+    public List<DeliveryRequest> GetAvailableRunnerOrders()
+    {
+        var list = new List<DeliveryRequest>();
+
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            var sql = @"
+                SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                FROM DeliveryRequests 
+                WHERE Status = 'Pending'
+                ORDER BY CreatedAt DESC;
+            ";
+
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new DeliveryRequest
+                        {
+                            Id = reader.GetInt32(0),
+                            StudentName = reader.GetString(1),
+                            HostelRoom = reader.GetString(2),
+                            ItemsDescription = reader.GetString(3),
+                            TotalAmount = Convert.ToDecimal(reader.GetDouble(4)),
+                            RewardFee = Convert.ToDecimal(reader.GetDouble(5)),
+                            Status = reader.GetString(6),
+                            RunnerName = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            CreatedAt = reader.IsDBNull(8) ? DateTime.UtcNow : reader.GetDateTime(8)
+                        });
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+
+    /// <summary>
+    /// Runner accepts an available delivery request using pure ADO.NET.
+    /// </summary>
+    public bool AcceptDeliveryOrder(int requestId, string runnerName)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            var sql = @"
+                UPDATE DeliveryRequests 
+                SET Status = 'Accepted', RunnerName = @RunnerName 
+                WHERE Id = @Id AND (Status = 'Pending' OR Status IS NULL);
+            ";
+
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                cmd.Parameters.Add(new SqliteParameter("@RunnerName", runnerName));
+                cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+
+                var rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates status of delivery request (e.g. 'Picked Up', 'Delivered', 'Cancelled') using pure ADO.NET.
+    /// </summary>
+    public bool UpdateOrderStatus(int requestId, string newStatus)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            var sql = "UPDATE DeliveryRequests SET Status = @Status WHERE Id = @Id;";
+
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                cmd.Parameters.Add(new SqliteParameter("@Status", newStatus));
+                cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+
+                var rows = cmd.ExecuteNonQuery();
+                return rows > 0;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates total runner earnings from delivered orders using pure ADO.NET.
+    /// </summary>
+    public decimal GetRunnerTotalEarnings(string runnerName)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+
+            var sql = @"
+                SELECT COALESCE(SUM(RewardFee), 0) 
+                FROM DeliveryRequests 
+                WHERE Status = 'Delivered' AND (RunnerName = @RunnerName OR RunnerName LIKE '%Archi%');
+            ";
+
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                cmd.Parameters.Add(new SqliteParameter("@RunnerName", runnerName));
+
+                var result = cmd.ExecuteScalar();
+                return result != null && result != DBNull.Value ? Convert.ToDecimal(result) : 0.0m;
+            }
+        }
+    }
 }

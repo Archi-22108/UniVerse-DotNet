@@ -21,4 +21,8 @@ public interface IAdoNetDbHelper
     DeliveryRequest? GetDeliveryRequestById(int id);
     DeliveryRequest? GetLatestDeliveryRequest(string? studentName = null);
     List<DeliveryRequest> GetStudentDeliveryRequests(string? studentName = null);
+    List<DeliveryRequest> GetAvailableRunnerOrders();
+    bool AcceptDeliveryOrder(int requestId, string runnerName);
+    bool UpdateOrderStatus(int requestId, string newStatus);
+    decimal GetRunnerTotalEarnings(string runnerName);
 }

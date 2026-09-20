@@ -1,0 +1,1466 @@
+@model UniVerse.Web.Models.RunnerViewModel
+@{
+    Layout = null; // Immersive full desktop layout matching screenshot 1:1
+    ViewData["Title"] = "Runner Dashboard · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.7);
+            --uv-card-border: rgba(0, 229, 153, 0.18);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .runner-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .badge-live-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.25);
+        }
+
+        .dot-pulse-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseGlow 1.8s infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+
+        .wallet-indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-foot {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: #ef4444;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN RUNNER VIEWPORT
+           ══════════════════════════════════════════════════════ */
+        .runner-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 2rem 2.5rem 5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.65rem;
+            max-width: 1240px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Header Row ── */
+        .runner-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .runner-head-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .runner-circle-icon-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.28);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.15);
+        }
+
+        .runner-title-group h1 {
+            font-size: 1.85rem;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            letter-spacing: -0.5px;
+        }
+
+        .sparkle-emerald {
+            color: var(--uv-emerald);
+            font-size: 1.4rem;
+        }
+
+        .runner-title-group p {
+            font-size: 0.84rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.2rem;
+        }
+
+        .runner-head-right {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .btn-bell-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-bell-circle:hover {
+            border-color: rgba(0, 229, 153, 0.4);
+            color: var(--uv-emerald);
+        }
+
+        /* ── Online Toggle Pill ── */
+        .online-toggle-pill-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(8, 16, 12, 0.85);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            padding: 0.45rem 1.15rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.18);
+            user-select: none;
+        }
+
+        .online-toggle-pill-wrap.offline {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+        }
+
+        .switch-capsule {
+            width: 38px;
+            height: 22px;
+            border-radius: 9999px;
+            background: rgba(0, 229, 153, 0.25);
+            border: 1px solid var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+
+        .switch-capsule-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 10px var(--uv-emerald);
+            transform: translateX(16px);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .online-toggle-pill-wrap.offline .switch-capsule {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .online-toggle-pill-wrap.offline .switch-capsule-thumb {
+            transform: translateX(0);
+            background: #85988e;
+            box-shadow: none;
+        }
+
+        .online-status-label {
+            font-size: 0.82rem;
+            color: #85988e;
+        }
+
+        .online-status-label strong {
+            color: var(--uv-emerald);
+            font-weight: 700;
+        }
+
+        .online-toggle-pill-wrap.offline .online-status-label strong {
+            color: #ef4444;
+        }
+
+        /* ── 3 Filter Tabs (Available / Active / History) ── */
+        .runner-filter-tabs-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .runner-tab-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #85988e;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .runner-tab-pill:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+            color: #ffffff;
+        }
+
+        .runner-tab-pill.active {
+            background: rgba(0, 229, 153, 0.08);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+            font-weight: 700;
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.16);
+        }
+
+        /* ── 4 Top Stat Cards Grid ── */
+        .runner-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.15rem;
+        }
+
+        .runner-stat-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.25rem 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            transition: all 0.2s ease;
+        }
+
+        .runner-stat-card:hover {
+            border-color: var(--uv-card-border-hover);
+        }
+
+        .r-stat-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .r-stat-label-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #85988e;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .r-stat-val-bold {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .r-stat-sub-note {
+            font-size: 0.72rem;
+            color: #85988e;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .r-stat-sub-green {
+            color: var(--uv-emerald);
+            font-weight: 600;
+        }
+
+        .r-stat-icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           BIG CENTER RADAR STATE CARD (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .radar-empty-state-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 20px;
+            padding: 3.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1.25rem;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+            position: relative;
+        }
+
+        .radar-pulse-beacon-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            position: relative;
+            box-shadow: 0 0 24px rgba(0, 229, 153, 0.2);
+        }
+
+        .radar-pulse-beacon-circle::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 229, 153, 0.15);
+            animation: radarRipple 2.5s infinite;
+        }
+
+        @@keyframes radarRipple {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .badge-listening-radar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.25rem 0.85rem;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+        }
+
+        .radar-empty-heading {
+            font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+        }
+
+        .radar-empty-explainer {
+            font-size: 0.84rem;
+            color: var(--uv-text-muted);
+            max-width: 580px;
+            line-height: 1.5;
+        }
+
+        .radar-empty-explainer strong {
+            color: var(--uv-emerald);
+        }
+
+        .peak-times-pill-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 9999px;
+            padding: 0.5rem 1.35rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            color: #85988e;
+        }
+
+        /* ── Active Orders List (When Orders Exist) ── */
+        .orders-active-list-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .order-available-item-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.35rem 1.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            transition: all 0.2s ease;
+        }
+
+        .order-available-item-card:hover {
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.15);
+        }
+
+        .order-avail-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avail-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .avail-meta-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .avail-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .avail-name-bold {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .avail-id-mono {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            color: #85988e;
+        }
+
+        .avail-route-sub {
+            font-size: 0.78rem;
+            color: #85988e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .avail-route-sub strong {
+            color: #ffffff;
+        }
+
+        .order-avail-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .reward-payout-box {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reward-tag-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            color: #85988e;
+            text-transform: uppercase;
+        }
+
+        .reward-cash-bold {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--uv-emerald);
+        }
+
+        .btn-accept-mission {
+            background: var(--uv-emerald);
+            color: #020806;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0.65rem 1.45rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            box-shadow: 0 0 18px rgba(0, 229, 153, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-accept-mission:hover {
+            background: #25f4ab;
+            transform: translateY(-1px);
+        }
+
+        .btn-complete-mission {
+            background: #3b82f6;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0.65rem 1.45rem;
+            border-radius: 9999px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-complete-mission:hover {
+            background: #60a5fa;
+            transform: translateY(-1px);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LOWER SECTION: GUIDE ACCORDION & LEVEL CARD
+           ══════════════════════════════════════════════════════ */
+        .runner-guide-banner {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .runner-guide-banner:hover {
+            border-color: rgba(0, 229, 153, 0.25);
+        }
+
+        .guide-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #85988e;
+        }
+
+        .guide-tag-emerald {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            color: var(--uv-emerald);
+        }
+
+        .guide-expand-link {
+            color: #ffffff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .guide-content-panel {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: -0.85rem;
+        }
+
+        .guide-step-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .guide-step-title {
+            color: var(--uv-emerald);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .guide-step-desc {
+            color: #85988e;
+            font-size: 0.74rem;
+            line-height: 1.4;
+        }
+
+        /* Level 1 Starter Runner Card */
+        .runner-level-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.25rem 1.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .level-left-block {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .level-badge-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            color: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .level-details-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .level-tags-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .pill-starter-level {
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.55rem;
+            border-radius: 9999px;
+            letter-spacing: 0.04em;
+        }
+
+        .level-sub-meta {
+            font-size: 0.76rem;
+            color: #85988e;
+        }
+
+        .level-progress-track {
+            width: 280px;
+            height: 5px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .level-progress-fill {
+            height: 100%;
+            width: 15%;
+            background: var(--uv-emerald);
+            border-radius: 9999px;
+            box-shadow: 0 0 10px var(--uv-emerald);
+        }
+
+        .btn-view-performance {
+            background: rgba(0, 229, 153, 0.06);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-view-performance:hover {
+            background: rgba(0, 229, 153, 0.14);
+            transform: translateY(-1px);
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 992px) {
+            .runner-sidebar { display: none; }
+            .runner-stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .guide-content-panel { grid-template-columns: 1fr; }
+        }
+
+        @@media (max-width: 600px) {
+            .runner-stats-grid { grid-template-columns: 1fr; }
+            .level-progress-track { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Canvas Starfield ── -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+       ══════════════════════════════════════════════════════ -->
+    <aside class="runner-sidebar">
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav>
+                <ul class="sidebar-menu-list">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-grid"></i>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Requests" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>My Req...</span>
+                            </div>
+                            <span class="badge-live-pill">
+                                <span class="dot-pulse-green"></span>
+                                <span>2 live</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Runner" class="sidebar-nav-item active">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Runner Mode</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-wallet2"></i>
+                                <span>Wallet</span>
+                            </div>
+                            <span class="wallet-indicator-dot"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bag"></i>
+                                <span>Marketplace</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                            <div class="sidebar-nav-left">
+                                <i class="bi bi-gear"></i>
+                                <span>Setting</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="sidebar-foot">
+            <a asp-controller="Account" asp-action="Login" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN RUNNER VIEWPORT
+       ══════════════════════════════════════════════════════ -->
+    <main class="runner-main-viewport">
+        <!-- ── Top Header Row ── -->
+        <div class="runner-header-row">
+            <div class="runner-head-left">
+                <div class="runner-circle-icon-badge">
+                    <i class="bi bi-bicycle"></i>
+                </div>
+                <div class="runner-title-group">
+                    <h1>
+                        <span>Runner Dashboard</span>
+                        <span class="sparkle-emerald">✦</span>
+                    </h1>
+                    <p>Deliver on campus, help peers, and earn instant cash. 💸</p>
+                </div>
+            </div>
+
+            <div class="runner-head-right">
+                <button type="button" class="btn-bell-circle" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                </button>
+
+                <!-- Interactive Online Toggle Switch (Matching Screenshot 1:1) -->
+                <div class="online-toggle-pill-wrap @(Model.IsOnline ? "" : "offline")" id="runnerToggleWrap" onclick="toggleOnlineStatus()">
+                    <div class="switch-capsule">
+                        <div class="switch-capsule-thumb"></div>
+                    </div>
+                    <span class="online-status-label" id="onlineStatusLabel">
+                        @if (Model.IsOnline)
+                        {
+                            <span>● <strong>Online</strong> · Accepting Orders</span>
+                        }
+                        else
+                        {
+                            <span>● <strong>Offline</strong> · On Break</span>
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 3 Filter Tabs (Available / Active / History) ── -->
+        <div class="runner-filter-tabs-strip">
+            <a asp-controller="Dashboard" asp-action="Runner" asp-route-tab="available" class="runner-tab-pill @(Model.ActiveTab == "available" ? "active" : "")">
+                <i class="bi bi-box-seam"></i>
+                <span>Available</span>
+            </a>
+            <a asp-controller="Dashboard" asp-action="Runner" asp-route-tab="active" class="runner-tab-pill @(Model.ActiveTab == "active" ? "active" : "")">
+                <i class="bi bi-clock"></i>
+                <span>Active</span>
+            </a>
+            <a asp-controller="Dashboard" asp-action="Runner" asp-route-tab="history" class="runner-tab-pill @(Model.ActiveTab == "history" ? "active" : "")">
+                <i class="bi bi-clock-history"></i>
+                <span>History</span>
+            </a>
+        </div>
+
+        <!-- ── 4 Top Stat Cards Grid ── -->
+        <div class="runner-stats-grid">
+            <!-- Available -->
+            <div class="runner-stat-card">
+                <div class="r-stat-left">
+                    <span class="r-stat-label-mono">AVAILABLE</span>
+                    <span class="r-stat-val-bold">@Model.AvailableCount</span>
+                    <span class="r-stat-sub-note r-stat-sub-green">
+                        <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                        <span>New orders</span>
+                    </span>
+                </div>
+                <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
+                    <i class="bi bi-box-seam" style="color: var(--uv-emerald);"></i>
+                </div>
+            </div>
+
+            <!-- Active -->
+            <div class="runner-stat-card">
+                <div class="r-stat-left">
+                    <span class="r-stat-label-mono">ACTIVE</span>
+                    <span class="r-stat-val-bold">@Model.ActiveCount</span>
+                    <span class="r-stat-sub-note">
+                        @(Model.ActiveCount > 0 ? $"{Model.ActiveCount} in progress" : "No missions")
+                    </span>
+                </div>
+                <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
+                    <i class="bi bi-clock" style="color: var(--uv-emerald);"></i>
+                </div>
+            </div>
+
+            <!-- Earnings -->
+            <div class="runner-stat-card">
+                <div class="r-stat-left">
+                    <span class="r-stat-label-mono">EARNINGS</span>
+                    <span class="r-stat-val-bold">₹ @((int)Model.TotalEarnings)</span>
+                    <span class="r-stat-sub-note">
+                        <a asp-controller="Dashboard" asp-action="Index" style="color: #85988e; text-decoration: none;">Wallet →</a>
+                    </span>
+                </div>
+                <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
+                    <i class="bi bi-wallet2" style="color: var(--uv-emerald);"></i>
+                </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="runner-stat-card">
+                <div class="r-stat-left">
+                    <span class="r-stat-label-mono">RATING</span>
+                    <span class="r-stat-val-bold">@Model.Rating</span>
+                    <span class="r-stat-sub-note" style="color: #f59e0b;">★ Starter</span>
+                </div>
+                <div class="r-stat-icon-circle" style="border-color: rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-star-fill" style="color: #f59e0b;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+           MAIN RUNNER ORDERS / RADAR STATE (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        @if (Model.ActiveTab == "available")
+        {
+            if (Model.AvailableOrders.Count == 0 || !Model.IsOnline)
+            {
+                <!-- EXACT 1:1 Empty State from User Screenshot -->
+                <section class="radar-empty-state-card">
+                    <div class="radar-pulse-beacon-circle">
+                        <i class="bi bi-broadcast"></i>
+                    </div>
+
+                    <div class="badge-listening-radar">
+                        <span class="dot-pulse-green" style="width: 5px; height: 5px;"></span>
+                        <span>@(Model.IsOnline ? "CAMPUS RADAR ACTIVE · LISTENING FOR ORDERS" : "RUNNER MODE OFFLINE")</span>
+                    </div>
+
+                    <h2 class="radar-empty-heading">
+                        @(Model.IsOnline ? "No Active Requests on Radar Right Now" : "You are currently Offline")
+                    </h2>
+
+                    <p class="radar-empty-explainer">
+                        @if (Model.IsOnline)
+                        {
+                            <span>Aapka Runner Mode <strong>ONLINE</strong> hai! Jaise hi campus me koi student food, snacks ya notes order karega, yaha instant sound &amp; visual alert aayega.</span>
+                        }
+                        else
+                        {
+                            <span>Toggle your status to <strong>Online</strong> at the top right to start receiving instant campus food, snack, and note delivery requests!</span>
+                        }
+                    </p>
+
+                    <div class="peak-times-pill-box">
+                        <span>💡</span>
+                        <span>Peak orders time: Lunch (1 PM – 3 PM) &amp; Late Night (9 PM – 1 AM)</span>
+                    </div>
+                </section>
+            }
+            else
+            {
+                <!-- List of Available Orders for Runner to Accept! -->
+                <div class="orders-active-list-stack">
+                    @foreach (var order in Model.AvailableOrders)
+                    {
+                        <div class="order-available-item-card">
+                            <div class="order-avail-left">
+                                <div class="avail-icon-circle">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+                                <div class="avail-meta-col">
+                                    <div class="avail-title-row">
+                                        <h3 class="avail-name-bold">@order.ItemTitle</h3>
+                                        <span class="avail-id-mono">@order.FormattedId</span>
+                                    </div>
+                                    <div class="avail-route-sub">
+                                        <span>From <strong>@order.PickupSpot</strong></span>
+                                        <span>→</span>
+                                        <span>Deliver to <strong>@order.Destination</strong></span>
+                                        <span>· @order.TimeAgo</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-avail-right">
+                                <div class="reward-payout-box">
+                                    <span class="reward-tag-label">Runner Payout</span>
+                                    <span class="reward-cash-bold">+₹@((int)order.RewardFee)</span>
+                                </div>
+
+                                <form asp-controller="Dashboard" asp-action="AcceptOrder" method="post" style="margin: 0;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@order.Id" />
+                                    <button type="submit" class="btn-accept-mission">
+                                        <i class="bi bi-lightning-fill"></i>
+                                        <span>Accept Order</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else if (Model.ActiveTab == "active")
+        {
+            if (Model.ActiveMissions.Count == 0)
+            {
+                <section class="radar-empty-state-card">
+                    <div class="radar-pulse-beacon-circle">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h2 class="radar-empty-heading">No Active Missions in Progress</h2>
+                    <p class="radar-empty-explainer">Switch to the <strong>Available</strong> tab to accept pending campus deliveries.</p>
+                </section>
+            }
+            else
+            {
+                <div class="orders-active-list-stack">
+                    @foreach (var mission in Model.ActiveMissions)
+                    {
+                        <div class="order-available-item-card" style="border-color: #3b82f6;">
+                            <div class="order-avail-left">
+                                <div class="avail-icon-circle" style="background: rgba(59, 130, 246, 0.1); border-color: #3b82f6; color: #3b82f6;">
+                                    <i class="bi bi-bicycle"></i>
+                                </div>
+                                <div class="avail-meta-col">
+                                    <div class="avail-title-row">
+                                        <h3 class="avail-name-bold">@mission.ItemTitle</h3>
+                                        <span class="badge-live-pill" style="background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">In Progress</span>
+                                    </div>
+                                    <div class="avail-route-sub">
+                                        <span>Pickup: <strong>@mission.PickupSpot</strong></span>
+                                        <span>→</span>
+                                        <span>Dropoff: <strong>@mission.Destination</strong></span>
+                                    </div>
+                                    <span style="font-size: 0.72rem; color: #f59e0b;">Handover OTP required from requester upon delivery: <strong>@mission.OtpCode</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="order-avail-right">
+                                <div class="reward-payout-box">
+                                    <span class="reward-tag-label">Earning</span>
+                                    <span class="reward-cash-bold" style="color: #60a5fa;">₹@((int)mission.RewardFee)</span>
+                                </div>
+
+                                <form asp-controller="Dashboard" asp-action="CompleteOrder" method="post" style="margin: 0;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@mission.Id" />
+                                    <button type="submit" class="btn-complete-mission">
+                                        <i class="bi bi-check2-circle"></i>
+                                        <span>Complete &amp; Collect Cash</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else if (Model.ActiveTab == "history")
+        {
+            if (Model.CompletedHistory.Count == 0)
+            {
+                <section class="radar-empty-state-card">
+                    <div class="radar-pulse-beacon-circle">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h2 class="radar-empty-heading">No Completed Delivery History Yet</h2>
+                    <p class="radar-empty-explainer">Deliver orders to earn cash and build your peer reputation on campus!</p>
+                </section>
+            }
+            else
+            {
+                <div class="orders-active-list-stack">
+                    @foreach (var hist in Model.CompletedHistory)
+                    {
+                        <div class="order-available-item-card">
+                            <div class="order-avail-left">
+                                <div class="avail-icon-circle">
+                                    <i class="bi bi-check-lg"></i>
+                                </div>
+                                <div class="avail-meta-col">
+                                    <h3 class="avail-name-bold">@hist.ItemTitle</h3>
+                                    <div class="avail-route-sub">
+                                        <span>Delivered to <strong>@hist.Destination</strong> · @hist.TimeAgo</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-avail-right">
+                                <div class="reward-payout-box">
+                                    <span class="reward-tag-label">Earned</span>
+                                    <span class="reward-cash-bold">+₹@((int)hist.RewardFee)</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        <!-- ══════════════════════════════════════════════════════
+           LOWER SECTION: RUNNER GUIDE & LEVEL CARD (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ -->
+        <!-- Runner Guide Collapsible Banner -->
+        <div class="runner-guide-banner" onclick="toggleGuide()">
+            <div class="guide-left">
+                <span class="dot-pulse-green"></span>
+                <span class="guide-tag-emerald">RUNNER GUIDE</span>
+                <span>· Earn cash on campus walks</span>
+            </div>
+            <span class="guide-expand-link">
+                <span>How it Works (3 Steps)</span>
+                <i class="bi bi-chevron-down" id="guideChevronIcon"></i>
+            </span>
+        </div>
+
+        <!-- Collapsible Content -->
+        <div class="guide-content-panel" id="guidePanel" style="display: none;">
+            <div class="guide-step-box">
+                <span class="guide-step-title">1. Accept Available Order</span>
+                <span class="guide-step-desc">Pick up requests when you're already walking near the vending machine or student canteen.</span>
+            </div>
+            <div class="guide-step-box">
+                <span class="guide-step-title">2. Deliver to Hostel Room</span>
+                <span class="guide-step-desc">Deliver the item straight to your peer's hostel door. Fast delivery yields extra tips.</span>
+            </div>
+            <div class="guide-step-box">
+                <span class="guide-step-title">3. Enter OTP &amp; Earn</span>
+                <span class="guide-step-desc">Verify delivery OTP from the student and receive 100% of the runner reward directly!</span>
+            </div>
+        </div>
+
+        <!-- Level 1 Starter Runner Card (Matching Screenshot 1:1) -->
+        <div class="runner-level-card">
+            <div class="level-left-block">
+                <div class="level-badge-circle">
+                    <i class="bi bi-stars"></i>
+                </div>
+
+                <div class="level-details-col">
+                    <div class="level-tags-row">
+                        <span class="pill-starter-level">@Model.BadgeLevel</span>
+                        <span class="level-sub-meta">● @Model.CompletedDeliveriesCount completed deliveries (100% Tips kept)</span>
+                    </div>
+
+                    <div class="level-progress-track">
+                        <div class="level-progress-fill" style="width: @(Math.Max(15, Model.CompletedDeliveriesCount * 20))%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="javascript:void(0)" onclick="alert('⚡ Level 1 Starter: You keep 100% of runner tips! Complete 5 deliveries to unlock Silver Runner badge.')" class="btn-view-performance">
+                <i class="bi bi-activity"></i>
+                <span>View Performance &amp; Tips</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </main>
+
+    <!-- ── Interactive Client Script ── -->
+    <script>
+        // ── 1. Starfield Animation ──
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 60;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // ── 2. Interactive Online/Offline Toggle ──
+        let isOnline = @(Model.IsOnline ? "true" : "false");
+
+        function toggleOnlineStatus() {
+            isOnline = !isOnline;
+            const wrap = document.getElementById('runnerToggleWrap');
+            const label = document.getElementById('onlineStatusLabel');
+
+            if (isOnline) {
+                wrap.className = 'online-toggle-pill-wrap';
+                label.innerHTML = '<span>● <strong>Online</strong> · Accepting Orders</span>';
+                window.location.href = '@Url.Action("Runner", "Dashboard", new { tab = Model.ActiveTab, isOnline = true })';
+            } else {
+                wrap.className = 'online-toggle-pill-wrap offline';
+                label.innerHTML = '<span>● <strong>Offline</strong> · On Break</span>';
+                window.location.href = '@Url.Action("Runner", "Dashboard", new { tab = Model.ActiveTab, isOnline = false })';
+            }
+        }
+
+        // ── 3. Runner Guide Accordion Toggle ──
+        let guideOpen = false;
+        function toggleGuide() {
+            guideOpen = !guideOpen;
+            const panel = document.getElementById('guidePanel');
+            const chevron = document.getElementById('guideChevronIcon');
+            if (guideOpen) {
+                panel.style.display = 'grid';
+                chevron.className = 'bi bi-chevron-up';
+            } else {
+                panel.style.display = 'none';
+                chevron.className = 'bi bi-chevron-down';
+            }
+        }
+    </script>
+</body>
+</html>

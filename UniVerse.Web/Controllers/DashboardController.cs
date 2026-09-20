@@ -343,9 +343,84 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public IActionResult Runner()
+    public IActionResult Runner(string? tab = "available", bool isOnline = true)
     {
-        return RedirectToAction("Index");
+        var runnerName = "Archi.kumari126697";
+        var dbAll = _dbHelper.GetStudentDeliveryRequests();
+        var earnings = _dbHelper.GetRunnerTotalEarnings(runnerName);
+
+        var model = new RunnerViewModel
+        {
+            IsOnline = isOnline,
+            ActiveTab = string.IsNullOrEmpty(tab) ? "available" : tab.ToLowerInvariant(),
+            TotalEarnings = earnings,
+            Rating = "New",
+            BadgeLevel = "LEVEL 1 STARTER RUNNER"
+        };
+
+        foreach (var req in dbAll)
+        {
+            var isMyMission = !string.IsNullOrEmpty(req.RunnerName) &&
+                              req.RunnerName.Contains("Archi", StringComparison.OrdinalIgnoreCase);
+
+            var elapsed = DateTime.UtcNow - req.CreatedAt;
+            var timeAgo = elapsed.TotalMinutes < 1 ? "Just now" :
+                          elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes} mins ago" :
+                          $"{elapsed.Hours}h ago";
+
+            var itemDto = new RunnerOrderItemDto
+            {
+                Id = req.Id,
+                FormattedId = $"#D0{((req.Id * 1337 + 113435) % 999999):D6}",
+                StudentRequester = req.StudentName,
+                ItemTitle = req.ItemsDescription,
+                PickupSpot = "Hostel Vending Machine",
+                Destination = (req.HostelRoom ?? "Hostel A - Room 400").Replace(" · Room ", " - Room "),
+                RewardFee = req.RewardFee > 0 ? req.RewardFee : 5.0m,
+                ItemCost = req.TotalAmount > req.RewardFee ? (req.TotalAmount - req.RewardFee) : 20.0m,
+                Status = req.Status,
+                OtpCode = $"{((req.Id * 19 + 9855) % 9000 + 1000)}",
+                TimeAgo = timeAgo
+            };
+
+            if (req.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+            {
+                model.AvailableOrders.Add(itemDto);
+            }
+            else if (isMyMission && (req.Status.Equals("Accepted", StringComparison.OrdinalIgnoreCase) ||
+                                     req.Status.Equals("Picked Up", StringComparison.OrdinalIgnoreCase) ||
+                                     req.Status.Equals("In Transit", StringComparison.OrdinalIgnoreCase)))
+            {
+                model.ActiveMissions.Add(itemDto);
+            }
+            else if (isMyMission && req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+            {
+                model.CompletedHistory.Add(itemDto);
+            }
+        }
+
+        model.AvailableCount = model.AvailableOrders.Count;
+        model.ActiveCount = model.ActiveMissions.Count;
+        model.CompletedDeliveriesCount = model.CompletedHistory.Count;
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public IActionResult AcceptOrder(int id)
+    {
+        var runnerName = "Archi.kumari126697";
+        _dbHelper.AcceptDeliveryOrder(id, runnerName);
+        TempData["SuccessMessage"] = $"Order #{id} accepted! Proceed to pickup items from vending machine.";
+        return RedirectToAction("Runner", new { tab = "active" });
+    }
+
+    [HttpPost]
+    public IActionResult CompleteOrder(int id)
+    {
+        _dbHelper.UpdateOrderStatus(id, "Delivered");
+        TempData["SuccessMessage"] = $"Order #{id} successfully delivered! Reward fee credited to wallet.";
+        return RedirectToAction("Runner", new { tab = "history" });
     }
 
     [HttpGet]
