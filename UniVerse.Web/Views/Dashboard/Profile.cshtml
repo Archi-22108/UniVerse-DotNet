@@ -51,20 +51,30 @@
             flex-direction: column;
         }
 
-        /* ── Cinematic Blurred Backdrop Matching Screenshot ── */
-        .cinematic-backdrop-layer {
+        /* ── Video Background Container (Matching universe frontend 1:1) ── */
+        .video-bg-container {
             position: fixed;
             inset: 0;
-            background: 
-                radial-gradient(circle at 85% 15%, rgba(59, 130, 246, 0.22) 0%, transparent 45%),
-                radial-gradient(circle at 15% 30%, rgba(239, 68, 68, 0.15) 0%, transparent 45%),
-                radial-gradient(circle at 50% 85%, rgba(0, 229, 153, 0.12) 0%, transparent 50%),
-                linear-gradient(180deg, rgba(3, 7, 8, 0.85) 0%, rgba(3, 7, 8, 0.95) 100%),
-                url('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
-            filter: blur(2px);
-            opacity: 0.65;
+            width: 100vw;
+            height: 100vh;
             z-index: 0;
             pointer-events: none;
+            overflow: hidden;
+        }
+
+        .video-bg-container video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .video-bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(3, 7, 8, 0.6);
+            backdrop-filter: blur(1.5px);
+            -webkit-backdrop-filter: blur(1.5px);
         }
 
         #starCanvas {
@@ -707,7 +717,11 @@
     </style>
 </head>
 <body>
-    <div class="cinematic-backdrop-layer"></div>
+    <!-- Video Background (Matches universe frontend 1:1) -->
+    <div class="video-bg-container">
+        <video src="~/profile-background-responsive-small.mp4" autoplay muted loop playsinline preload="auto"></video>
+        <div class="video-bg-overlay"></div>
+    </div>
     <canvas id="starCanvas"></canvas>
 
     <div class="profile-page-viewport">
