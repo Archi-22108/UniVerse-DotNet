@@ -323,17 +323,18 @@
             gap: 0.95rem;
         }
 
+        .cube-icon-box,
         .card-circle-icon {
             width: 44px;
             height: 44px;
-            border-radius: 50%;
+            border-radius: 12px;
             background: rgba(0, 229, 153, 0.08);
             border: 1px solid rgba(0, 229, 153, 0.3);
             color: var(--uv-emerald);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
             box-shadow: 0 0 14px rgba(0, 229, 153, 0.15);
         }
@@ -397,20 +398,31 @@
             box-shadow: 0 0 16px rgba(0, 229, 153, 0.18);
         }
 
-        /* ── Sub-Filter Strip ── */
+        /* ── Sub-Filter Strip (2-row layout matching screenshot 1:1) ── */
         .sub-filter-strip {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 0.75rem;
             padding-top: 0.25rem;
         }
 
-        .strip-left {
+        .sub-filter-top-row {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            justify-content: space-between;
+        }
+
+        .sub-filter-bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .stock-pills-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
 
@@ -421,7 +433,6 @@
             display: flex;
             align-items: center;
             gap: 0.35rem;
-            margin-right: 0.3rem;
         }
 
         .stock-pill {
@@ -1376,14 +1387,12 @@
 
             <!-- 3-Step Progress Indicator Matching Screenshot 1:1 -->
             <div class="stepper-track-wrap">
-                <div class="step-item completed" id="stepItem1" onclick="goToStep(1)">
-                    <div class="step-circle" id="stepCircle1">
-                        <i class="bi bi-check-lg" style="font-size: 1.1rem; -webkit-text-stroke: 0.5px;"></i>
-                    </div>
+                <div class="step-item active" id="stepItem1" onclick="goToStep(1)">
+                    <div class="step-circle" id="stepCircle1">1</div>
                     <span class="step-label">Item Details</span>
                 </div>
-                <div class="step-connector active" id="stepConnector1"></div>
-                <div class="step-item active" id="stepItem2" onclick="goToStep(2)">
+                <div class="step-connector" id="stepConnector1"></div>
+                <div class="step-item" id="stepItem2" onclick="goToStep(2)">
                     <div class="step-circle" id="stepCircle2">2</div>
                     <span class="step-label">Delivery &amp; Reward</span>
                 </div>
@@ -1452,28 +1461,29 @@
                         </button>
                     </div>
 
-                    <!-- Sub-Filter Strip -->
+                    <!-- Sub-Filter Strip (2-row layout matching screenshot 1:1) -->
                     <div class="sub-filter-strip">
-                        <div class="strip-left">
+                        <div class="sub-filter-top-row">
                             <span class="strip-title-label">
                                 <i class="bi bi-stars"></i>
                                 <span>Hostel Vending Machine Live Stock (Tap to 1-click add):</span>
                             </span>
-                            <button type="button" class="stock-pill active" onclick="filterStock('All', this)">All (57)</button>
-                            <button type="button" class="stock-pill" onclick="filterStock('Drinks', this)">🍷 Drinks (21)</button>
-                            <button type="button" class="stock-pill" onclick="filterStock('Chips', this)">🍿 Chips (19)</button>
-                            <button type="button" class="stock-pill" onclick="filterStock('Chocolates', this)">🍫 Chocolates (17)</button>
-                        </div>
-
-                        <div class="strip-right">
-                            <div class="search-box-wrap">
-                                <i class="bi bi-search"></i>
-                                <input type="text" id="productSearchInput" placeholder="Search 57 snacks & drinks" oninput="searchProducts(this.value)" />
-                            </div>
                             <span class="badge-machine-loc">
                                 <span class="pulse-dot" style="width: 5px; height: 5px;"></span>
                                 <span>HOSTEL GF MACHINES</span>
                             </span>
+                        </div>
+                        <div class="sub-filter-bottom-row">
+                            <div class="stock-pills-row">
+                                <button type="button" class="stock-pill active" onclick="filterStock('All', this)">All (57)</button>
+                                <button type="button" class="stock-pill" onclick="filterStock('Drinks', this)">🍷 Drinks (21)</button>
+                                <button type="button" class="stock-pill" onclick="filterStock('Chips', this)">🍿 Chips (19)</button>
+                                <button type="button" class="stock-pill" onclick="filterStock('Chocolates', this)">🍫 Chocolates (17)</button>
+                            </div>
+                            <div class="search-box-wrap">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="productSearchInput" placeholder="Search 57 snacks & drinks" oninput="searchProducts(this.value)" />
+                            </div>
                         </div>
                     </div>
 
@@ -1502,8 +1512,8 @@
 
                     <!-- Custom Item Input Row -->
                     <div class="custom-item-input-bar">
-                        <input type="text" id="customItemName" class="custom-name-in" placeholder="Type vending machine name or custom item..." />
-                        <input type="number" id="customItemPrice" class="custom-price-in" placeholder="₹ Est. price" min="5" value="20" />
+                        <input type="text" id="customItemName" class="custom-name-in" placeholder="Type vending machine name..." />
+                        <input type="number" id="customItemPrice" class="custom-price-in" placeholder="₹ Est. price" min="5" />
                         <div class="qty-stepper-box">
                             <button type="button" class="btn-stepper" onclick="adjustCustomQty(-1)">−</button>
                             <span class="qty-val-mono" id="customQtyDisplay">1</span>
@@ -1815,10 +1825,7 @@
         })();
 
         // ── 2. Cart & Logistics State Management ──
-        // Pre-populate with 1x CrunchEx Chili Tadka matching user's exact screenshot demonstration if empty
-        let cart = [
-            { name: "CrunchEx Chili Tadka", price: 20, qty: 1 }
-        ];
+        let cart = [];
         let currentStep = 1;
         let selectedTip = 5;
         let selectedUrgency = 'Standard';
@@ -1826,15 +1833,17 @@
         let selectedHostel = 'Hostel A';
         let customQty = 1;
 
-        // Initialize UI on load - defaults directly to Step 2 matching user screenshot 1:1
+        // Initialize UI on load - defaults directly to Step 1 matching user screenshot 1:1
         document.addEventListener('DOMContentLoaded', () => {
             updateCartUI();
             const urlParams = new URLSearchParams(window.location.search);
             const stepParam = parseInt(urlParams.get('step'));
-            if (stepParam === 1 || stepParam === 3) {
-                goToStep(stepParam);
-            } else {
+            if (stepParam === 2 && cart.length > 0) {
                 goToStep(2);
+            } else if (stepParam === 3 && cart.length > 0) {
+                goToStep(3);
+            } else {
+                goToStep(1);
             }
         });
 
@@ -1888,6 +1897,7 @@
             }
 
             nameInput.value = '';
+            priceInput.value = '';
             customQty = 1;
             document.getElementById('customQtyDisplay').innerText = '1';
             updateCartUI();
@@ -2134,6 +2144,33 @@
         function setCategory(catName, btn) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
+            const customNameInput = document.getElementById('customItemName');
+            const pills = document.querySelectorAll('.stock-pill');
+
+            if (catName === 'Vending Machine') {
+                if (pills[0]) filterStock('All', pills[0]);
+                customNameInput.placeholder = "Type vending machine name...";
+            } else if (catName === 'Snack') {
+                const chipsPill = Array.from(pills).find(p => p.innerText.includes('Chips'));
+                if (chipsPill) filterStock('Chips', chipsPill);
+                customNameInput.placeholder = "Type snack name (e.g. Kurkure, Lays, Wafers)...";
+            } else if (catName === 'Beverage') {
+                const drinksPill = Array.from(pills).find(p => p.innerText.includes('Drinks'));
+                if (drinksPill) filterStock('Drinks', drinksPill);
+                customNameInput.placeholder = "Type beverage name (e.g. Frooti, Coke, Cold Coffee)...";
+            } else if (catName === 'Meal') {
+                if (pills[0]) filterStock('All', pills[0]);
+                customNameInput.placeholder = "Type meal name (e.g. Thali, Biryani, Sandwich, Maggie)...";
+            } else if (catName === 'Grocery') {
+                const chocPill = Array.from(pills).find(p => p.innerText.includes('Chocolates'));
+                if (chocPill) filterStock('Chocolates', chocPill);
+                customNameInput.placeholder = "Type grocery or treat (e.g. Milk, Biscuits, Bread)...";
+            } else if (catName === 'Stationery') {
+                customNameInput.placeholder = "Type stationery item (e.g. Notebook, Blue Pen, Lab Manual)...";
+            } else if (catName === 'Medicine') {
+                customNameInput.placeholder = "Type medicine or health item (e.g. Paracetamol, Band-aid, Vicks)...";
+            }
         }
 
         function filterStock(subCat, btn) {
