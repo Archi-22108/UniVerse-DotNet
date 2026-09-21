@@ -8,6 +8,7 @@ namespace UniVerse.Web.Controllers;
 /// <summary>
 /// Dashboard Controller handling Student Campus Super-App operations.
 /// Follows ASP.NET Core MVC Architecture and C# OOP Dependency Injection.
+/// Strictly isolates and persists real data for every authenticated student.
 /// </summary>
 public class DashboardController : Controller
 {
@@ -22,23 +23,64 @@ public class DashboardController : Controller
         _env = env;
     }
 
+    /// <summary>
+    /// Gets the current authenticated student's normalized email address.
+    /// Falls back gracefully to default Marwadi campus evaluation identity when unauthenticated.
+    /// </summary>
+    private string GetCurrentEmail()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            return email.Trim().ToLowerInvariant();
+        }
+        return "student@marwadiuniversity.ac.in";
+    }
+
+    /// <summary>
+    /// Retrieves or persists the active student entity in SQLite database using pure ADO.NET.
+    /// Guarantees that every student operates strictly with their own real, safe profile and wallet.
+    /// </summary>
+    private User GetCurrentStudent()
+    {
+        var email = GetCurrentEmail();
+        var user = _dbHelper.GetUserByEmail(email);
+        if (user != null)
+        {
+            return user;
+        }
+
+        // Extract student name from auth claims or derive cleanly from campus email prefix
+        var name = User.FindFirst(ClaimTypes.Name)?.Value;
+        if (string.IsNullOrWhiteSpace(name) || name.Equals(email, StringComparison.OrdinalIgnoreCase))
+        {
+            var prefix = email.Split('@')[0];
+            name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prefix.Replace('.', ' ').Replace('_', ' '));
+        }
+
+        // Auto-register so user record & initial wallet balance are safely persisted in SQLite
+        _dbHelper.RegisterUser(name, email, "Pass@" + Guid.NewGuid().ToString("N")[..8], out _);
+        user = _dbHelper.GetUserByEmail(email);
+
+        return user ?? new User
+        {
+            Id = 1,
+            FullName = name,
+            Email = email,
+            Role = "Student",
+            HostelBlock = "Hostel D",
+            RoomNumber = "D-101"
+        };
+    }
+
     [HttpGet]
     public IActionResult Index()
     {
-        // Get authenticated user email or fallback to demo account Archi.kumari126697 matching screenshot
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        if (string.IsNullOrEmpty(email) || email.Contains("archi", StringComparison.OrdinalIgnoreCase))
-        {
-            email = "archi.kumari126697@marwadiuniversity.ac.in";
-        }
+        var student = GetCurrentStudent();
+        var model = _dbHelper.GetStudentDashboardData(student.Email);
 
-        var model = _dbHelper.GetStudentDashboardData(email);
-
-        if (email.Contains("archi", StringComparison.OrdinalIgnoreCase))
-        {
-            model.DisplayName = "Archi.kumari126697";
-            model.Email = "archi.kumari126697@marwadiuniversity.ac.in";
-        }
+        model.DisplayName = student.FullName;
+        model.Email = student.Email;
 
         return View(model);
     }
@@ -46,9 +88,7 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult NewRequest()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var user = _dbHelper.GetUserByEmail(email);
-
+        var student = GetCurrentStudent();
         var dbProducts = _dbHelper.GetAllProducts();
         var productDtos = new List<VendingProductDto>();
 
@@ -87,9 +127,9 @@ public class DashboardController : Controller
 
         var model = new CreateRequestViewModel
         {
-            StudentName = user?.FullName ?? "Archi.kumari126697",
-            HostelBlock = !string.IsNullOrEmpty(user?.HostelBlock) ? user.HostelBlock : "Hostel D",
-            RoomNumber = !string.IsNullOrEmpty(user?.RoomNumber) ? user.RoomNumber : "D-402",
+            StudentName = student.FullName,
+            HostelBlock = !string.IsNullOrEmpty(student.HostelBlock) ? student.HostelBlock : "Hostel D",
+            RoomNumber = !string.IsNullOrEmpty(student.RoomNumber) ? student.RoomNumber : "D-101",
             Products = productDtos
         };
 
@@ -105,6 +145,8 @@ public class DashboardController : Controller
             TempData["ErrorMessage"] = "Please select at least one item to request delivery.";
             return RedirectToAction("NewRequest");
         }
+
+        var student = GetCurrentStudent();
 
         // Parse items from JSON or build readable description
         string itemsDescription = "Campus Delivery Request";
@@ -137,7 +179,8 @@ public class DashboardController : Controller
 
         var deliveryReq = new DeliveryRequest
         {
-            StudentName = !string.IsNullOrWhiteSpace(model.StudentName) ? model.StudentName : "Archi.kumari126697",
+            StudentName = !string.IsNullOrWhiteSpace(model.StudentName) ? model.StudentName : student.FullName,
+            StudentEmail = student.Email,
             HostelRoom = $"{model.HostelBlock} · Room {model.RoomNumber}",
             ItemsDescription = itemsDescription,
             TotalAmount = calculatedSubtotal + model.RewardFee,
@@ -145,7 +188,7 @@ public class DashboardController : Controller
             Status = "Pending"
         };
 
-        // Insert into database using pure ADO.NET
+        // Insert into database using pure ADO.NET with real wallet balance deduction
         var newId = _dbHelper.CreateDeliveryRequest(deliveryReq);
 
         TempData["SuccessMessage"] = "Delivery request broadcasted successfully! A campus student runner will accept it shortly.";
@@ -159,9 +202,7 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult LiveRadar(int? id)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var user = _dbHelper.GetUserByEmail(email);
-        var studentName = user?.FullName ?? "Archi.kumari126697";
+        var student = GetCurrentStudent();
 
         DeliveryRequest? req = null;
 
@@ -172,7 +213,7 @@ public class DashboardController : Controller
 
         if (req == null)
         {
-            req = _dbHelper.GetLatestDeliveryRequest(studentName);
+            req = _dbHelper.GetLatestDeliveryRequest(student.FullName) ?? _dbHelper.GetLatestDeliveryRequest(student.Email);
         }
 
         var viewModel = new LiveRadarViewModel();
@@ -187,7 +228,7 @@ public class DashboardController : Controller
             }
             viewModel.StudentName = req.StudentName;
 
-            var hr = req.HostelRoom ?? (user != null ? $"{user.HostelBlock} - Room {user.RoomNumber}" : "Hostel A - Room 400");
+            var hr = req.HostelRoom ?? $"{student.HostelBlock} - Room {student.RoomNumber}";
             hr = hr.Replace(" · Room ", " - Room ");
             viewModel.DestinationRoom = hr;
 
@@ -244,10 +285,8 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Requests(string? tab = "active")
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var user = _dbHelper.GetUserByEmail(email);
-        var studentName = user?.FullName ?? "Archi.kumari126697";
-        var dbRequests = _dbHelper.GetStudentDeliveryRequests(studentName);
+        var student = GetCurrentStudent();
+        var dbRequests = _dbHelper.GetStudentDeliveryRequests(student.FullName);
         var currentTab = string.IsNullOrEmpty(tab) ? "active" : tab.ToLowerInvariant();
         var model = new MyRequestsViewModel
         {
@@ -284,7 +323,7 @@ public class DashboardController : Controller
                 FormattedId = formattedId,
                 ItemTitle = req.ItemsDescription,
                 PickupSpot = "Hostel Vending Machine",
-                Destination = (req.HostelRoom ?? "Hostel A - Room 400").Replace(" · Room ", " - Room "),
+                Destination = (req.HostelRoom ?? $"{student.HostelBlock} - Room {student.RoomNumber}").Replace(" · Room ", " - Room "),
                 ItemCount = 1,
                 TotalAmount = req.TotalAmount,
                 RewardFee = req.RewardFee,
@@ -330,8 +369,8 @@ public class DashboardController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult CancelOrder(int id)
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var success = _dbHelper.CancelDeliveryRequest(id, email);
+        var student = GetCurrentStudent();
+        var success = _dbHelper.CancelDeliveryRequest(id, student.Email);
         if (success)
         {
             TempData["SuccessMessage"] = $"Order #{id} has been cancelled and refunded to your wallet!";
@@ -346,7 +385,8 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Runner(string? tab = "available", bool isOnline = true)
     {
-        var runnerName = "Archi.kumari126697";
+        var student = GetCurrentStudent();
+        var runnerName = student.FullName;
         var dbAll = _dbHelper.GetStudentDeliveryRequests();
         var earnings = _dbHelper.GetRunnerTotalEarnings(runnerName);
 
@@ -362,7 +402,8 @@ public class DashboardController : Controller
         foreach (var req in dbAll)
         {
             var isMyMission = !string.IsNullOrEmpty(req.RunnerName) &&
-                              req.RunnerName.Contains("Archi", StringComparison.OrdinalIgnoreCase);
+                              (req.RunnerName.Equals(runnerName, StringComparison.OrdinalIgnoreCase) ||
+                               req.RunnerName.Equals(student.Email, StringComparison.OrdinalIgnoreCase));
 
             var elapsed = DateTime.UtcNow - req.CreatedAt;
             var timeAgo = elapsed.TotalMinutes < 1 ? "Just now" :
@@ -376,7 +417,7 @@ public class DashboardController : Controller
                 StudentRequester = req.StudentName,
                 ItemTitle = req.ItemsDescription,
                 PickupSpot = "Hostel Vending Machine",
-                Destination = (req.HostelRoom ?? "Hostel A - Room 400").Replace(" · Room ", " - Room "),
+                Destination = (req.HostelRoom ?? "Hostel Room").Replace(" · Room ", " - Room "),
                 RewardFee = req.RewardFee > 0 ? req.RewardFee : 5.0m,
                 ItemCost = req.TotalAmount > req.RewardFee ? (req.TotalAmount - req.RewardFee) : 20.0m,
                 Status = req.Status,
@@ -410,8 +451,8 @@ public class DashboardController : Controller
     [HttpPost]
     public IActionResult AcceptOrder(int id)
     {
-        var runnerName = "Archi.kumari126697";
-        _dbHelper.AcceptDeliveryOrder(id, runnerName);
+        var student = GetCurrentStudent();
+        _dbHelper.AcceptDeliveryOrder(id, student.FullName);
         TempData["SuccessMessage"] = $"Order #{id} accepted! Proceed to pickup items from vending machine.";
         return RedirectToAction("Runner", new { tab = "active" });
     }
@@ -427,8 +468,9 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Wallet()
     {
-        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var model = _dbHelper.GetWalletData(studentEmail);
+        var student = GetCurrentStudent();
+        var model = _dbHelper.GetWalletData(student.Email);
+        model.StudentName = student.FullName;
         return View(model);
     }
 
@@ -436,13 +478,13 @@ public class DashboardController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult TopUpWallet(decimal amount, string paymentMethod)
     {
-        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var student = GetCurrentStudent();
         if (amount <= 0)
         {
             TempData["ErrorMessage"] = "Please enter a valid top-up amount.";
             return RedirectToAction("Wallet");
         }
-        _dbHelper.TopUpWallet(studentEmail, amount, string.IsNullOrWhiteSpace(paymentMethod) ? "Google Pay (UPI)" : paymentMethod);
+        _dbHelper.TopUpWallet(student.Email, amount, string.IsNullOrWhiteSpace(paymentMethod) ? "Google Pay (UPI)" : paymentMethod);
         TempData["SuccessMessage"] = $"₹{amount:F2} credited to your UniVerse Wallet successfully!";
         return RedirectToAction("Wallet");
     }
@@ -451,7 +493,7 @@ public class DashboardController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult WithdrawWallet(decimal amount, string upiId)
     {
-        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var student = GetCurrentStudent();
         if (amount <= 0)
         {
             TempData["ErrorMessage"] = "Please enter a valid payout withdrawal amount.";
@@ -462,7 +504,7 @@ public class DashboardController : Controller
             TempData["ErrorMessage"] = "Please enter your UPI ID for payout.";
             return RedirectToAction("Wallet");
         }
-        var success = _dbHelper.WithdrawWallet(studentEmail, amount, upiId);
+        var success = _dbHelper.WithdrawWallet(student.Email, amount, upiId);
         if (!success)
         {
             TempData["ErrorMessage"] = "Insufficient wallet balance for this withdrawal.";
@@ -481,7 +523,8 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Marketplace(string? category, string? search, string? sort, string? view)
     {
-        var currentUser = "Archi.kumari126697";
+        var student = GetCurrentStudent();
+        var currentUser = student.FullName;
         var selectedCategory = string.IsNullOrWhiteSpace(category) ? "All Items" : category;
         var selectedSort = string.IsNullOrWhiteSpace(sort) ? "Newest" : sort;
         var selectedView = string.IsNullOrWhiteSpace(view) ? "all" : view.ToLowerInvariant();
@@ -498,7 +541,7 @@ public class DashboardController : Controller
             ActiveView = selectedView,
             TotalListingsCount = items.Count,
             SavedCount = allItems.Count(i => i.IsSaved),
-            MyListingsCount = allItems.Count(i => i.SellerName.Contains("Archi", StringComparison.OrdinalIgnoreCase))
+            MyListingsCount = allItems.Count(i => i.SellerName.Equals(currentUser, StringComparison.OrdinalIgnoreCase))
         };
 
         return View(model);
@@ -514,8 +557,9 @@ public class DashboardController : Controller
             return RedirectToAction("Marketplace");
         }
 
-        item.SellerName = "Archi.kumari126697";
-        item.SellerHostel = "Hostel D · Room 304";
+        var student = GetCurrentStudent();
+        item.SellerName = student.FullName;
+        item.SellerHostel = !string.IsNullOrWhiteSpace(student.HostelBlock) ? $"{student.HostelBlock} · Room {student.RoomNumber}" : "Hostel D · Room 101";
         item.CreatedAt = DateTime.UtcNow;
         item.Rating = "No ratings yet";
 
@@ -555,16 +599,16 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Analytics(string range = "7d")
     {
-        var studentEmail = User.Identity?.Name ?? "student@marwadiuniversity.ac.in";
-        var model = _dbHelper.GetAnalyticsData(studentEmail, range);
+        var student = GetCurrentStudent();
+        var model = _dbHelper.GetAnalyticsData(student.Email, range);
         return View(model);
     }
 
     [HttpGet]
     public IActionResult ExportAnalyticsCsv(string range = "7d")
     {
-        var studentEmail = User.Identity?.Name ?? "student@marwadiuniversity.ac.in";
-        var model = _dbHelper.GetAnalyticsData(studentEmail, range);
+        var student = GetCurrentStudent();
+        var model = _dbHelper.GetAnalyticsData(student.Email, range);
 
         var builder = new System.Text.StringBuilder();
         builder.AppendLine("Date,Spending (INR),Requests Created,Requests Completed,Requests Cancelled");
@@ -584,8 +628,12 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Profile()
     {
-        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var model = _dbHelper.GetUserProfile(studentEmail);
+        var student = GetCurrentStudent();
+        var model = _dbHelper.GetUserProfile(student.Email);
+        if (string.IsNullOrWhiteSpace(model.FullName) || model.FullName.Equals("student", StringComparison.OrdinalIgnoreCase))
+        {
+            model.FullName = student.FullName;
+        }
         return View(model);
     }
 
@@ -593,8 +641,8 @@ public class DashboardController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile(ProfileViewModel model, IFormFile? photoFile)
     {
-        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        model.Email = studentEmail; // Tied to university identity
+        var student = GetCurrentStudent();
+        model.Email = student.Email; // Strictly tied to authenticated student identity
 
         // Handle photo removal
         if (model.RemovePhoto)
@@ -645,20 +693,18 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Setting(string? tab = "all")
     {
-        var studentEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
-                           ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        var profile = _dbHelper.GetUserProfile(studentEmail);
-        var user    = _dbHelper.GetUserByEmail(studentEmail);
+        var student = GetCurrentStudent();
+        var profile = _dbHelper.GetUserProfile(student.Email);
 
         var model = new SettingsViewModel
         {
-            FullName           = profile.FullName,
-            Email              = profile.Email,
+            FullName           = !string.IsNullOrWhiteSpace(profile.FullName) ? profile.FullName : student.FullName,
+            Email              = student.Email,
             ProfilePictureUrl  = profile.ProfilePictureUrl,
-            StudentId          = "1041",
-            Role               = user?.Role ?? "Student",
-            HostelBlock        = user?.HostelBlock ?? "Hostel A",
-            RoomNumber         = user?.RoomNumber  ?? "",
+            StudentId          = student.Id.ToString(),
+            Role               = student.Role ?? "Student",
+            HostelBlock        = student.HostelBlock ?? "Hostel D",
+            RoomNumber         = student.RoomNumber  ?? "D-101",
             ActiveTab          = tab ?? "all"
         };
 
@@ -673,9 +719,8 @@ public class DashboardController : Controller
     public IActionResult SaveDeliveryDefaults(string hostelBlock, string roomNumber,
                                               string runnerContact, string quickDropoffNote)
     {
-        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
-                    ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        _dbHelper.UpdateUserHostelInfo(email, hostelBlock, roomNumber);
+        var student = GetCurrentStudent();
+        _dbHelper.UpdateUserHostelInfo(student.Email, hostelBlock, roomNumber);
         TempData["SuccessMessage"] = "Delivery defaults saved successfully!";
         return RedirectToAction("Setting", new { tab = "hostel" });
     }
@@ -694,9 +739,8 @@ public class DashboardController : Controller
             TempData["ErrorMessage"] = "Password must be at least 8 characters.";
             return RedirectToAction("Setting", new { tab = "security" });
         }
-        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
-                    ?? "archi.kumari126697@marwadiuniversity.ac.in";
-        _dbHelper.UpdateUserPassword(email, newPassword);
+        var student = GetCurrentStudent();
+        _dbHelper.UpdateUserPassword(student.Email, newPassword);
         TempData["SuccessMessage"] = "Password updated successfully!";
         return RedirectToAction("Setting", new { tab = "security" });
     }

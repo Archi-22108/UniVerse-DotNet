@@ -128,6 +128,12 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     alterCmd.ExecuteNonQuery();
             } catch { }
 
+            try
+            {
+                using (var alterCmd = new SqliteCommand("ALTER TABLE DeliveryRequests ADD COLUMN StudentEmail TEXT;", connection))
+                    alterCmd.ExecuteNonQuery();
+            } catch { }
+
             // Seed initial wallet transactions if empty
             try
             {
@@ -449,10 +455,10 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     }
                 }
 
-                // 2. Insert new student into Users table
+                // 2. Insert new student into Users table with initial 250.0 balance
                 var insertQuery = @"
-                    INSERT INTO Users (FullName, Email, Password, Role, HostelBlock, RoomNumber, CreatedAt)
-                    VALUES (@FullName, @Email, @Password, 'Student', 'Hostel D', 'Hostel Room', CURRENT_TIMESTAMP);
+                    INSERT INTO Users (FullName, Email, Password, Role, HostelBlock, RoomNumber, WalletBalance, CreatedAt)
+                    VALUES (@FullName, @Email, @Password, 'Student', 'Hostel D', 'Hostel Room', 250.0, CURRENT_TIMESTAMP);
                 ";
 
                 using (var insertCmd = new SqliteCommand(insertQuery, connection))
@@ -462,7 +468,23 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     insertCmd.Parameters.Add(new SqliteParameter("@Password", password));
 
                     var rowsAffected = insertCmd.ExecuteNonQuery();
-                    return rowsAffected > 0;
+                    if (rowsAffected > 0)
+                    {
+                        // Provide initial welcome bonus transaction
+                        try
+                        {
+                            var bonusTx = @"
+                                INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
+                                VALUES (@Email, 'Campus Welcome Bonus', 'Welcome to UniVerse Campus Super-App', 250.0, 'Credit', 'WelcomeBonus', 'BONUS-250', 'Completed', CURRENT_TIMESTAMP);";
+                            using var bCmd = new SqliteCommand(bonusTx, connection);
+                            bCmd.Parameters.Add(new SqliteParameter("@Email", normalizedEmail));
+                            bCmd.ExecuteNonQuery();
+                        }
+                        catch { }
+
+                        return true;
+                    }
+                    return false;
                 }
             }
         }
@@ -481,7 +503,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     {
         var model = new DashboardViewModel
         {
-            Email = !string.IsNullOrEmpty(studentEmail) ? studentEmail.Trim().ToLowerInvariant() : "archi.kumari126697@marwadiuniversity.ac.in"
+            Email = !string.IsNullOrEmpty(studentEmail) ? studentEmail.Trim().ToLowerInvariant() : "student@marwadiuniversity.ac.in"
         };
 
         using (var connection = new SqliteConnection(_connectionString))
@@ -502,7 +524,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     }
                     else
                     {
-                        model.DisplayName = "Archi.kumari126697";
+                        model.DisplayName = model.Email.Split('@')[0].Replace('.', ' ');
                     }
                 }
             }
@@ -511,11 +533,15 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             var reqSql = @"
                 SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
                 FROM DeliveryRequests 
+                WHERE LOWER(StudentName) = LOWER(@DisplayName) OR LOWER(StudentEmail) = LOWER(@Email)
                 ORDER BY CreatedAt DESC;
             ";
 
             using (var reqCmd = new SqliteCommand(reqSql, connection))
             {
+                reqCmd.Parameters.Add(new SqliteParameter("@DisplayName", model.DisplayName));
+                reqCmd.Parameters.Add(new SqliteParameter("@Email", model.Email));
+
                 using (var reader = reqCmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -533,49 +559,42 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                             CreatedAt = reader.IsDBNull(8) ? DateTime.UtcNow : reader.GetDateTime(8)
                         };
 
-                        // Check if this request belongs to the current student or demo student
-                        var isMyRequest = req.StudentName.Equals(model.DisplayName, StringComparison.OrdinalIgnoreCase) ||
-                                          req.StudentName.Contains("Archi", StringComparison.OrdinalIgnoreCase);
+                        model.TotalRequests++;
 
-                        if (isMyRequest)
+                        if (req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
                         {
-                            model.TotalRequests++;
+                            model.CompletedRequests++;
+                            model.RecentCompleted.Add(req);
+                        }
+                        else if (req.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                        {
+                            model.CancelledRequests++;
+                        }
+                        else
+                        {
+                            model.ActiveRequests++;
+                            model.ActiveDeliveries.Add(req);
+                        }
 
-                            if (req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
-                            {
-                                model.CompletedRequests++;
-                                model.RecentCompleted.Add(req);
-                            }
-                            else if (req.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
-                            {
-                                model.CancelledRequests++;
-                            }
-                            else
-                            {
-                                model.ActiveRequests++;
-                                model.ActiveDeliveries.Add(req);
-                            }
+                        // Add Activity Item
+                        model.Activities.Add(new DashboardActivityItem
+                        {
+                            Id = req.Id.ToString(),
+                            Title = $"Request #{req.Id}",
+                            Description = $"Your request for {req.ItemsDescription} status is {req.Status}.",
+                            TimeAgo = "Recently",
+                            ColorHex = req.Status == "Delivered" ? "#00e599" : "#f59e0b",
+                            Timestamp = req.CreatedAt
+                        });
 
-                            // Add Activity Item
-                            model.Activities.Add(new DashboardActivityItem
+                        // Real WeeklyActivityCounts calculation for sparkline
+                        var diffDays = (DateTime.UtcNow.Date - req.CreatedAt.Date).TotalDays;
+                        if (diffDays >= 0 && diffDays < 7)
+                        {
+                            int dayIdx = ((int)req.CreatedAt.DayOfWeek + 6) % 7; // Mon=0 .. Sun=6
+                            if (dayIdx >= 0 && dayIdx < 7)
                             {
-                                Id = req.Id.ToString(),
-                                Title = $"Request #{req.Id}",
-                                Description = $"Your request for {req.ItemsDescription} status is {req.Status}.",
-                                TimeAgo = "Recently",
-                                ColorHex = req.Status == "Delivered" ? "#00e599" : "#f59e0b",
-                                Timestamp = req.CreatedAt
-                            });
-
-                            // Real WeeklyActivityCounts calculation for sparkline
-                            var diffDays = (DateTime.UtcNow.Date - req.CreatedAt.Date).TotalDays;
-                            if (diffDays >= 0 && diffDays < 7)
-                            {
-                                int dayIdx = ((int)req.CreatedAt.DayOfWeek + 6) % 7; // Mon=0 .. Sun=6
-                                if (dayIdx >= 0 && dayIdx < 7)
-                                {
-                                    model.WeeklyActivityCounts[dayIdx]++;
-                                }
+                                model.WeeklyActivityCounts[dayIdx]++;
                             }
                         }
                     }
@@ -644,17 +663,36 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             {
                 try
                 {
+                    var studentEmail = !string.IsNullOrWhiteSpace(request.StudentEmail)
+                        ? request.StudentEmail.Trim().ToLowerInvariant()
+                        : null;
+
+                    if (string.IsNullOrEmpty(studentEmail) && !string.IsNullOrWhiteSpace(request.StudentName))
+                    {
+                        var lookupSql = "SELECT Email FROM Users WHERE LOWER(FullName) = LOWER(@name) LIMIT 1;";
+                        using (var lCmd = new SqliteCommand(lookupSql, connection, transaction))
+                        {
+                            lCmd.Parameters.Add(new SqliteParameter("@name", request.StudentName.Trim()));
+                            var obj = lCmd.ExecuteScalar();
+                            if (obj != null && obj != DBNull.Value)
+                                studentEmail = obj.ToString();
+                        }
+                    }
+
+                    studentEmail ??= "student@marwadiuniversity.ac.in";
+
                     var sql = @"
-                        INSERT INTO DeliveryRequests (StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt)
-                        VALUES (@StudentName, @HostelRoom, @ItemsDescription, @TotalAmount, @RewardFee, 'Pending', NULL, CURRENT_TIMESTAMP);
+                        INSERT INTO DeliveryRequests (StudentName, StudentEmail, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt)
+                        VALUES (@StudentName, @StudentEmail, @HostelRoom, @ItemsDescription, @TotalAmount, @RewardFee, 'Pending', NULL, CURRENT_TIMESTAMP);
                         SELECT last_insert_rowid();
                     ";
 
                     int newId = 0;
                     using (var cmd = new SqliteCommand(sql, connection, transaction))
                     {
-                        cmd.Parameters.Add(new SqliteParameter("@StudentName", request.StudentName ?? "Archi.kumari126697"));
-                        cmd.Parameters.Add(new SqliteParameter("@HostelRoom", request.HostelRoom ?? "Hostel D · Room D-402"));
+                        cmd.Parameters.Add(new SqliteParameter("@StudentName", request.StudentName ?? "Student"));
+                        cmd.Parameters.Add(new SqliteParameter("@StudentEmail", studentEmail));
+                        cmd.Parameters.Add(new SqliteParameter("@HostelRoom", request.HostelRoom ?? "Hostel D · Room 101"));
                         cmd.Parameters.Add(new SqliteParameter("@ItemsDescription", request.ItemsDescription ?? "Campus Snacks"));
                         cmd.Parameters.Add(new SqliteParameter("@TotalAmount", (double)request.TotalAmount));
                         cmd.Parameters.Add(new SqliteParameter("@RewardFee", (double)request.RewardFee));
@@ -662,24 +700,26 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                         newId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // Real-time Wallet Deduction
+                    // Real-time Wallet Deduction strictly from this requester's wallet
                     if (request.TotalAmount > 0)
                     {
                         var updateBal = @"
                             UPDATE Users 
                             SET WalletBalance = CASE WHEN WalletBalance >= @amt THEN WalletBalance - @amt ELSE 0 END 
-                            WHERE LOWER(Email) LIKE '%archi%' OR LOWER(FullName) LIKE '%archi%';";
+                            WHERE LOWER(Email) = LOWER(@email);";
                         using (var upCmd = new SqliteCommand(updateBal, connection, transaction))
                         {
                             upCmd.Parameters.Add(new SqliteParameter("@amt", (double)request.TotalAmount));
+                            upCmd.Parameters.Add(new SqliteParameter("@email", studentEmail));
                             upCmd.ExecuteNonQuery();
                         }
 
                         var insTx = @"
                             INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
-                            VALUES ('archi.kumari126697@marwadiuniversity.ac.in', @title, @desc, @amt, 'Debit', 'DeliveryPayment', @ref, 'Completed', CURRENT_TIMESTAMP);";
+                            VALUES (@email, @title, @desc, @amt, 'Debit', 'DeliveryPayment', @ref, 'Completed', CURRENT_TIMESTAMP);";
                         using (var insCmd = new SqliteCommand(insTx, connection, transaction))
                         {
+                            insCmd.Parameters.Add(new SqliteParameter("@email", studentEmail));
                             insCmd.Parameters.Add(new SqliteParameter("@title", $"Snack Order #{newId} Payment"));
                             insCmd.Parameters.Add(new SqliteParameter("@desc", $"Paid for {request.ItemsDescription} (Hostel Drop)"));
                             insCmd.Parameters.Add(new SqliteParameter("@amt", (double)request.TotalAmount));
@@ -758,14 +798,14 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                    ORDER BY CreatedAt DESC LIMIT 1;"
                 : @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
                    FROM DeliveryRequests 
-                   WHERE StudentName = @StudentName OR StudentName LIKE '%Archi%'
+                   WHERE LOWER(StudentName) = LOWER(@StudentName) OR LOWER(StudentEmail) = LOWER(@StudentName)
                    ORDER BY CreatedAt DESC LIMIT 1;";
 
             using (var cmd = new SqliteCommand(sql, connection))
             {
                 if (!string.IsNullOrWhiteSpace(studentName))
                 {
-                    cmd.Parameters.Add(new SqliteParameter("@StudentName", studentName));
+                    cmd.Parameters.Add(new SqliteParameter("@StudentName", studentName.Trim()));
                 }
 
                 using (var reader = cmd.ExecuteReader())
@@ -809,14 +849,14 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                    ORDER BY CreatedAt DESC;"
                 : @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
                    FROM DeliveryRequests 
-                   WHERE StudentName = @StudentName OR StudentName LIKE '%Archi%'
+                   WHERE LOWER(StudentName) = LOWER(@StudentName) OR LOWER(StudentEmail) = LOWER(@StudentName)
                    ORDER BY CreatedAt DESC;";
 
             using (var cmd = new SqliteCommand(sql, connection))
             {
                 if (!string.IsNullOrWhiteSpace(studentName))
                 {
-                    cmd.Parameters.Add(new SqliteParameter("@StudentName", studentName));
+                    cmd.Parameters.Add(new SqliteParameter("@StudentName", studentName.Trim()));
                 }
 
                 using (var reader = cmd.ExecuteReader())
@@ -957,23 +997,35 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     // When order is Delivered, reward fee is credited to Runner's real wallet balance
                     if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase) && rewardFee > 0)
                     {
-                        var runnerTarget = !string.IsNullOrWhiteSpace(runnerName) ? runnerName : "Archi.kumari126697";
+                        var runnerTarget = !string.IsNullOrWhiteSpace(runnerName) ? runnerName : "Student Runner";
+                        string runnerEmail = "";
+                        var lookupRunnerSql = "SELECT Email FROM Users WHERE LOWER(FullName) = LOWER(@rName) LIMIT 1;";
+                        using (var lCmd = new SqliteCommand(lookupRunnerSql, connection, transaction))
+                        {
+                            lCmd.Parameters.Add(new SqliteParameter("@rName", runnerTarget));
+                            var obj = lCmd.ExecuteScalar();
+                            if (obj != null && obj != DBNull.Value) runnerEmail = obj.ToString()!;
+                        }
+                        if (string.IsNullOrEmpty(runnerEmail)) runnerEmail = "rohit.runner@marwadiuniversity.ac.in";
+
                         var updateRunnerWallet = @"
                             UPDATE Users 
                             SET WalletBalance = COALESCE(WalletBalance, 250.0) + @reward 
-                            WHERE LOWER(FullName) = LOWER(@rName) OR LOWER(Email) LIKE '%archi%';";
+                            WHERE LOWER(FullName) = LOWER(@rName) OR LOWER(Email) = LOWER(@rEmail);";
                         using (var upCmd = new SqliteCommand(updateRunnerWallet, connection, transaction))
                         {
                             upCmd.Parameters.Add(new SqliteParameter("@reward", (double)rewardFee));
                             upCmd.Parameters.Add(new SqliteParameter("@rName", runnerTarget));
+                            upCmd.Parameters.Add(new SqliteParameter("@rEmail", runnerEmail));
                             upCmd.ExecuteNonQuery();
                         }
 
                         var insTx = @"
                             INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
-                            VALUES ('archi.kumari126697@marwadiuniversity.ac.in', @title, @desc, @amt, 'Credit', 'RunnerReward', @ref, 'Completed', CURRENT_TIMESTAMP);";
+                            VALUES (@email, @title, @desc, @amt, 'Credit', 'RunnerReward', @ref, 'Completed', CURRENT_TIMESTAMP);";
                         using (var insCmd = new SqliteCommand(insTx, connection, transaction))
                         {
+                            insCmd.Parameters.Add(new SqliteParameter("@email", runnerEmail));
                             insCmd.Parameters.Add(new SqliteParameter("@title", $"Runner Tip Reward · Order #{requestId}"));
                             insCmd.Parameters.Add(new SqliteParameter("@desc", $"Delivered {itemsDesc} to {hostelRoom}"));
                             insCmd.Parameters.Add(new SqliteParameter("@amt", (double)rewardFee));
@@ -1044,14 +1096,15 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     // Refund to wallet
                     if (totalAmount > 0)
                     {
+                        var targetEmail = !string.IsNullOrWhiteSpace(userEmail) ? userEmail.Trim().ToLowerInvariant() : "student@marwadiuniversity.ac.in";
                         var refundWallet = @"
                             UPDATE Users 
                             SET WalletBalance = COALESCE(WalletBalance, 250.0) + @amt 
-                            WHERE Email = @email OR LOWER(Email) LIKE '%archi%';";
+                            WHERE LOWER(Email) = LOWER(@email);";
                         using (var cmd = new SqliteCommand(refundWallet, connection, transaction))
                         {
                             cmd.Parameters.Add(new SqliteParameter("@amt", (double)totalAmount));
-                            cmd.Parameters.Add(new SqliteParameter("@email", userEmail ?? "archi.kumari126697@marwadiuniversity.ac.in"));
+                            cmd.Parameters.Add(new SqliteParameter("@email", targetEmail));
                             cmd.ExecuteNonQuery();
                         }
 
@@ -1060,7 +1113,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                             VALUES (@email, @title, @desc, @amt, 'Credit', 'Refund', @ref, 'Completed', CURRENT_TIMESTAMP);";
                         using (var cmd = new SqliteCommand(insTx, connection, transaction))
                         {
-                            cmd.Parameters.Add(new SqliteParameter("@email", userEmail ?? "archi.kumari126697@marwadiuniversity.ac.in"));
+                            cmd.Parameters.Add(new SqliteParameter("@email", targetEmail));
                             cmd.Parameters.Add(new SqliteParameter("@title", $"Refund: Order #{requestId} Cancelled"));
                             cmd.Parameters.Add(new SqliteParameter("@desc", $"Full refund credited to wallet for cancelled order #{requestId}"));
                             cmd.Parameters.Add(new SqliteParameter("@amt", (double)totalAmount));
@@ -1093,7 +1146,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             var sql = @"
                 SELECT COALESCE(SUM(RewardFee), 0) 
                 FROM DeliveryRequests 
-                WHERE Status = 'Delivered' AND (RunnerName = @RunnerName OR RunnerName LIKE '%Archi%');
+                WHERE Status = 'Delivered' AND LOWER(RunnerName) = LOWER(@RunnerName);
             ";
 
             using (var cmd = new SqliteCommand(sql, connection))
@@ -1136,7 +1189,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             {
                 if (viewFilter.Equals("my", StringComparison.OrdinalIgnoreCase))
                 {
-                    sql += " AND (LOWER(SellerName) = LOWER(@SellerName) OR LOWER(SellerName) LIKE '%archi%')";
+                    sql += " AND LOWER(SellerName) = LOWER(@SellerName)";
                     parameters.Add(new SqliteParameter("@SellerName", currentUser));
                 }
                 else if (viewFilter.Equals("saved", StringComparison.OrdinalIgnoreCase))
@@ -1391,16 +1444,24 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             connection.Open();
 
             // 1. Query all real student delivery requests
-            var sql = @"
-                SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
-                FROM DeliveryRequests 
-                ORDER BY CreatedAt DESC;
-            ";
+            var sql = string.IsNullOrWhiteSpace(studentName)
+                ? @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                   FROM DeliveryRequests 
+                   ORDER BY CreatedAt DESC;"
+                : @"SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
+                   FROM DeliveryRequests 
+                   WHERE LOWER(StudentName) = LOWER(@student) OR LOWER(StudentEmail) = LOWER(@student)
+                   ORDER BY CreatedAt DESC;";
 
             var allRequests = new List<DeliveryRequest>();
 
             using (var cmd = new SqliteCommand(sql, connection))
             {
+                if (!string.IsNullOrWhiteSpace(studentName))
+                {
+                    cmd.Parameters.Add(new SqliteParameter("@student", studentName.Trim()));
+                }
+
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -1519,10 +1580,11 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public ProfileViewModel GetUserProfile(string email)
     {
+        var targetEmail = !string.IsNullOrWhiteSpace(email) ? email.Trim().ToLowerInvariant() : "student@marwadiuniversity.ac.in";
         var model = new ProfileViewModel
         {
-            Email = "archi.kumari126697@marwadiuniversity.ac.in",
-            FullName = "3166_ARCHI KUMARI",
+            Email = targetEmail,
+            FullName = targetEmail.Split('@')[0].Replace('.', ' '),
             RatingText = "No ratings yet"
         };
 
@@ -1533,29 +1595,23 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             var sql = @"
                 SELECT FullName, Email, ProfilePictureUrl, Department, Semester 
                 FROM Users 
-                WHERE Email = @Email OR Email LIKE '%archi%' OR FullName LIKE '%ARCHI%'
+                WHERE LOWER(Email) = LOWER(@Email)
                 LIMIT 1;
             ";
 
             using (var cmd = new SqliteCommand(sql, connection))
             {
-                cmd.Parameters.Add(new SqliteParameter("@Email", email ?? "archi.kumari126697@marwadiuniversity.ac.in"));
+                cmd.Parameters.Add(new SqliteParameter("@Email", targetEmail));
                 using (var reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
                         var fn = reader.GetString(0);
-                        model.FullName = (string.IsNullOrWhiteSpace(fn) || fn.Equals("Archi.kumari126697", StringComparison.OrdinalIgnoreCase) || fn.Equals("Archi Kumari", StringComparison.OrdinalIgnoreCase)) 
-                            ? "3166_ARCHI KUMARI" 
-                            : fn;
+                        model.FullName = !string.IsNullOrWhiteSpace(fn) ? fn : model.FullName;
                         model.Email = reader.GetString(1);
                         model.ProfilePictureUrl = reader.IsDBNull(2) ? null : reader.GetString(2);
                         model.Department = reader.IsDBNull(3) ? null : reader.GetString(3);
                         model.Semester = reader.IsDBNull(4) ? null : reader.GetString(4);
-                    }
-                    else
-                    {
-                        model.FullName = "3166_ARCHI KUMARI";
                     }
                 }
             }
@@ -1569,6 +1625,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public bool UpdateUserProfile(ProfileViewModel profile)
     {
+        var targetEmail = profile.Email.Trim().ToLowerInvariant();
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
@@ -1579,7 +1636,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     Department = @Department, 
                     Semester = @Semester, 
                     ProfilePictureUrl = @ProfilePictureUrl 
-                WHERE Email = @Email OR Email LIKE '%archi%' OR FullName LIKE '%ARCHI%';
+                WHERE LOWER(Email) = LOWER(@Email);
             ";
 
             int rows = 0;
@@ -1589,20 +1646,20 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                 cmd.Parameters.Add(new SqliteParameter("@Department", (object?)profile.Department ?? DBNull.Value));
                 cmd.Parameters.Add(new SqliteParameter("@Semester", (object?)profile.Semester ?? DBNull.Value));
                 cmd.Parameters.Add(new SqliteParameter("@ProfilePictureUrl", (object?)profile.ProfilePictureUrl ?? DBNull.Value));
-                cmd.Parameters.Add(new SqliteParameter("@Email", profile.Email));
+                cmd.Parameters.Add(new SqliteParameter("@Email", targetEmail));
                 rows = cmd.ExecuteNonQuery();
             }
 
             if (rows == 0)
             {
                 var insertSql = @"
-                    INSERT INTO Users (FullName, Email, Password, Role, HostelBlock, RoomNumber, ProfilePictureUrl, Department, Semester)
-                    VALUES (@FullName, @Email, 'Password123!', 'Student', 'Hostel A', 'Room 400', @ProfilePictureUrl, @Department, @Semester);
+                    INSERT INTO Users (FullName, Email, Password, Role, HostelBlock, RoomNumber, ProfilePictureUrl, Department, Semester, WalletBalance)
+                    VALUES (@FullName, @Email, 'Password123!', 'Student', 'Hostel D', 'D-101', @ProfilePictureUrl, @Department, @Semester, 250.0);
                 ";
                 using (var cmd = new SqliteCommand(insertSql, connection))
                 {
                     cmd.Parameters.Add(new SqliteParameter("@FullName", profile.FullName));
-                    cmd.Parameters.Add(new SqliteParameter("@Email", profile.Email));
+                    cmd.Parameters.Add(new SqliteParameter("@Email", targetEmail));
                     cmd.Parameters.Add(new SqliteParameter("@Department", (object?)profile.Department ?? DBNull.Value));
                     cmd.Parameters.Add(new SqliteParameter("@Semester", (object?)profile.Semester ?? DBNull.Value));
                     cmd.Parameters.Add(new SqliteParameter("@ProfilePictureUrl", (object?)profile.ProfilePictureUrl ?? DBNull.Value));
@@ -1619,16 +1676,17 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public bool UpdateUserHostelInfo(string email, string hostelBlock, string roomNumber)
     {
+        var targetEmail = email.Trim().ToLowerInvariant();
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
             var sql = @"UPDATE Users SET HostelBlock = @HostelBlock, RoomNumber = @RoomNumber
-                        WHERE Email = @Email OR Email LIKE '%archi%';";
+                        WHERE LOWER(Email) = LOWER(@Email);";
             using (var cmd = new SqliteCommand(sql, connection))
             {
-                cmd.Parameters.Add(new SqliteParameter("@HostelBlock", hostelBlock ?? "Hostel A"));
+                cmd.Parameters.Add(new SqliteParameter("@HostelBlock", hostelBlock ?? "Hostel D"));
                 cmd.Parameters.Add(new SqliteParameter("@RoomNumber",  roomNumber  ?? ""));
-                cmd.Parameters.Add(new SqliteParameter("@Email",       email));
+                cmd.Parameters.Add(new SqliteParameter("@Email",       targetEmail));
                 cmd.ExecuteNonQuery();
             }
         }
@@ -1640,15 +1698,16 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public bool UpdateUserPassword(string email, string newPassword)
     {
+        var targetEmail = email.Trim().ToLowerInvariant();
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
             var sql = @"UPDATE Users SET Password = @Password
-                        WHERE Email = @Email OR Email LIKE '%archi%';";
+                        WHERE LOWER(Email) = LOWER(@Email);";
             using (var cmd = new SqliteCommand(sql, connection))
             {
                 cmd.Parameters.Add(new SqliteParameter("@Password", newPassword));
-                cmd.Parameters.Add(new SqliteParameter("@Email",    email));
+                cmd.Parameters.Add(new SqliteParameter("@Email",    targetEmail));
                 cmd.ExecuteNonQuery();
             }
         }
@@ -1660,9 +1719,10 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public WalletViewModel GetWalletData(string email)
     {
+        var targetEmail = !string.IsNullOrWhiteSpace(email) ? email.Trim().ToLowerInvariant() : "student@marwadiuniversity.ac.in";
         var model = new WalletViewModel
         {
-            StudentEmail = email
+            StudentEmail = targetEmail
         };
 
         using (var connection = new SqliteConnection(_connectionString))
@@ -1673,12 +1733,12 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             var userQuery = "SELECT FullName, ProfilePictureUrl, COALESCE(WalletBalance, 250.0) FROM Users WHERE LOWER(Email) = LOWER(@email);";
             using (var userCmd = new SqliteCommand(userQuery, connection))
             {
-                userCmd.Parameters.AddWithValue("@email", email);
+                userCmd.Parameters.AddWithValue("@email", targetEmail);
                 using (var reader = userCmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        model.StudentName = reader.IsDBNull(0) ? "Student" : reader.GetString(0);
+                        model.StudentName = reader.IsDBNull(0) ? "Marwadi Student" : reader.GetString(0);
                         model.ProfilePictureUrl = reader.IsDBNull(1) ? null : reader.GetString(1);
                         model.Balance = Convert.ToDecimal(reader.GetDouble(2));
                     }
@@ -1686,22 +1746,22 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             }
 
             if (string.IsNullOrEmpty(model.StudentName))
-                model.StudentName = "3166_ARCHI KUMARI";
+                model.StudentName = targetEmail.Split('@')[0].Replace('.', ' ');
 
             model.Initial = !string.IsNullOrWhiteSpace(model.StudentName)
                 ? model.StudentName.Trim().Substring(0, 1).ToUpper()
-                : "A";
+                : "M";
 
-            // 2. Read Transactions
+            // 2. Read Transactions strictly for this student
             var txQuery = @"
                 SELECT Id, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt 
                 FROM WalletTransactions 
-                WHERE LOWER(UserEmail) = LOWER(@email) OR UserEmail LIKE '%archi%'
+                WHERE LOWER(UserEmail) = LOWER(@email)
                 ORDER BY CreatedAt DESC;";
 
             using (var txCmd = new SqliteCommand(txQuery, connection))
             {
-                txCmd.Parameters.AddWithValue("@email", email);
+                txCmd.Parameters.AddWithValue("@email", targetEmail);
                 using (var reader = txCmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -1739,10 +1799,11 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             // Real count of deliveries done from DeliveryRequests table
             var delQuery = @"
                 SELECT COUNT(*) FROM DeliveryRequests 
-                WHERE Status = 'Delivered' AND (RunnerName = @name OR RunnerName LIKE '%Archi%');";
+                WHERE Status = 'Delivered' AND (LOWER(RunnerName) = LOWER(@name) OR LOWER(RunnerName) = LOWER(@email));";
             using (var delCmd = new SqliteCommand(delQuery, connection))
             {
                 delCmd.Parameters.AddWithValue("@name", model.StudentName);
+                delCmd.Parameters.AddWithValue("@email", targetEmail);
                 var obj = delCmd.ExecuteScalar();
                 model.TotalDeliveriesDone = obj != null && obj != DBNull.Value ? Convert.ToInt32(obj) : 0;
             }
@@ -1756,6 +1817,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public bool TopUpWallet(string email, decimal amount, string paymentMethod)
     {
+        var targetEmail = email.Trim().ToLowerInvariant();
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
@@ -1763,11 +1825,11 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             {
                 try
                 {
-                    var updateQuery = "UPDATE Users SET WalletBalance = COALESCE(WalletBalance, 250.0) + @amt WHERE LOWER(Email) = LOWER(@email) OR Email LIKE '%archi%';";
+                    var updateQuery = "UPDATE Users SET WalletBalance = COALESCE(WalletBalance, 250.0) + @amt WHERE LOWER(Email) = LOWER(@email);";
                     using (var upCmd = new SqliteCommand(updateQuery, connection, transaction))
                     {
                         upCmd.Parameters.AddWithValue("@amt", (double)amount);
-                        upCmd.Parameters.AddWithValue("@email", email);
+                        upCmd.Parameters.AddWithValue("@email", targetEmail);
                         upCmd.ExecuteNonQuery();
                     }
 
@@ -1776,7 +1838,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                         VALUES (@email, @title, @desc, @amt, 'Credit', 'Topup', @ref, 'Completed');";
                     using (var insCmd = new SqliteCommand(insQuery, connection, transaction))
                     {
-                        insCmd.Parameters.AddWithValue("@email", email);
+                        insCmd.Parameters.AddWithValue("@email", targetEmail);
                         insCmd.Parameters.AddWithValue("@title", $"Wallet Top-up · {paymentMethod}");
                         insCmd.Parameters.AddWithValue("@desc", $"Instant recharge via {paymentMethod}");
                         insCmd.Parameters.AddWithValue("@amt", (double)amount);
@@ -1801,6 +1863,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
     /// </summary>
     public bool WithdrawWallet(string email, decimal amount, string upiId)
     {
+        var targetEmail = email.Trim().ToLowerInvariant();
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
@@ -1808,11 +1871,11 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             {
                 try
                 {
-                    var checkQuery = "SELECT COALESCE(WalletBalance, 250.0) FROM Users WHERE LOWER(Email) = LOWER(@email) OR Email LIKE '%archi%';";
+                    var checkQuery = "SELECT COALESCE(WalletBalance, 250.0) FROM Users WHERE LOWER(Email) = LOWER(@email);";
                     decimal curBalance = 0;
                     using (var chkCmd = new SqliteCommand(checkQuery, connection, transaction))
                     {
-                        chkCmd.Parameters.AddWithValue("@email", email);
+                        chkCmd.Parameters.AddWithValue("@email", targetEmail);
                         var obj = chkCmd.ExecuteScalar();
                         if (obj != null && obj != DBNull.Value)
                             curBalance = Convert.ToDecimal(obj);
@@ -1821,11 +1884,11 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                     if (curBalance < amount)
                         return false;
 
-                    var updateQuery = "UPDATE Users SET WalletBalance = WalletBalance - @amt WHERE LOWER(Email) = LOWER(@email) OR Email LIKE '%archi%';";
+                    var updateQuery = "UPDATE Users SET WalletBalance = WalletBalance - @amt WHERE LOWER(Email) = LOWER(@email);";
                     using (var upCmd = new SqliteCommand(updateQuery, connection, transaction))
                     {
                         upCmd.Parameters.AddWithValue("@amt", (double)amount);
-                        upCmd.Parameters.AddWithValue("@email", email);
+                        upCmd.Parameters.AddWithValue("@email", targetEmail);
                         upCmd.ExecuteNonQuery();
                     }
 
@@ -1834,9 +1897,9 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                         VALUES (@email, @title, @desc, @amt, 'Debit', 'Withdrawal', @ref, 'Completed');";
                     using (var insCmd = new SqliteCommand(insQuery, connection, transaction))
                     {
-                        insCmd.Parameters.AddWithValue("@email", email);
-                        insCmd.Parameters.AddWithValue("@title", "UPI Payout Transfer");
-                        insCmd.Parameters.AddWithValue("@desc", $"Withdrawn to {upiId}");
+                        insCmd.Parameters.AddWithValue("@email", targetEmail);
+                        insCmd.Parameters.AddWithValue("@title", "UPI Transfer to " + upiId);
+                        insCmd.Parameters.AddWithValue("@desc", "Instant payout to " + upiId);
                         insCmd.Parameters.AddWithValue("@amt", (double)amount);
                         insCmd.Parameters.AddWithValue("@ref", "PAYOUT-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper());
                         insCmd.ExecuteNonQuery();
