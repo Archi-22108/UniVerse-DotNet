@@ -296,19 +296,34 @@
 
         .sci-input {
             width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #ffffff;
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            outline: none !important;
+            color: #ffffff !important;
             font-size: 13.5px;
             padding: 12px 42px 12px 40px;
             font-family: 'Inter', sans-serif;
             caret-color: #00d2ff;
+            color-scheme: dark;
         }
 
         .sci-input::placeholder {
             color: rgba(255, 255, 255, 0.25);
             font-size: 13px;
+        }
+
+        .sci-input:-webkit-autofill,
+        .sci-input:-webkit-autofill:hover,
+        .sci-input:-webkit-autofill:focus,
+        .sci-input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #020408 inset !important;
+            box-shadow: 0 0 0 1000px #020408 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+            caret-color: #00d2ff !important;
+            border-radius: 4px;
+            transition: background-color 5000000s ease-in-out 0s;
         }
 
         .input-right-node {

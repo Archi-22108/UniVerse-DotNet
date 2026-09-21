@@ -20,6 +20,7 @@
 
     <style>
         :root {
+            color-scheme: dark;
             --uv-dark-bg: #03050c;
             --uv-emerald: #10b981;
             --uv-teal: #14b8a6;
@@ -248,16 +249,45 @@
 
         .input-box input {
             flex: 1;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #ffffff;
+            width: 100%;
+            height: 100%;
+            background: transparent !important;
+            background-color: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            color: #ffffff !important;
             font-size: 0.92rem;
             font-family: inherit;
+            color-scheme: dark;
         }
 
         .input-box input::placeholder {
             color: rgba(255, 255, 255, 0.28);
+        }
+
+        /* ── Chromium / Edge / Safari Autofill Fix (Eliminates white box) ── */
+        .input-box input:-webkit-autofill,
+        .input-box input:-webkit-autofill:hover,
+        .input-box input:-webkit-autofill:focus,
+        .input-box input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #040a14 inset !important;
+            box-shadow: 0 0 0 1000px #040a14 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+            caret-color: #ffffff !important;
+            border-radius: 8px;
+            transition: background-color 5000000s ease-in-out 0s;
+            background-color: transparent !important;
+        }
+
+        /* ── Firefox Autofill Fix ── */
+        .input-box input:-moz-autofill,
+        .input-box input:-moz-autofill-preview {
+            box-shadow: 0 0 0 1000px #040a14 inset !important;
+            -moz-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
+            filter: none !important;
         }
 
         .input-action-btn {
