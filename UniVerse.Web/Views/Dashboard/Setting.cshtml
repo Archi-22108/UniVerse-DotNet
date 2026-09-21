@@ -1,0 +1,365 @@
+@model UniVerse.Web.Models.SettingsViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Settings · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        :root{--bg:#060d0a;--card:rgba(10,20,15,0.85);--border:rgba(0,229,153,0.14);--border-dim:rgba(255,255,255,0.07);--em:#00e599;--em-dim:rgba(0,229,153,0.18);--em-glow:rgba(0,229,153,0.35);--red:#ef4444;--text:#ffffff;--muted:#6b8c7a;--dim:#3a5245;}
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+        a{text-decoration:none;color:inherit;}
+        .backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 80% 10%,rgba(0,229,153,0.06) 0%,transparent 50%),radial-gradient(circle at 20% 80%,rgba(59,130,246,0.05) 0%,transparent 50%);}
+        .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;height:52px;background:rgba(6,13,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-dim);}
+        .nav-brand{display:flex;align-items:center;gap:0.5rem;font-weight:800;font-size:1.05rem;}
+        .nav-logo{width:28px;height:28px;background:linear-gradient(135deg,#00e599,#047857);border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px var(--em-glow);}
+        .nav-brand span{color:var(--em);}
+        .nav-right{display:flex;align-items:center;gap:0.75rem;}
+        .live-pill{display:flex;align-items:center;gap:0.4rem;background:rgba(0,229,153,0.12);border:1px solid rgba(0,229,153,0.25);border-radius:9999px;padding:0.2rem 0.65rem;font-size:0.72rem;font-weight:700;color:var(--em);}
+        .live-dot{width:6px;height:6px;border-radius:50%;background:var(--em);animation:pulse 2s infinite;}
+        @@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.3);}}
+        .nav-menu-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem;padding:0.25rem;}
+        .page{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:70px 1rem 4rem;}
+        .page-header{display:flex;align-items:flex-start;gap:0.85rem;margin-bottom:1.5rem;}
+        .back-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.05);border:1px solid var(--border-dim);color:var(--muted);flex-shrink:0;margin-top:3px;transition:all 0.2s;}
+        .back-btn:hover{background:rgba(255,255,255,0.09);color:#fff;}
+        .page-title h1{font-size:1.55rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.2rem;}
+        .page-title p{font-size:0.82rem;color:var(--muted);}
+        .profile-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.1rem 1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;backdrop-filter:blur(12px);}
+        .avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#00e599,#047857);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:#032b18;flex-shrink:0;box-shadow:0 0 14px var(--em-glow);}
+        .avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+        .profile-info{flex:1;min-width:0;}
+        .profile-name{font-weight:700;font-size:0.95rem;margin-bottom:0.15rem;}
+        .profile-meta{font-size:0.72rem;color:var(--muted);display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.15rem;}
+        .meta-tag{background:rgba(0,229,153,0.1);border:1px solid rgba(0,229,153,0.2);border-radius:4px;padding:0.1rem 0.4rem;color:var(--em);font-size:0.65rem;font-weight:700;}
+        .profile-uni{font-size:0.72rem;color:var(--dim);}
+        .edit-profile-btn{display:inline-flex;align-items:center;gap:0.4rem;border:1px solid rgba(0,229,153,0.35);border-radius:9px;padding:0.45rem 0.9rem;color:var(--em);font-size:0.8rem;font-weight:600;background:rgba(0,229,153,0.07);transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
+        .edit-profile-btn:hover{background:rgba(0,229,153,0.15);}
+        .tab-nav{display:flex;gap:0.35rem;margin-bottom:1.5rem;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+        .tab-nav::-webkit-scrollbar{display:none;}
+        .tab-btn{display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.85rem;border-radius:9px;font-size:0.78rem;font-weight:600;white-space:nowrap;background:rgba(255,255,255,0.04);border:1px solid var(--border-dim);color:var(--muted);transition:all 0.2s;}
+        .tab-btn:hover{background:rgba(255,255,255,0.08);color:#fff;}
+        .tab-btn.active{background:rgba(0,229,153,0.15);border-color:rgba(0,229,153,0.4);color:var(--em);}
+        .section-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.35rem 1.4rem;margin-bottom:1.1rem;backdrop-filter:blur(10px);}
+        .section-card.danger{border-color:rgba(239,68,68,0.25);background:rgba(15,5,5,0.8);}
+        .section-head{display:flex;align-items:flex-start;gap:0.85rem;margin-bottom:1.1rem;}
+        .section-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+        .icon-green{background:rgba(0,229,153,0.15);border:1px solid rgba(0,229,153,0.25);color:var(--em);}
+        .icon-blue{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.25);color:#60a5fa;}
+        .icon-amber{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.25);color:#fbbf24;}
+        .icon-purple{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);color:#a78bfa;}
+        .icon-red{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);color:var(--red);}
+        .section-title-text h3{font-size:0.95rem;font-weight:700;margin-bottom:0.2rem;}
+        .section-title-text p{font-size:0.78rem;color:var(--muted);line-height:1.5;}
+        .info-box{background:rgba(0,229,153,0.06);border:1px solid rgba(0,229,153,0.18);border-radius:10px;padding:0.7rem 0.9rem;font-size:0.76rem;color:rgba(255,255,255,0.6);line-height:1.55;margin-bottom:1rem;display:flex;gap:0.5rem;}
+        .info-box i{color:var(--em);flex-shrink:0;margin-top:1px;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:0.85rem;}
+        .form-row.single{grid-template-columns:1fr;}
+        .field-label{font-size:0.72rem;font-weight:600;color:var(--muted);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.35rem;}
+        .field-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-dim);border-radius:10px;padding:0.6rem 0.85rem;color:#fff;font-size:0.85rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;}
+        .field-input:focus{border-color:rgba(0,229,153,0.45);}
+        .field-input::placeholder{color:var(--dim);}
+        .input-wrap{position:relative;}
+        .input-prefix{position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.85rem;pointer-events:none;}
+        .input-wrap .field-input{padding-left:2rem;}
+        .eye-btn{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:0;}
+        .btn-green{display:inline-flex;align-items:center;gap:0.5rem;background:var(--em);color:#032b18;font-weight:700;font-size:0.83rem;padding:0.6rem 1.3rem;border-radius:10px;border:none;cursor:pointer;transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,153,0.3);}
+        .btn-green:hover{background:#2dffc0;}
+        .btn-green-outline{display:inline-flex;align-items:center;gap:0.5rem;background:transparent;color:var(--em);font-weight:600;font-size:0.82rem;padding:0.5rem 1rem;border-radius:10px;border:1px solid rgba(0,229,153,0.35);cursor:pointer;transition:all 0.2s;}
+        .btn-green-outline:hover{background:rgba(0,229,153,0.1);}
+        .btn-red{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(239,68,68,0.15);color:var(--red);font-weight:700;font-size:0.83rem;padding:0.6rem 1.3rem;border-radius:10px;border:1px solid rgba(239,68,68,0.35);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+        .btn-red:hover{background:rgba(239,68,68,0.25);}
+        .btn-row{display:flex;justify-content:flex-end;margin-top:1rem;}
+        .info-row-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;}
+        .info-cell{background:rgba(255,255,255,0.04);border:1px solid var(--border-dim);border-radius:10px;padding:0.75rem 1rem;}
+        .info-cell-label{font-size:0.68rem;color:var(--muted);margin-bottom:0.3rem;display:flex;align-items:center;gap:0.35rem;text-transform:uppercase;letter-spacing:0.05em;}
+        .info-cell-value{font-size:0.83rem;font-weight:600;color:#fff;word-break:break-all;}
+        .status-active{color:var(--em);}
+        .session-row{background:rgba(255,255,255,0.04);border:1px solid var(--border-dim);border-radius:10px;padding:0.75rem 1rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:1rem;}
+        .session-left{display:flex;align-items:center;gap:0.6rem;}
+        .session-badge{background:rgba(0,229,153,0.15);border:1px solid rgba(0,229,153,0.25);border-radius:6px;padding:0.15rem 0.5rem;font-size:0.65rem;font-weight:700;color:var(--em);margin-left:0.4rem;}
+        .session-device{font-size:0.72rem;color:var(--muted);margin-top:0.15rem;}
+        .link-btn{background:none;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem;transition:color 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;}
+        .link-btn:hover{color:#fff;}
+        .sub-divider{border:none;border-top:1px solid var(--border-dim);margin:1.25rem 0;}
+        .sub-heading{font-size:0.88rem;font-weight:700;margin-bottom:1rem;color:#fff;}
+        .toggle-list{display:flex;flex-direction:column;gap:0.55rem;}
+        .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.03);border:1px solid var(--border-dim);border-radius:10px;}
+        .toggle-left{display:flex;align-items:center;gap:0.75rem;}
+        .toggle-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;}
+        .toggle-text h4{font-size:0.82rem;font-weight:600;margin-bottom:0.1rem;}
+        .toggle-text p{font-size:0.7rem;color:var(--muted);line-height:1.4;}
+        .toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+        .toggle input{opacity:0;width:0;height:0;}
+        .slider{position:absolute;inset:0;background:rgba(255,255,255,0.12);border-radius:9999px;cursor:pointer;transition:0.25s;}
+        .slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.25s;}
+        input:checked+.slider{background:var(--em);}
+        input:checked+.slider:before{transform:translateX(18px);}
+        .audio-row{display:flex;align-items:center;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;}
+        .audio-label{font-size:0.75rem;color:var(--muted);flex:1;}
+        .privacy-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:1rem;}
+        .field-select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border-dim);border-radius:10px;padding:0.6rem 0.85rem;color:#fff;font-size:0.83rem;font-family:'Inter',sans-serif;outline:none;appearance:none;cursor:pointer;}
+        .field-select option{background:#0a1410;}
+        .danger-item{display:flex;align-items:center;justify-content:space-between;padding:0.9rem 0;gap:1rem;}
+        .danger-item+.danger-item{border-top:1px solid rgba(239,68,68,0.12);}
+        .danger-left h4{font-size:0.88rem;font-weight:700;margin-bottom:0.2rem;}
+        .danger-left p{font-size:0.75rem;color:var(--muted);line-height:1.5;}
+        .alert-success{background:rgba(0,229,153,0.12);border:1px solid rgba(0,229,153,0.3);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;color:var(--em);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+        .alert-error{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:0.7rem 1rem;font-size:0.82rem;color:var(--red);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+        .page-footer{text-align:center;padding:1.5rem;font-size:0.72rem;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;}
+        .page-footer a{color:var(--muted);}
+    </style>
+</head>
+<body>
+<div class="backdrop"></div>
+
+<nav class="nav">
+    <a asp-controller="Home" asp-action="Index" class="nav-brand">
+        <div class="nav-logo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+        </div>
+        Uni<span>Verse</span>
+    </a>
+    <div class="nav-right">
+        <div class="live-pill"><span class="live-dot"></span> 6 Active</div>
+        <button class="nav-menu-btn"><i class="bi bi-list"></i></button>
+    </div>
+</nav>
+
+<div class="page">
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {<div class="alert-success"><i class="bi bi-check-circle-fill"></i> @Model.SuccessMessage</div>}
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {<div class="alert-error"><i class="bi bi-exclamation-circle-fill"></i> @Model.ErrorMessage</div>}
+
+    <div class="page-header">
+        <a asp-controller="Dashboard" asp-action="Index" class="back-btn"><i class="bi bi-arrow-left"></i></a>
+        <div class="page-title">
+            <h1>Settings</h1>
+            <p>Manage your campus identity, security credentials, and preferences.</p>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <div class="avatar">
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+            {<img src="@Model.ProfilePictureUrl" alt="Profile" />}
+            else{@Model.Initial}
+        </div>
+        <div class="profile-info">
+            <div class="profile-name">@Model.FullName</div>
+            <div class="profile-meta">
+                <span>ID: @Model.StudentId</span>
+                <span class="meta-tag">Active Student</span>
+                <span class="meta-tag">@Model.Role</span>
+            </div>
+            <div class="profile-uni"><i class="bi bi-building" style="font-size:0.65rem;"></i> Marwadi University &nbsp;|&nbsp; @Model.DisplayHandle</div>
+        </div>
+        <a asp-controller="Dashboard" asp-action="Profile" class="edit-profile-btn"><i class="bi bi-pencil"></i> Edit Profile</a>
+    </div>
+
+    <div class="tab-nav">
+        <a href="@Url.Action("Setting","Dashboard",new{tab="all"})" class="tab-btn @(Model.ActiveTab=="all"?"active":"")"><i class="bi bi-grid"></i> All Settings</a>
+        <a href="@Url.Action("Setting","Dashboard",new{tab="security"})" class="tab-btn @(Model.ActiveTab=="security"?"active":"")"><i class="bi bi-shield-lock"></i> Security &amp; Login</a>
+        <a href="@Url.Action("Setting","Dashboard",new{tab="hostel"})" class="tab-btn @(Model.ActiveTab=="hostel"?"active":"")"><i class="bi bi-house-door"></i> Hostel &amp; Delivery</a>
+        <a href="@Url.Action("Setting","Dashboard",new{tab="alerts"})" class="tab-btn @(Model.ActiveTab=="alerts"?"active":"")"><i class="bi bi-bell"></i> Alerts &amp; Audio</a>
+        <a href="@Url.Action("Setting","Dashboard",new{tab="danger"})" class="tab-btn @(Model.ActiveTab=="danger"?"active":"")"><i class="bi bi-exclamation-triangle" style="color:#f87171;"></i> <span style="color:#f87171;">Danger Zone</span></a>
+    </div>
+
+    @if (Model.ActiveTab == "all" || Model.ActiveTab == "hostel")
+    {
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon icon-green"><i class="bi bi-house-door-fill"></i></div>
+            <div class="section-title-text"><h3>Hostel &amp; Delivery Defaults</h3><p>Set your room &amp; phone number to autofill delivery preferences.</p></div>
+        </div>
+        <div class="info-box"><i class="bi bi-info-circle-fill"></i><span>Whenever you create a delivery request for snacks or drinks, your saved hostel, room, and runner phone number will be pre-filled automatically for a tap-speed deal.</span></div>
+        <form asp-controller="Dashboard" asp-action="SaveDeliveryDefaults" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-row">
+                <div>
+                    <div class="field-label"><i class="bi bi-building"></i> Default Hostel/Building</div>
+                    <div class="input-wrap"><i class="bi bi-building input-prefix"></i><input name="hostelBlock" class="field-input" value="@Model.HostelBlock" placeholder="e.g. Hostel A" /></div>
+                </div>
+                <div>
+                    <div class="field-label"><i class="bi bi-door-open"></i> Room Number / Floor</div>
+                    <div class="input-wrap"><i class="bi bi-door-open input-prefix"></i><input name="roomNumber" class="field-input" value="@Model.RoomNumber" placeholder="e.g. D-305, Room 415" /></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <div class="field-label"><i class="bi bi-telephone"></i> Runner Contact (WhatsApp / Cell)</div>
+                    <div class="input-wrap"><i class="bi bi-telephone input-prefix"></i><input name="runnerContact" type="tel" class="field-input" value="@Model.RunnerContact" placeholder="e.g. +91 98765-43210" /></div>
+                </div>
+                <div>
+                    <div class="field-label"><i class="bi bi-sticky"></i> Quick Dropoff Note (Optional)</div>
+                    <div class="input-wrap"><i class="bi bi-sticky input-prefix"></i><input name="quickDropoffNote" class="field-input" value="@Model.QuickDropoffNote" placeholder="e.g. Leave at door or call me" /></div>
+                </div>
+            </div>
+            <div class="btn-row"><button type="submit" class="btn-green"><i class="bi bi-floppy"></i> Save Delivery Defaults</button></div>
+        </form>
+    </div>
+    }
+
+    @if (Model.ActiveTab == "all" || Model.ActiveTab == "security")
+    {
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon icon-blue"><i class="bi bi-shield-lock-fill"></i></div>
+            <div class="section-title-text"><h3>Account &amp; Security</h3><p>Manage credentials, active devices, sessions, and sign-in security.</p></div>
+        </div>
+        <div class="info-row-grid">
+            <div class="info-cell">
+                <div class="info-cell-label"><i class="bi bi-envelope"></i> University Email</div>
+                <div class="info-cell-value" style="font-size:0.75rem;">@Model.Email</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-cell-label"><i class="bi bi-person-check"></i> Account Status</div>
+                <div class="info-cell-value status-active"><i class="bi bi-circle-fill" style="font-size:0.5rem;"></i> @Model.AccountStatus</div>
+            </div>
+        </div>
+        <div class="session-row">
+            <div class="session-left">
+                <i class="bi bi-laptop" style="color:var(--em);font-size:1.1rem;"></i>
+                <div>
+                    <div style="font-size:0.82rem;font-weight:600;">Current Browser Session <span class="session-badge">Active Now</span></div>
+                    <div class="session-device">Authorised via student ID (not end-to-end encrypted)</div>
+                </div>
+            </div>
+            <button type="button" class="link-btn"><i class="bi bi-box-arrow-right"></i> Log out other devices</button>
+        </div>
+        <hr class="sub-divider">
+        <div class="sub-heading">Change Password</div>
+        <form asp-controller="Dashboard" asp-action="ChangePassword" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-row single">
+                <div>
+                    <div class="field-label">Current Password</div>
+                    <div class="input-wrap"><i class="bi bi-lock input-prefix"></i><input name="currentPassword" type="password" id="cp" class="field-input" placeholder="Enter current password" /><button type="button" class="eye-btn" onclick="togglePwd('cp')"><i class="bi bi-eye" id="cp-eye"></i></button></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <div class="field-label">New Password</div>
+                    <div class="input-wrap"><i class="bi bi-lock-fill input-prefix"></i><input name="newPassword" type="password" id="np" class="field-input" placeholder="At least 8 characters" /><button type="button" class="eye-btn" onclick="togglePwd('np')"><i class="bi bi-eye" id="np-eye"></i></button></div>
+                </div>
+                <div>
+                    <div class="field-label">Confirm New Password</div>
+                    <div class="input-wrap"><i class="bi bi-lock-fill input-prefix"></i><input name="confirmNewPassword" type="password" id="cnp" class="field-input" placeholder="Re-enter new password" /><button type="button" class="eye-btn" onclick="togglePwd('cnp')"><i class="bi bi-eye" id="cnp-eye"></i></button></div>
+                </div>
+            </div>
+            <div class="btn-row"><button type="submit" class="btn-green"><i class="bi bi-key"></i> Update Password</button></div>
+        </form>
+    </div>
+    }
+
+    @if (Model.ActiveTab == "all" || Model.ActiveTab == "alerts")
+    {
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon icon-amber"><i class="bi bi-bell-fill"></i></div>
+            <div class="section-title-text"><h3>Campus Alerts &amp; Preferences</h3><p>Configure live alert tones, notify Flasher, and team alert visibility.</p></div>
+        </div>
+        <form asp-controller="Dashboard" asp-action="SavePreferences" method="post">
+            @Html.AntiForgeryToken()
+            <div class="sub-heading" style="margin-bottom:0.75rem;">Campus Notifications</div>
+            <div class="toggle-list">
+                <div class="toggle-row">
+                    <div class="toggle-left"><div class="toggle-icon icon-green"><i class="bi bi-box-seam"></i></div><div class="toggle-text"><h4>Request Updates</h4><p>Receive notifications when your delivery requests change status.</p></div></div>
+                    <label class="toggle"><input type="checkbox" name="notifyRequests" value="true" @(Model.NotifyRequestUpdates?"checked":"") /><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-left"><div class="toggle-icon icon-green"><i class="bi bi-bicycle"></i></div><div class="toggle-text"><h4>Delivery Updates</h4><p>Get notified for your active runner assignments.</p></div></div>
+                    <label class="toggle"><input type="checkbox" name="notifyDelivery" value="true" @(Model.NotifyDeliveryUpdates?"checked":"") /><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-left"><div class="toggle-icon icon-blue"><i class="bi bi-chat-dots"></i></div><div class="toggle-text"><h4>Chat Messages</h4><p>Receive notifications when someone sends you a message.</p></div></div>
+                    <label class="toggle"><input type="checkbox" name="notifyChat" value="true" @(Model.NotifyChatMessages?"checked":"") /><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-left"><div class="toggle-icon icon-amber"><i class="bi bi-shop"></i></div><div class="toggle-text"><h4>Marketplace &amp; Resale Alerts</h4><p>Notify when an offer or purchase is made on new listings like you.</p></div></div>
+                    <label class="toggle"><input type="checkbox" name="notifyMarketplace" value="true" @(Model.NotifyMarketplace?"checked":"") /><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-left"><div class="toggle-icon icon-purple"><i class="bi bi-music-note-beamed"></i></div><div class="toggle-text"><h4>Audio Chimes</h4><p>Play synthesised chime sounds when a new delivery or alert is incoming.</p></div></div>
+                    <label class="toggle"><input type="checkbox" name="notifyChimes" value="true" @(Model.NotifyAudioChimes?"checked":"") /><span class="slider"></span></label>
+                </div>
+            </div>
+            <div class="audio-row">
+                <span class="audio-label"><i class="bi bi-volume-up"></i> Test synthesised sound chimes:</span>
+                <button type="button" class="btn-green-outline" onclick="playChime('chat')"><i class="bi bi-chat-dots"></i> Chat Chime</button>
+                <button type="button" class="btn-green-outline" onclick="playChime('order')"><i class="bi bi-box-seam"></i> Order / Milestone</button>
+            </div>
+            <hr class="sub-divider">
+            <div class="sub-heading">Privacy Controls</div>
+            <div class="privacy-grid">
+                <div>
+                    <div class="field-label">Profile Visibility</div>
+                    <select name="profileVisibility" id="profVis" class="field-select">
+                        <option>Public (Visible to campus)</option>
+                        <option>Campus Only</option>
+                        <option>Private</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="field-label">Activity Visibility</div>
+                    <select name="activityVisibility" id="actVis" class="field-select">
+                        <option>Public</option>
+                        <option>Campus Only</option>
+                        <option>Private</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-row"><button type="submit" class="btn-green"><i class="bi bi-floppy"></i> Save Preferences</button></div>
+        </form>
+    </div>
+    }
+
+    @if (Model.ActiveTab == "all" || Model.ActiveTab == "danger")
+    {
+    <div class="section-card danger">
+        <div class="section-head">
+            <div class="section-icon icon-red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="section-title-text"><h3>Account Danger Zone</h3><p>Manage active session logout or account permanent termination.</p></div>
+        </div>
+        <div class="danger-item">
+            <div class="danger-left"><h4>Sign Out of UniVerse</h4><p>Sign out your UniVerse student account on this device.</p></div>
+            <a asp-controller="Account" asp-action="Logout" class="btn-red"><i class="bi bi-box-arrow-right"></i> Sign Out</a>
+        </div>
+        <div class="danger-item">
+            <div class="danger-left"><h4 style="color:var(--red);">Delete Account Permanently</h4><p>This will erase your account, listings, requests, and marketplace listings. This cannot be undone.</p></div>
+            <button class="btn-red" onclick="confirmDelete()" style="background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.6);"><i class="bi bi-trash3"></i> Delete Account</button>
+        </div>
+    </div>
+    }
+
+    <footer class="page-footer">
+        <span>UniVerse Campus &copy; @DateTime.Now.Year</span>
+        <a asp-controller="Home" asp-action="Index">Home</a>
+        <a asp-controller="Dashboard" asp-action="Index">Campus Support</a>
+    </footer>
+</div>
+<script>
+// Restore select values from server model
+(function(){
+    var pv=document.getElementById('profVis'), av=document.getElementById('actVis');
+    if(pv) pv.value='@Html.Raw(Model.ProfileVisibility)';
+    if(av) av.value='@Html.Raw(Model.ActivityVisibility)';
+})();
+function togglePwd(id){var i=document.getElementById(id),e=document.getElementById(id+'-eye');i.type=i.type==='password'?'text':'password';e.className=i.type==='password'?'bi bi-eye':'bi bi-eye-slash';}
+function playChime(t){try{var c=new(window.AudioContext||window.webkitAudioContext)(),f=t==='chat'?[523,659,784]:[784,1047,1319];f.forEach(function(fr,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=fr;g.gain.setValueAtTime(0.18,c.currentTime+i*0.15);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+i*0.15+0.5);o.start(c.currentTime+i*0.15);o.stop(c.currentTime+i*0.15+0.5);});}catch(e){}}
+function confirmDelete(){if(confirm('Are you absolutely sure? This will permanently delete your account and all data. This CANNOT be undone.')){alert('Account deletion request submitted. Our team will process it within 24 hours.');}}
+</script>
+</body>
+</html>

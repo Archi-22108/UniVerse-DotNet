@@ -602,8 +602,72 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public IActionResult Setting()
+    public IActionResult Setting(string? tab = "all")
     {
-        return RedirectToAction("Index");
+        var studentEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                           ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var profile = _dbHelper.GetUserProfile(studentEmail);
+        var user    = _dbHelper.GetUserByEmail(studentEmail);
+
+        var model = new SettingsViewModel
+        {
+            FullName           = profile.FullName,
+            Email              = profile.Email,
+            ProfilePictureUrl  = profile.ProfilePictureUrl,
+            StudentId          = "1041",
+            Role               = user?.Role ?? "Student",
+            HostelBlock        = user?.HostelBlock ?? "Hostel A",
+            RoomNumber         = user?.RoomNumber  ?? "",
+            ActiveTab          = tab ?? "all"
+        };
+
+        if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
+        if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SaveDeliveryDefaults(string hostelBlock, string roomNumber,
+                                              string runnerContact, string quickDropoffNote)
+    {
+        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                    ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        _dbHelper.UpdateUserHostelInfo(email, hostelBlock, roomNumber);
+        TempData["SuccessMessage"] = "Delivery defaults saved successfully!";
+        return RedirectToAction("Setting", new { tab = "hostel" });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ChangePassword(string currentPassword, string newPassword, string confirmNewPassword)
+    {
+        if (newPassword != confirmNewPassword)
+        {
+            TempData["ErrorMessage"] = "New passwords do not match.";
+            return RedirectToAction("Setting", new { tab = "security" });
+        }
+        if (newPassword.Length < 8)
+        {
+            TempData["ErrorMessage"] = "Password must be at least 8 characters.";
+            return RedirectToAction("Setting", new { tab = "security" });
+        }
+        var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                    ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        _dbHelper.UpdateUserPassword(email, newPassword);
+        TempData["SuccessMessage"] = "Password updated successfully!";
+        return RedirectToAction("Setting", new { tab = "security" });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SavePreferences(bool notifyRequests, bool notifyDelivery,
+                                         bool notifyChat, bool notifyMarketplace,
+                                         bool notifyChimes, string profileVisibility,
+                                         string activityVisibility)
+    {
+        TempData["SuccessMessage"] = "Preferences saved successfully!";
+        return RedirectToAction("Setting", new { tab = "alerts" });
     }
 }

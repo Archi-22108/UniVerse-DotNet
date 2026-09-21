@@ -33,4 +33,6 @@ public interface IAdoNetDbHelper
     AnalyticsViewModel GetAnalyticsData(string? studentName = null, string range = "7d");
     ProfileViewModel GetUserProfile(string email);
     bool UpdateUserProfile(ProfileViewModel profile);
+    bool UpdateUserHostelInfo(string email, string hostelBlock, string roomNumber);
+    bool UpdateUserPassword(string email, string newPassword);
 }

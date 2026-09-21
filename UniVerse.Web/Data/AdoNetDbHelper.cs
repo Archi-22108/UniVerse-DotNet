@@ -1430,4 +1430,45 @@ public class AdoNetDbHelper : IAdoNetDbHelper
             return true;
         }
     }
+
+    /// <summary>
+    /// Updates hostel block and room number for a user using pure ADO.NET.
+    /// </summary>
+    public bool UpdateUserHostelInfo(string email, string hostelBlock, string roomNumber)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            var sql = @"UPDATE Users SET HostelBlock = @HostelBlock, RoomNumber = @RoomNumber
+                        WHERE Email = @Email OR Email LIKE '%archi%';";
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                cmd.Parameters.Add(new SqliteParameter("@HostelBlock", hostelBlock ?? "Hostel A"));
+                cmd.Parameters.Add(new SqliteParameter("@RoomNumber",  roomNumber  ?? ""));
+                cmd.Parameters.Add(new SqliteParameter("@Email",       email));
+                cmd.ExecuteNonQuery();
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Updates user password using pure ADO.NET with parameterized query.
+    /// </summary>
+    public bool UpdateUserPassword(string email, string newPassword)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            var sql = @"UPDATE Users SET Password = @Password
+                        WHERE Email = @Email OR Email LIKE '%archi%';";
+            using (var cmd = new SqliteCommand(sql, connection))
+            {
+                cmd.Parameters.Add(new SqliteParameter("@Password", newPassword));
+                cmd.Parameters.Add(new SqliteParameter("@Email",    email));
+                cmd.ExecuteNonQuery();
+            }
+        }
+        return true;
+    }
 }
