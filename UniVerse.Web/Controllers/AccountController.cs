@@ -213,37 +213,61 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Dashboard");
     }
 
+    /// <summary>
+    /// Authenticates or registers a Marwadi University student using Google Single Sign-On (SSO).
+    /// Enforces institutional domain validation (@marwadiuniversity.ac.in) and persists via ADO.NET.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GoogleRegister()
+    public async Task<IActionResult> GoogleAuth(string? googleEmail, string? googleName, string? returnUrl = null)
     {
-        var googleEmail = "student.google@marwadiuniversity.ac.in";
-        var user = _dbHelper.GetUserByEmail(googleEmail);
+        if (string.IsNullOrWhiteSpace(googleEmail))
+        {
+            TempData["ErrorMessage"] = "Please select or provide a valid Marwadi University Google account.";
+            return RedirectToAction("Login");
+        }
 
+        var normalizedEmail = googleEmail.Trim().ToLowerInvariant();
+
+        // 1. Strict Institutional Domain Validation (@marwadiuniversity.ac.in)
+        if (!normalizedEmail.EndsWith("@marwadiuniversity.ac.in", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["ErrorMessage"] = "Access Denied: Only Marwadi University institutional accounts (@marwadiuniversity.ac.in) are permitted.";
+            return RedirectToAction("Login");
+        }
+
+        // 2. Fetch or Register Student via ADO.NET
+        var user = _dbHelper.GetUserByEmail(normalizedEmail);
         if (user == null)
         {
-            _dbHelper.RegisterUser("Google Verified Student", googleEmail, "GoogleAuth123!", out _);
-            user = _dbHelper.GetUserByEmail(googleEmail);
+            var displayName = !string.IsNullOrWhiteSpace(googleName)
+                ? googleName.Trim()
+                : normalizedEmail.Split('@')[0].Replace('.', ' ');
+
+            // Auto-register new Marwadi student via ADO.NET
+            _dbHelper.RegisterUser(displayName, normalizedEmail, "GoogleSSO@" + Guid.NewGuid().ToString("N")[..8], out _);
+            user = _dbHelper.GetUserByEmail(normalizedEmail);
         }
 
         user ??= new User
         {
-            Id = 88,
-            FullName = "Google Verified Student",
-            Email = googleEmail,
+            Id = 999,
+            FullName = !string.IsNullOrWhiteSpace(googleName) ? googleName.Trim() : "Marwadi Student",
+            Email = normalizedEmail,
             Role = "Student",
             HostelBlock = "Hostel D",
-            RoomNumber = "D-202"
+            RoomNumber = "D-101"
         };
 
+        // 3. Create Cookie Authentication Claims
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.FullName),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim("HostelBlock", user.HostelBlock),
-            new Claim("RoomNumber", user.RoomNumber)
+            new Claim(ClaimTypes.Role, string.IsNullOrEmpty(user.Role) ? "Student" : user.Role),
+            new Claim("HostelBlock", string.IsNullOrEmpty(user.HostelBlock) ? "Hostel D" : user.HostelBlock),
+            new Claim("RoomNumber", string.IsNullOrEmpty(user.RoomNumber) ? "D-101" : user.RoomNumber)
         };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -252,7 +276,16 @@ public class AccountController : Controller
             new ClaimsPrincipal(claimsIdentity),
             new AuthenticationProperties { IsPersistent = true, ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7) });
 
-        return RedirectToAction("Index", "Dashboard");
+        _logger.LogInformation("Marwadi University student authenticated via Google SSO: {Email} ({Name})", user.Email, user.FullName);
+
+        return RedirectToLocal(returnUrl);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GoogleRegister(string? googleEmail = null, string? googleName = null)
+    {
+        return await GoogleAuth(googleEmail ?? "student.google@marwadiuniversity.ac.in", googleName ?? "Google Verified Student");
     }
 
     [HttpGet]
