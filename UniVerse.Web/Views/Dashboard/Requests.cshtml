@@ -931,7 +931,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Runner" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-bicycle"></i>
                                 <span>Runner Mode</span>
@@ -939,7 +939,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Wallet" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-wallet2"></i>
                                 <span>Wallet</span>
@@ -948,7 +948,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Marketplace" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-bag"></i>
                                 <span>Marketplace</span>
@@ -956,7 +956,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Chat" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-chat-dots"></i>
                                 <span>Chat</span>
@@ -964,7 +964,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Analytics" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-bar-chart"></i>
                                 <span>Analytics</span>
@@ -972,7 +972,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Profile" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-person"></i>
                                 <span>Profile</span>
@@ -980,7 +980,7 @@
                         </a>
                     </li>
                     <li>
-                        <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                        <a asp-controller="Dashboard" asp-action="Setting" class="sidebar-nav-item">
                             <div class="sidebar-nav-left">
                                 <i class="bi bi-gear"></i>
                                 <span>Setting</span>
@@ -1026,6 +1026,22 @@
                 </a>
             </div>
         </div>
+
+        <!-- ── Toast Alerts ── -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div style="background: rgba(0, 229, 153, 0.12); border: 1px solid rgba(0, 229, 153, 0.35); color: #00e599; padding: 0.85rem 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem;">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; padding: 0.85rem 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>@TempData["ErrorMessage"]</span>
+            </div>
+        }
 
         <!-- ── Top 3 Stat Cards ── -->
         <div class="top-stat-cards-grid">
@@ -1135,6 +1151,18 @@
            REQUESTS CARDS LIST (MATCHING SCREENSHOT 1:1)
            ══════════════════════════════════════════════════════ -->
         <div class="requests-stack" id="ordersStack">
+            @if (!Model.Requests.Any())
+            {
+                <div class="empty-state-box" style="text-align: center; padding: 4rem 1.5rem; background: rgba(8, 14, 11, 0.6); border: 1px dashed rgba(0, 229, 153, 0.2); border-radius: 16px; margin: 1rem 0;">
+                    <i class="bi bi-inbox" style="font-size: 2.8rem; color: #85988e; margin-bottom: 1rem; display: inline-block;"></i>
+                    <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.4rem;">No delivery requests found</h3>
+                    <p style="color: #85988e; font-size: 0.85rem; margin-bottom: 1.25rem;">You don't have any orders in the '@Model.ActiveTab' tab right now.</p>
+                    <a asp-controller="Dashboard" asp-action="NewRequest" class="btn-new-request-pill" style="display: inline-flex;">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create New Request</span>
+                    </a>
+                </div>
+            }
             @foreach (var req in Model.Requests)
             {
                 <div class="request-order-card" data-title="@req.ItemTitle.ToLowerInvariant()">
@@ -1220,10 +1248,17 @@
                         </div>
 
                         <div class="card-actions-right">
-                            <button type="button" class="btn-cancel-pill" onclick="cancelOrder(@req.Id)">
-                                <i class="bi bi-x-lg"></i>
-                                <span>Cancel</span>
-                            </button>
+                            @if (req.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <form asp-controller="Dashboard" asp-action="CancelOrder" method="post" style="display:inline; margin: 0;" onsubmit="return confirm('Cancel this campus delivery request? Your payment will be refunded to your wallet.');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@req.Id" />
+                                    <button type="submit" class="btn-cancel-pill">
+                                        <i class="bi bi-x-lg"></i>
+                                        <span>Cancel</span>
+                                    </button>
+                                </form>
+                            }
 
                             <a asp-controller="Dashboard" asp-action="LiveRadar" asp-route-id="@req.Id" class="btn-open-radar-sm">
                                 <i class="bi bi-broadcast"></i>

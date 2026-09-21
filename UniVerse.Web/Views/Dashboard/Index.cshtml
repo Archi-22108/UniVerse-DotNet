@@ -1098,14 +1098,28 @@
                                 </button>
                             </div>
 
+                            @{
+                                var counts = Model.WeeklyActivityCounts ?? new List<int> { 0, 0, 0, 0, 0, 0, 0 };
+                                while (counts.Count < 7) counts.Add(0);
+                                int maxSpark = Math.Max(1, counts.Max());
+                                int[] xPts = new int[] { 20, 130, 240, 350, 460, 570, 680 };
+                                var pathPts = new List<string>();
+                                for (int i = 0; i < 7; i++)
+                                {
+                                    int yVal = 65 - (int)Math.Round((double)counts[i] / maxSpark * 50.0);
+                                    pathPts.Add($"{xPts[i]} {yVal}");
+                                }
+                                string sparkD = "M " + string.Join(" L ", pathPts);
+                            }
+
                             <div class="chart-box-relative">
-                                <!-- Y-axis -->
+                                <!-- Dynamic Y-axis -->
                                 <div class="chart-y-axis-labels">
-                                    <span>1</span>
+                                    <span>@maxSpark</span>
                                     <span>0</span>
                                 </div>
 
-                                <!-- SVG Sparkline Drawing -->
+                                <!-- SVG Dynamic Sparkline Drawing -->
                                 <div class="chart-stage-area">
                                     <div class="chart-svg-draw">
                                         <svg viewBox="0 0 700 70" preserveAspectRatio="none">
@@ -1114,13 +1128,23 @@
                                             <!-- Baseline Solid line -->
                                             <line x1="0" y1="65" x2="700" y2="65" stroke="rgba(255, 255, 255, 0.05)" />
 
-                                            <!-- Sleek glowing green sparkline line matching screenshot -->
-                                            <path d="M 10 65 L 115 65 L 225 65 L 340 65 L 450 65 L 565 65 L 690 65"
+                                            <!-- Dynamic glowing green sparkline path -->
+                                            <path d="@sparkD"
                                                   fill="none"
                                                   stroke="#00e599"
                                                   stroke-width="2.2"
                                                   stroke-linecap="round"
+                                                  stroke-linejoin="round"
                                                   style="filter: drop-shadow(0 0 5px rgba(0, 229, 153, 0.75));" />
+
+                                            @for (int i = 0; i < 7; i++)
+                                            {
+                                                if (counts[i] > 0)
+                                                {
+                                                    int cy = 65 - (int)Math.Round((double)counts[i] / maxSpark * 50.0);
+                                                    <circle cx="@xPts[i]" cy="@cy" r="3.5" fill="#00e599" stroke="#030708" stroke-width="1.5" />
+                                                }
+                                            }
                                         </svg>
                                     </div>
 

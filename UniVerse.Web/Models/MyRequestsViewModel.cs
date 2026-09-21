@@ -9,7 +9,7 @@ namespace UniVerse.Web.Models;
 /// </summary>
 public class MyRequestsViewModel
 {
-    public int ActiveCount { get; set; } = 2;
+    public int ActiveCount { get; set; } = 0;
     public int DeliveredCount { get; set; } = 0;
     public int CancelledCount { get; set; } = 0;
     public int TotalCount => ActiveCount + DeliveredCount + CancelledCount;

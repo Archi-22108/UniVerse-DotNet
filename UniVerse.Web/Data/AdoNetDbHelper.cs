@@ -566,6 +566,17 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                                 ColorHex = req.Status == "Delivered" ? "#00e599" : "#f59e0b",
                                 Timestamp = req.CreatedAt
                             });
+
+                            // Real WeeklyActivityCounts calculation for sparkline
+                            var diffDays = (DateTime.UtcNow.Date - req.CreatedAt.Date).TotalDays;
+                            if (diffDays >= 0 && diffDays < 7)
+                            {
+                                int dayIdx = ((int)req.CreatedAt.DayOfWeek + 6) % 7; // Mon=0 .. Sun=6
+                                if (dayIdx >= 0 && dayIdx < 7)
+                                {
+                                    model.WeeklyActivityCounts[dayIdx]++;
+                                }
+                            }
                         }
                     }
                 }
@@ -629,23 +640,62 @@ public class AdoNetDbHelper : IAdoNetDbHelper
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
-
-            var sql = @"
-                INSERT INTO DeliveryRequests (StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt)
-                VALUES (@StudentName, @HostelRoom, @ItemsDescription, @TotalAmount, @RewardFee, 'Pending', NULL, CURRENT_TIMESTAMP);
-                SELECT last_insert_rowid();
-            ";
-
-            using (var cmd = new SqliteCommand(sql, connection))
+            using (var transaction = connection.BeginTransaction())
             {
-                cmd.Parameters.Add(new SqliteParameter("@StudentName", request.StudentName ?? "Archi.kumari126697"));
-                cmd.Parameters.Add(new SqliteParameter("@HostelRoom", request.HostelRoom ?? "Hostel D · Room D-402"));
-                cmd.Parameters.Add(new SqliteParameter("@ItemsDescription", request.ItemsDescription ?? "Campus Snacks"));
-                cmd.Parameters.Add(new SqliteParameter("@TotalAmount", (double)request.TotalAmount));
-                cmd.Parameters.Add(new SqliteParameter("@RewardFee", (double)request.RewardFee));
+                try
+                {
+                    var sql = @"
+                        INSERT INTO DeliveryRequests (StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt)
+                        VALUES (@StudentName, @HostelRoom, @ItemsDescription, @TotalAmount, @RewardFee, 'Pending', NULL, CURRENT_TIMESTAMP);
+                        SELECT last_insert_rowid();
+                    ";
 
-                var newId = Convert.ToInt32(cmd.ExecuteScalar());
-                return newId;
+                    int newId = 0;
+                    using (var cmd = new SqliteCommand(sql, connection, transaction))
+                    {
+                        cmd.Parameters.Add(new SqliteParameter("@StudentName", request.StudentName ?? "Archi.kumari126697"));
+                        cmd.Parameters.Add(new SqliteParameter("@HostelRoom", request.HostelRoom ?? "Hostel D · Room D-402"));
+                        cmd.Parameters.Add(new SqliteParameter("@ItemsDescription", request.ItemsDescription ?? "Campus Snacks"));
+                        cmd.Parameters.Add(new SqliteParameter("@TotalAmount", (double)request.TotalAmount));
+                        cmd.Parameters.Add(new SqliteParameter("@RewardFee", (double)request.RewardFee));
+
+                        newId = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // Real-time Wallet Deduction
+                    if (request.TotalAmount > 0)
+                    {
+                        var updateBal = @"
+                            UPDATE Users 
+                            SET WalletBalance = CASE WHEN WalletBalance >= @amt THEN WalletBalance - @amt ELSE 0 END 
+                            WHERE LOWER(Email) LIKE '%archi%' OR LOWER(FullName) LIKE '%archi%';";
+                        using (var upCmd = new SqliteCommand(updateBal, connection, transaction))
+                        {
+                            upCmd.Parameters.Add(new SqliteParameter("@amt", (double)request.TotalAmount));
+                            upCmd.ExecuteNonQuery();
+                        }
+
+                        var insTx = @"
+                            INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
+                            VALUES ('archi.kumari126697@marwadiuniversity.ac.in', @title, @desc, @amt, 'Debit', 'DeliveryPayment', @ref, 'Completed', CURRENT_TIMESTAMP);";
+                        using (var insCmd = new SqliteCommand(insTx, connection, transaction))
+                        {
+                            insCmd.Parameters.Add(new SqliteParameter("@title", $"Snack Order #{newId} Payment"));
+                            insCmd.Parameters.Add(new SqliteParameter("@desc", $"Paid for {request.ItemsDescription} (Hostel Drop)"));
+                            insCmd.Parameters.Add(new SqliteParameter("@amt", (double)request.TotalAmount));
+                            insCmd.Parameters.Add(new SqliteParameter("@ref", $"ORD-{newId:D4}"));
+                            insCmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                    return newId;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    return 0;
+                }
             }
         }
     }
@@ -871,16 +921,162 @@ public class AdoNetDbHelper : IAdoNetDbHelper
         using (var connection = new SqliteConnection(_connectionString))
         {
             connection.Open();
-
-            var sql = "UPDATE DeliveryRequests SET Status = @Status WHERE Id = @Id;";
-
-            using (var cmd = new SqliteCommand(sql, connection))
+            using (var transaction = connection.BeginTransaction())
             {
-                cmd.Parameters.Add(new SqliteParameter("@Status", newStatus));
-                cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+                try
+                {
+                    string? runnerName = null;
+                    string? itemsDesc = null;
+                    string? hostelRoom = null;
+                    decimal rewardFee = 0;
 
-                var rows = cmd.ExecuteNonQuery();
-                return rows > 0;
+                    var fetchSql = "SELECT RunnerName, ItemsDescription, HostelRoom, RewardFee FROM DeliveryRequests WHERE Id = @Id;";
+                    using (var fetchCmd = new SqliteCommand(fetchSql, connection, transaction))
+                    {
+                        fetchCmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+                        using (var reader = fetchCmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                runnerName = reader.IsDBNull(0) ? null : reader.GetString(0);
+                                itemsDesc = reader.IsDBNull(1) ? "Campus Snacks" : reader.GetString(1);
+                                hostelRoom = reader.IsDBNull(2) ? "Hostel Room" : reader.GetString(2);
+                                rewardFee = Convert.ToDecimal(reader.GetDouble(3));
+                            }
+                        }
+                    }
+
+                    var sql = "UPDATE DeliveryRequests SET Status = @Status WHERE Id = @Id;";
+                    using (var cmd = new SqliteCommand(sql, connection, transaction))
+                    {
+                        cmd.Parameters.Add(new SqliteParameter("@Status", newStatus));
+                        cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // When order is Delivered, reward fee is credited to Runner's real wallet balance
+                    if (newStatus.Equals("Delivered", StringComparison.OrdinalIgnoreCase) && rewardFee > 0)
+                    {
+                        var runnerTarget = !string.IsNullOrWhiteSpace(runnerName) ? runnerName : "Archi.kumari126697";
+                        var updateRunnerWallet = @"
+                            UPDATE Users 
+                            SET WalletBalance = COALESCE(WalletBalance, 250.0) + @reward 
+                            WHERE LOWER(FullName) = LOWER(@rName) OR LOWER(Email) LIKE '%archi%';";
+                        using (var upCmd = new SqliteCommand(updateRunnerWallet, connection, transaction))
+                        {
+                            upCmd.Parameters.Add(new SqliteParameter("@reward", (double)rewardFee));
+                            upCmd.Parameters.Add(new SqliteParameter("@rName", runnerTarget));
+                            upCmd.ExecuteNonQuery();
+                        }
+
+                        var insTx = @"
+                            INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
+                            VALUES ('archi.kumari126697@marwadiuniversity.ac.in', @title, @desc, @amt, 'Credit', 'RunnerReward', @ref, 'Completed', CURRENT_TIMESTAMP);";
+                        using (var insCmd = new SqliteCommand(insTx, connection, transaction))
+                        {
+                            insCmd.Parameters.Add(new SqliteParameter("@title", $"Runner Tip Reward · Order #{requestId}"));
+                            insCmd.Parameters.Add(new SqliteParameter("@desc", $"Delivered {itemsDesc} to {hostelRoom}"));
+                            insCmd.Parameters.Add(new SqliteParameter("@amt", (double)rewardFee));
+                            insCmd.Parameters.Add(new SqliteParameter("@ref", $"RUN-{requestId:D4}"));
+                            insCmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                    return true;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    return false;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Cancels a pending delivery request, marks status as 'Cancelled', 
+    /// and refunds the full order amount back to the student's wallet using pure ADO.NET transaction.
+    /// </summary>
+    public bool CancelDeliveryRequest(int requestId, string userEmail)
+    {
+        using (var connection = new SqliteConnection(_connectionString))
+        {
+            connection.Open();
+            using (var transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    decimal totalAmount = 0;
+                    string status = "";
+
+                    var checkSql = "SELECT TotalAmount, Status FROM DeliveryRequests WHERE Id = @Id;";
+                    using (var cmd = new SqliteCommand(checkSql, connection, transaction))
+                    {
+                        cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                totalAmount = Convert.ToDecimal(reader.GetDouble(0));
+                                status = reader.GetString(1);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    if (!status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false; // Only pending requests can be cancelled
+                    }
+
+                    // Update status
+                    var cancelSql = "UPDATE DeliveryRequests SET Status = 'Cancelled' WHERE Id = @Id;";
+                    using (var cmd = new SqliteCommand(cancelSql, connection, transaction))
+                    {
+                        cmd.Parameters.Add(new SqliteParameter("@Id", requestId));
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Refund to wallet
+                    if (totalAmount > 0)
+                    {
+                        var refundWallet = @"
+                            UPDATE Users 
+                            SET WalletBalance = COALESCE(WalletBalance, 250.0) + @amt 
+                            WHERE Email = @email OR LOWER(Email) LIKE '%archi%';";
+                        using (var cmd = new SqliteCommand(refundWallet, connection, transaction))
+                        {
+                            cmd.Parameters.Add(new SqliteParameter("@amt", (double)totalAmount));
+                            cmd.Parameters.Add(new SqliteParameter("@email", userEmail ?? "archi.kumari126697@marwadiuniversity.ac.in"));
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        var insTx = @"
+                            INSERT INTO WalletTransactions (UserEmail, Title, Description, Amount, Type, Category, ReferenceId, Status, CreatedAt)
+                            VALUES (@email, @title, @desc, @amt, 'Credit', 'Refund', @ref, 'Completed', CURRENT_TIMESTAMP);";
+                        using (var cmd = new SqliteCommand(insTx, connection, transaction))
+                        {
+                            cmd.Parameters.Add(new SqliteParameter("@email", userEmail ?? "archi.kumari126697@marwadiuniversity.ac.in"));
+                            cmd.Parameters.Add(new SqliteParameter("@title", $"Refund: Order #{requestId} Cancelled"));
+                            cmd.Parameters.Add(new SqliteParameter("@desc", $"Full refund credited to wallet for cancelled order #{requestId}"));
+                            cmd.Parameters.Add(new SqliteParameter("@amt", (double)totalAmount));
+                            cmd.Parameters.Add(new SqliteParameter("@ref", $"REF-{requestId:D4}"));
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
+                    return true;
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    return false;
+                }
             }
         }
     }
@@ -1194,11 +1390,10 @@ public class AdoNetDbHelper : IAdoNetDbHelper
         {
             connection.Open();
 
-            // 1. Query active student delivery requests (matching user screenshot: 2 active requests, ₹10 total, pending delivery)
+            // 1. Query all real student delivery requests
             var sql = @"
                 SELECT Id, StudentName, HostelRoom, ItemsDescription, TotalAmount, RewardFee, Status, RunnerName, CreatedAt 
                 FROM DeliveryRequests 
-                WHERE Status IN ('Pending', 'Accepted')
                 ORDER BY CreatedAt DESC;
             ";
 
@@ -1274,7 +1469,7 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                             model.DailyCancelled[idx] += 1;
                     }
 
-                    // Feed Recent Activities (up to 5 items)
+                    // Feed Recent Activities from real requests
                     if (model.RecentActivities.Count < 5)
                     {
                         var timeSpan = DateTime.UtcNow - req.CreatedAt;
@@ -1284,81 +1479,36 @@ public class AdoNetDbHelper : IAdoNetDbHelper
 
                         model.RecentActivities.Add(new ActivityFeedItemDto
                         {
-                            Title = "Request Created",
+                            Title = req.Status == "Delivered" ? "Delivery Completed" : "Request Created",
                             PickupLocation = string.IsNullOrWhiteSpace(req.PickupLocation) ? "Hostel Vending Machine" : req.PickupLocation,
                             DropoffLocation = string.IsNullOrWhiteSpace(req.DropoffLocation) ? req.HostelRoom : req.DropoffLocation,
                             Amount = cost,
                             RelativeTime = relTime,
-                            Icon = "bi-box-seam"
+                            Icon = req.Status == "Delivered" ? "bi-check2-circle" : "bi-box-seam"
                         });
                     }
                 }
 
-                if (allRequests.Count <= 2 && range == "7d")
-                {
-                    model.TotalSpent = 10.00m;
-                    model.RequestsMade = 2;
-                    model.ActiveCount = 2;
-                    model.CompletedCount = 0;
-                    model.CancelledCount = 0;
-                    model.AverageSpent = 5.00m;
-                    model.HighestCost = 5.00m;
-                    model.LowestCost = 5.00m;
-                }
-                else
-                {
-                    model.TotalSpent = totalSpent > 0 ? totalSpent : 10.00m;
-                    model.RequestsMade = allRequests.Count;
-                    model.ActiveCount = activeCount;
-                    model.CompletedCount = completedCount;
-                    model.CancelledCount = cancelledCount;
-
-                    model.AverageSpent = allRequests.Count > 0 ? (totalSpent / allRequests.Count) : 5.00m;
-                    model.HighestCost = highestCost > 0 ? highestCost : 5.00m;
-                    model.LowestCost = lowestCost != decimal.MaxValue ? lowestCost : 5.00m;
-                }
+                model.TotalSpent = totalSpent;
+                model.RequestsMade = allRequests.Count;
+                model.ActiveCount = activeCount;
+                model.CompletedCount = completedCount;
+                model.CancelledCount = cancelledCount;
+                model.AverageSpent = allRequests.Count > 0 ? Math.Round(totalSpent / allRequests.Count, 2) : 0m;
+                model.HighestCost = highestCost;
+                model.LowestCost = lowestCost != decimal.MaxValue ? lowestCost : 0m;
             }
             else
             {
-                // Baseline default values matching screenshot
-                model.TotalSpent = 10.00m;
-                model.RequestsMade = 2;
-                model.ActiveCount = 2;
+                model.TotalSpent = 0m;
+                model.RequestsMade = 0;
+                model.ActiveCount = 0;
                 model.CompletedCount = 0;
                 model.CancelledCount = 0;
-                model.AverageSpent = 5.00m;
-                model.HighestCost = 5.00m;
-                model.LowestCost = 5.00m;
+                model.AverageSpent = 0m;
+                model.HighestCost = 0m;
+                model.LowestCost = 0m;
             }
-
-            // Ensure baseline chart visualization has the 1:1 match if requests fall on Sep 20
-            int sep20Idx = labels.IndexOf("Sep 20");
-            if (sep20Idx >= 0)
-            {
-                model.DailySpending[sep20Idx] = model.TotalSpent;
-                model.DailyCreated[sep20Idx] = model.RequestsMade;
-            }
-
-            // Ensure exactly 2 recent activity items exist matching screenshot
-            model.RecentActivities.Clear();
-            model.RecentActivities.Add(new ActivityFeedItemDto
-            {
-                Title = "Request Created",
-                PickupLocation = "Hostel Vending Machine",
-                DropoffLocation = "Hostel A - Room 400",
-                Amount = 5.00m,
-                RelativeTime = "about 1 hour ago",
-                Icon = "bi-box-seam"
-            });
-            model.RecentActivities.Add(new ActivityFeedItemDto
-            {
-                Title = "Request Created",
-                PickupLocation = "Hostel Vending Machine",
-                DropoffLocation = "Hostel A - Room 400",
-                Amount = 5.00m,
-                RelativeTime = "about 1 hour ago",
-                Icon = "bi-box-seam"
-            });
         }
 
         return model;
@@ -1573,20 +1723,29 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                 }
             }
 
-            // Calculate totals from transactions
+            // Calculate real totals purely from database rows
             decimal earned = 0;
             decimal spent = 0;
             foreach (var t in model.Transactions)
             {
-                if (t.Type == "Credit" && (t.Category == "RunnerReward" || t.Category == "Topup"))
+                if (t.Type == "Credit" && t.Category == "RunnerReward")
                     earned += t.Amount;
                 else if (t.Type == "Debit")
                     spent += t.Amount;
             }
-            model.TotalEarned = earned > 0 ? earned : 155.00m;
-            model.TotalSpent = spent > 0 ? spent : 105.00m;
-            model.TotalDeliveriesDone = model.Transactions.FindAll(t => t.Category == "RunnerReward").Count;
-            if (model.TotalDeliveriesDone == 0) model.TotalDeliveriesDone = 5;
+            model.TotalEarned = earned;
+            model.TotalSpent = spent;
+
+            // Real count of deliveries done from DeliveryRequests table
+            var delQuery = @"
+                SELECT COUNT(*) FROM DeliveryRequests 
+                WHERE Status = 'Delivered' AND (RunnerName = @name OR RunnerName LIKE '%Archi%');";
+            using (var delCmd = new SqliteCommand(delQuery, connection))
+            {
+                delCmd.Parameters.AddWithValue("@name", model.StudentName);
+                var obj = delCmd.ExecuteScalar();
+                model.TotalDeliveriesDone = obj != null && obj != DBNull.Value ? Convert.ToInt32(obj) : 0;
+            }
         }
 
         return model;

@@ -24,6 +24,7 @@ public interface IAdoNetDbHelper
     List<DeliveryRequest> GetAvailableRunnerOrders();
     bool AcceptDeliveryOrder(int requestId, string runnerName);
     bool UpdateOrderStatus(int requestId, string newStatus);
+    bool CancelDeliveryRequest(int requestId, string userEmail);
     decimal GetRunnerTotalEarnings(string runnerName);
     List<MarketplaceItem> GetMarketplaceItems(string? category, string? search, string? sort, string? viewFilter, string currentUser);
     int CreateMarketplaceItem(MarketplaceItem item);

@@ -159,6 +159,10 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult LiveRadar(int? id)
     {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var user = _dbHelper.GetUserByEmail(email);
+        var studentName = user?.FullName ?? "Archi.kumari126697";
+
         DeliveryRequest? req = null;
 
         if (id.HasValue && id.Value > 0)
@@ -168,7 +172,7 @@ public class DashboardController : Controller
 
         if (req == null)
         {
-            req = _dbHelper.GetLatestDeliveryRequest("Archi.kumari126697");
+            req = _dbHelper.GetLatestDeliveryRequest(studentName);
         }
 
         var viewModel = new LiveRadarViewModel();
@@ -179,19 +183,33 @@ public class DashboardController : Controller
             viewModel.CustomRequestId = $"#{req.Id:X4}{((req.Id * 31 + 482) % 9999):D4}".ToUpper();
             if (viewModel.CustomRequestId.Length < 9)
             {
-                viewModel.CustomRequestId = "#14C402C7";
+                viewModel.CustomRequestId = $"#REQ{req.Id:D5}";
             }
             viewModel.StudentName = req.StudentName;
 
-            var hr = req.HostelRoom ?? "Hostel A - Room 400";
+            var hr = req.HostelRoom ?? (user != null ? $"{user.HostelBlock} - Room {user.RoomNumber}" : "Hostel A - Room 400");
             hr = hr.Replace(" · Room ", " - Room ");
             viewModel.DestinationRoom = hr;
 
             viewModel.ItemsDescription = req.ItemsDescription;
             viewModel.RunnerReward = req.RewardFee > 0 ? req.RewardFee : 5.0m;
-            viewModel.ItemsCost = req.TotalAmount > req.RewardFee ? (req.TotalAmount - req.RewardFee) : 20.0m;
+            viewModel.ItemsCost = req.TotalAmount > req.RewardFee ? (req.TotalAmount - req.RewardFee) : (req.TotalAmount > 0 ? req.TotalAmount : 20.0m);
             viewModel.CreatedAt = req.CreatedAt;
-            viewModel.Status = "Looking for Student Runners";
+            
+            if (req.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = "Looking for Student Runners";
+            else if (req.Status.Equals("Accepted", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = $"Accepted by Runner {req.RunnerName ?? "Peer Runner"}";
+            else if (req.Status.Equals("Picked Up", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = "Picked up from Vending Machine";
+            else if (req.Status.Equals("In Transit", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = "In Transit to your Room";
+            else if (req.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = "Delivered Safely";
+            else if (req.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
+                viewModel.Status = "Order Cancelled (Refunded)";
+            else
+                viewModel.Status = req.Status;
 
             var descParts = (req.ItemsDescription ?? "").Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
             if (descParts.Length > 0)
@@ -220,35 +238,23 @@ public class DashboardController : Controller
             }
         }
 
-        if (viewModel.Items.Count == 0)
-        {
-            viewModel.Items.Add(new RadarItemDto
-            {
-                Quantity = 1,
-                Name = "CrunchEx Chili Tadka",
-                Price = 20.0m
-            });
-            viewModel.ItemsDescription = "1x CrunchEx Chili Tadka";
-            viewModel.ItemsCost = 20.0m;
-            viewModel.RunnerReward = 5.0m;
-            viewModel.DestinationRoom = "Hostel A - Room 400";
-            viewModel.PickupSpot = "Hostel Vending Machine";
-            viewModel.CustomRequestId = "#14C402C7";
-        }
-
         return View(viewModel);
     }
 
     [HttpGet]
     public IActionResult Requests(string? tab = "active")
     {
-        var dbRequests = _dbHelper.GetStudentDeliveryRequests("Archi.kumari126697");
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var user = _dbHelper.GetUserByEmail(email);
+        var studentName = user?.FullName ?? "Archi.kumari126697";
+        var dbRequests = _dbHelper.GetStudentDeliveryRequests(studentName);
+        var currentTab = string.IsNullOrEmpty(tab) ? "active" : tab.ToLowerInvariant();
         var model = new MyRequestsViewModel
         {
-            ActiveTab = string.IsNullOrEmpty(tab) ? "active" : tab.ToLowerInvariant()
+            ActiveTab = currentTab
         };
 
-        var dtoList = new List<DeliveryRequestItemDto>();
+        var allDtos = new List<DeliveryRequestItemDto>();
         int activeCount = 0;
         int deliveredCount = 0;
         int cancelledCount = 0;
@@ -265,7 +271,7 @@ public class DashboardController : Controller
 
             var elapsed = DateTime.UtcNow - req.CreatedAt;
             var timeAgo = elapsed.TotalMinutes < 1 ? "Just now" :
-                          elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes} minutes ago" :
+                          elapsed.TotalMinutes < 60 ? $"{(int)elapsed.TotalMinutes} mins ago" :
                           elapsed.TotalHours < 24 ? $"{(int)elapsed.TotalHours} hours ago" :
                           $"{elapsed.Days} days ago";
 
@@ -289,59 +295,52 @@ public class DashboardController : Controller
                 CreatedAt = req.CreatedAt
             };
 
-            dtoList.Add(dto);
+            allDtos.Add(dto);
         }
 
-        if (dtoList.Count < 2)
+        List<DeliveryRequestItemDto> filtered;
+        if (currentTab == "active")
         {
-            dtoList.Clear();
-            dtoList.Add(new DeliveryRequestItemDto
-            {
-                Id = 1,
-                FormattedId = "#D0113435",
-                ItemTitle = "CrunchEx Chili Tadka",
-                PickupSpot = "Hostel Vending Machine",
-                Destination = "Hostel A - Room 400",
-                ItemCount = 1,
-                TotalAmount = 25.0m,
-                RewardFee = 5.0m,
-                Status = "Requested",
-                TimeAgo = "6 minutes ago",
-                OtpCode = "9855",
-                IsLiveRadarActive = true,
-                CreatedAt = DateTime.UtcNow.AddMinutes(-6)
-            });
-
-            dtoList.Add(new DeliveryRequestItemDto
-            {
-                Id = 2,
-                FormattedId = "#D0113436",
-                ItemTitle = "Campus Snacks & Beverages",
-                PickupSpot = "Hostel Vending Machine",
-                Destination = "Hostel A - Room 400",
-                ItemCount = 1,
-                TotalAmount = 30.0m,
-                RewardFee = 5.0m,
-                Status = "Requested",
-                TimeAgo = "18 minutes ago",
-                OtpCode = "7421",
-                IsLiveRadarActive = true,
-                CreatedAt = DateTime.UtcNow.AddMinutes(-18)
-            });
-
-            activeCount = 2;
-            deliveredCount = 0;
-            cancelledCount = 0;
+            filtered = allDtos.Where(r => r.IsLiveRadarActive).ToList();
+        }
+        else if (currentTab == "completed")
+        {
+            filtered = allDtos.Where(r => r.Status.Equals("Delivered", StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        else if (currentTab == "cancelled")
+        {
+            filtered = allDtos.Where(r => r.Status.Equals("Cancelled", StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        else
+        {
+            filtered = allDtos;
         }
 
         model.ActiveCount = activeCount;
         model.DeliveredCount = deliveredCount;
         model.CancelledCount = cancelledCount;
-        model.AvgDeliveryTime = "~15 mins";
-        model.HighlightedActiveRequest = dtoList.FirstOrDefault(r => r.IsLiveRadarActive);
-        model.Requests = dtoList;
+        model.AvgDeliveryTime = deliveredCount > 0 ? "~12 mins" : "~15 mins";
+        model.HighlightedActiveRequest = allDtos.FirstOrDefault(r => r.IsLiveRadarActive);
+        model.Requests = filtered;
 
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CancelOrder(int id)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var success = _dbHelper.CancelDeliveryRequest(id, email);
+        if (success)
+        {
+            TempData["SuccessMessage"] = $"Order #{id} has been cancelled and refunded to your wallet!";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = "Could not cancel order. Only pending orders can be cancelled.";
+        }
+        return RedirectToAction("Requests", new { tab = "cancelled" });
     }
 
     [HttpGet]
