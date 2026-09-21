@@ -1006,7 +1006,10 @@ public class AdoNetDbHelper : IAdoNetDbHelper
                             var obj = lCmd.ExecuteScalar();
                             if (obj != null && obj != DBNull.Value) runnerEmail = obj.ToString()!;
                         }
-                        if (string.IsNullOrEmpty(runnerEmail)) runnerEmail = "rohit.runner@marwadiuniversity.ac.in";
+                        if (string.IsNullOrEmpty(runnerEmail))
+                        {
+                            runnerEmail = runnerTarget.Contains("@") ? runnerTarget : $"{runnerTarget.ToLowerInvariant().Replace(" ", ".")}@marwadiuniversity.ac.in";
+                        }
 
                         var updateRunnerWallet = @"
                             UPDATE Users 
