@@ -20,6 +20,7 @@
 
     <style>
         :root {
+            color-scheme: dark;
             --uv-bg: #030708;
             --uv-card-bg: rgba(7, 14, 11, 0.82);
             --uv-card-border: rgba(0, 229, 153, 0.18);
@@ -417,11 +418,166 @@
             }
         }
 
+        /* ── Custom Dark Dropdown Component ── */
+        .custom-select-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select-trigger {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 12px;
+            padding: 0.75rem 2.2rem 0.75rem 2.65rem;
+            font-size: 0.86rem;
+            color: #ffffff;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            text-align: left;
+            outline: none;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .custom-select-trigger:hover {
+            border-color: rgba(0, 229, 153, 0.35);
+            background: rgba(0, 229, 153, 0.02);
+        }
+
+        .custom-select-wrap.is-open .custom-select-trigger,
+        .custom-select-trigger:focus-visible {
+            border-color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.03);
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.15);
+        }
+
+        .custom-select-trigger .select-caret-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 0.75rem;
+            pointer-events: none;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .custom-select-wrap.is-open .select-caret-icon {
+            transform: translateY(-50%) rotate(180deg);
+            color: var(--uv-emerald);
+        }
+
+        .custom-select-trigger .custom-select-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #ffffff;
+        }
+
+        .custom-select-trigger .custom-select-text.placeholder {
+            color: #85988e;
+        }
+
+        /* Dropdown Menu Box */
+        .custom-select-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #08130f;
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 229, 153, 0.15);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            max-height: 230px;
+            overflow-y: auto;
+            z-index: 999;
+            padding: 0.35rem;
+            display: none;
+            animation: dropdownFadeIn 0.15s ease-out;
+        }
+
+        @@keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-select-wrap.is-open .custom-select-menu {
+            display: block;
+        }
+
+        /* Custom Scrollbar inside menu */
+        .custom-select-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-select-menu::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 9999px;
+        }
+        .custom-select-menu::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 153, 0.3);
+            border-radius: 9999px;
+        }
+        .custom-select-menu::-webkit-scrollbar-thumb:hover {
+            background: var(--uv-emerald);
+        }
+
+        /* Individual Dropdown Item */
+        .custom-select-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .custom-select-item:hover {
+            background: rgba(0, 229, 153, 0.08);
+            color: #ffffff;
+        }
+
+        .custom-select-item.is-selected {
+            background: rgba(0, 229, 153, 0.14);
+            color: var(--uv-emerald);
+            font-weight: 700;
+        }
+
+        .custom-select-item .item-check {
+            color: var(--uv-emerald);
+            font-size: 0.95rem;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .custom-select-item.is-selected .item-check {
+            opacity: 1;
+        }
+
+        /* Native select styling fallback */
         .form-select-pill {
             width: 100%;
             appearance: none;
             -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.025);
+            background: #08130f;
             border: 1px solid rgba(255, 255, 255, 0.09);
             border-radius: 12px;
             padding: 0.75rem 2.2rem 0.75rem 2.65rem;
@@ -431,10 +587,17 @@
             outline: none;
             cursor: pointer;
             transition: all 0.2s ease;
+            color-scheme: dark;
         }
 
         .form-select-pill:focus {
             border-color: var(--uv-emerald);
+        }
+
+        .form-select-pill option {
+            background-color: #08130f;
+            color: #ffffff;
+            padding: 8px 12px;
         }
 
         .select-caret-icon {
@@ -656,9 +819,8 @@
                         <!-- Department / Branch -->
                         <div class="form-field-group">
                             <label class="form-field-label">Department / Branch</label>
-                            <div class="input-icon-wrapper">
-                                <i class="bi bi-book input-prefix-icon"></i>
-                                <select name="Department" id="deptSelect" class="form-select-pill">
+                            <div class="custom-select-wrap" id="wrap-dept">
+                                <select name="Department" id="deptSelect" class="form-select-pill" style="display:none;">
                                     <option value="">Select your branch</option>
                                     <option value="Computer Science & Engineering">Computer Science &amp; Engineering</option>
                                     <option value="Information Technology">Information Technology</option>
@@ -672,16 +834,69 @@
                                     <option value="Faculty of Architecture">Faculty of Architecture</option>
                                     <option value="Other Department">Other Department</option>
                                 </select>
-                                <i class="bi bi-chevron-down select-caret-icon"></i>
+                                <button type="button" class="custom-select-trigger" id="trigger-dept" onclick="toggleCustomSelect('wrap-dept')">
+                                    <i class="bi bi-book input-prefix-icon"></i>
+                                    <span class="custom-select-text placeholder" id="label-dept">Select your branch</span>
+                                    <i class="bi bi-chevron-down select-caret-icon"></i>
+                                </button>
+                                <div class="custom-select-menu" id="menu-dept">
+                                    <div class="custom-select-item" data-val="" onclick="selectCustomItem('dept', '', 'Select your branch')">
+                                        <span>Select your branch</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Computer Science & Engineering" onclick="selectCustomItem('dept', 'Computer Science & Engineering', 'Computer Science & Engineering')">
+                                        <span>Computer Science &amp; Engineering</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Information Technology" onclick="selectCustomItem('dept', 'Information Technology', 'Information Technology')">
+                                        <span>Information Technology</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Mechanical Engineering" onclick="selectCustomItem('dept', 'Mechanical Engineering', 'Mechanical Engineering')">
+                                        <span>Mechanical Engineering</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Civil Engineering" onclick="selectCustomItem('dept', 'Civil Engineering', 'Civil Engineering')">
+                                        <span>Civil Engineering</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Electronics & Communication" onclick="selectCustomItem('dept', 'Electronics & Communication', 'Electronics & Communication')">
+                                        <span>Electronics &amp; Communication</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Chemical Engineering" onclick="selectCustomItem('dept', 'Chemical Engineering', 'Chemical Engineering')">
+                                        <span>Chemical Engineering</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Master of Business Administration (MBA)" onclick="selectCustomItem('dept', 'Master of Business Administration (MBA)', 'Master of Business Administration (MBA)')">
+                                        <span>Master of Business Administration (MBA)</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Faculty of Pharmacy" onclick="selectCustomItem('dept', 'Faculty of Pharmacy', 'Faculty of Pharmacy')">
+                                        <span>Faculty of Pharmacy</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Faculty of Law" onclick="selectCustomItem('dept', 'Faculty of Law', 'Faculty of Law')">
+                                        <span>Faculty of Law</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Faculty of Architecture" onclick="selectCustomItem('dept', 'Faculty of Architecture', 'Faculty of Architecture')">
+                                        <span>Faculty of Architecture</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Other Department" onclick="selectCustomItem('dept', 'Other Department', 'Other Department')">
+                                        <span>Other Department</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Semester -->
                         <div class="form-field-group">
                             <label class="form-field-label">Semester</label>
-                            <div class="input-icon-wrapper">
-                                <i class="bi bi-mortarboard input-prefix-icon"></i>
-                                <select name="Semester" id="semesterSelect" class="form-select-pill">
+                            <div class="custom-select-wrap" id="wrap-sem">
+                                <select name="Semester" id="semesterSelect" class="form-select-pill" style="display:none;">
                                     <option value="">Select your semester</option>
                                     <option value="Semester 1">Semester 1</option>
                                     <option value="Semester 2">Semester 2</option>
@@ -692,17 +907,120 @@
                                     <option value="Semester 7">Semester 7</option>
                                     <option value="Semester 8">Semester 8</option>
                                 </select>
-                                <i class="bi bi-chevron-down select-caret-icon"></i>
+                                <button type="button" class="custom-select-trigger" id="trigger-sem" onclick="toggleCustomSelect('wrap-sem')">
+                                    <i class="bi bi-mortarboard input-prefix-icon"></i>
+                                    <span class="custom-select-text placeholder" id="label-sem">Select your semester</span>
+                                    <i class="bi bi-chevron-down select-caret-icon"></i>
+                                </button>
+                                <div class="custom-select-menu" id="menu-sem">
+                                    <div class="custom-select-item" data-val="" onclick="selectCustomItem('sem', '', 'Select your semester')">
+                                        <span>Select your semester</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 1" onclick="selectCustomItem('sem', 'Semester 1', 'Semester 1')">
+                                        <span>Semester 1</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 2" onclick="selectCustomItem('sem', 'Semester 2', 'Semester 2')">
+                                        <span>Semester 2</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 3" onclick="selectCustomItem('sem', 'Semester 3', 'Semester 3')">
+                                        <span>Semester 3</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 4" onclick="selectCustomItem('sem', 'Semester 4', 'Semester 4')">
+                                        <span>Semester 4</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 5" onclick="selectCustomItem('sem', 'Semester 5', 'Semester 5')">
+                                        <span>Semester 5</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 6" onclick="selectCustomItem('sem', 'Semester 6', 'Semester 6')">
+                                        <span>Semester 6</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 7" onclick="selectCustomItem('sem', 'Semester 7', 'Semester 7')">
+                                        <span>Semester 7</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                    <div class="custom-select-item" data-val="Semester 8" onclick="selectCustomItem('sem', 'Semester 8', 'Semester 8')">
+                                        <span>Semester 8</span>
+                                        <i class="bi bi-check2 item-check"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <script>
+                        // ── Custom Dropdown Handler Functions ──
+                        function toggleCustomSelect(wrapId) {
+                            var wrap = document.getElementById(wrapId);
+                            if (!wrap) return;
+                            var wasOpen = wrap.classList.contains('is-open');
+                            document.querySelectorAll('.custom-select-wrap.is-open').forEach(function(w) {
+                                w.classList.remove('is-open');
+                            });
+                            if (!wasOpen) {
+                                wrap.classList.add('is-open');
+                            }
+                        }
+
+                        function selectCustomItem(type, val, text) {
+                            var select = document.getElementById(type === 'dept' ? 'deptSelect' : 'semesterSelect');
+                            var label  = document.getElementById(type === 'dept' ? 'label-dept' : 'label-sem');
+                            var menu   = document.getElementById(type === 'dept' ? 'menu-dept' : 'menu-sem');
+                            var wrap   = document.getElementById(type === 'dept' ? 'wrap-dept' : 'wrap-sem');
+
+                            if (select) {
+                                select.value = val;
+                            }
+                            if (label) {
+                                label.textContent = text;
+                                if (!val) {
+                                    label.classList.add('placeholder');
+                                } else {
+                                    label.classList.remove('placeholder');
+                                }
+                            }
+                            if (menu) {
+                                menu.querySelectorAll('.custom-select-item').forEach(function(item) {
+                                    if (item.getAttribute('data-val') === val) {
+                                        item.classList.add('is-selected');
+                                    } else {
+                                        item.classList.remove('is-selected');
+                                    }
+                                });
+                            }
+                            if (wrap) {
+                                wrap.classList.remove('is-open');
+                            }
+                        }
+
+                        // Close dropdowns on click outside or Escape key
+                        document.addEventListener('click', function(e) {
+                            if (!e.target.closest('.custom-select-wrap')) {
+                                document.querySelectorAll('.custom-select-wrap.is-open').forEach(function(w) {
+                                    w.classList.remove('is-open');
+                                });
+                            }
+                        });
+
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'Escape') {
+                                document.querySelectorAll('.custom-select-wrap.is-open').forEach(function(w) {
+                                    w.classList.remove('is-open');
+                                });
+                            }
+                        });
+
                         // Restore saved dropdown selections from server-side model
                         (function() {
                             var savedDept = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Department ?? ""));
                             var savedSem  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Semester ?? ""));
-                            if (savedDept) { var ds = document.getElementById('deptSelect'); if (ds) ds.value = savedDept; }
-                            if (savedSem)  { var ss = document.getElementById('semesterSelect'); if (ss) ss.value = savedSem; }
+                            if (savedDept) { selectCustomItem('dept', savedDept, savedDept); }
+                            if (savedSem)  { selectCustomItem('sem', savedSem, savedSem); }
                         })();
                     </script>
 
