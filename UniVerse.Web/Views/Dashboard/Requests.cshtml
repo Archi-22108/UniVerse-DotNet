@@ -324,6 +324,17 @@
             justify-content: space-between;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .stat-banner-card:hover {
+            border-color: rgba(0, 229, 153, 0.45);
+            background: rgba(0, 229, 153, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -8px rgba(0, 229, 153, 0.22);
         }
 
         .stat-card-left {
@@ -1046,7 +1057,7 @@
         <!-- ── Top 3 Stat Cards ── -->
         <div class="top-stat-cards-grid">
             <!-- Active In-Flight -->
-            <div class="stat-banner-card">
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="active" class="stat-banner-card" title="View active requests">
                 <div class="stat-card-left">
                     <span class="stat-tag-mono">ACTIVE IN-FLIGHT</span>
                     <span class="stat-number-bold">@Model.ActiveCount Orders</span>
@@ -1054,10 +1065,10 @@
                 <div class="stat-card-right-circle" style="border-color: rgba(0, 229, 153, 0.3);">
                     <i class="bi bi-truck" style="color: var(--uv-emerald);"></i>
                 </div>
-            </div>
+            </a>
 
             <!-- Delivered Safely -->
-            <div class="stat-banner-card">
+            <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="completed" class="stat-banner-card" title="View delivered requests">
                 <div class="stat-card-left">
                     <span class="stat-tag-mono stat-tag-gray">DELIVERED SAFELY</span>
                     <span class="stat-number-bold">@Model.DeliveredCount Orders</span>
@@ -1065,10 +1076,10 @@
                 <div class="stat-card-right-circle">
                     <i class="bi bi-check2" style="color: #85988e;"></i>
                 </div>
-            </div>
+            </a>
 
             <!-- Avg Delivery -->
-            <div class="stat-banner-card">
+            <a asp-controller="Dashboard" asp-action="Analytics" class="stat-banner-card" title="View delivery analytics & reports">
                 <div class="stat-card-left">
                     <span class="stat-tag-mono stat-tag-cyan">AVG. DELIVERY</span>
                     <span class="stat-number-bold">@Model.AvgDeliveryTime</span>
@@ -1077,7 +1088,7 @@
                 <div class="stat-card-right-circle" style="border-color: rgba(56, 189, 248, 0.3);">
                     <i class="bi bi-shield-check" style="color: #38bdf8;"></i>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- ── Special Live Radar Highlight Callout Card ── -->

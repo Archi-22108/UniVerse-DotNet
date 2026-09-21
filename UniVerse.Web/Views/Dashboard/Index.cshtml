@@ -360,12 +360,21 @@
             min-height: 98px;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            transition: all 0.2s ease;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
 
         .stat-card-box:hover {
-            border-color: var(--uv-card-border-hover);
-            transform: translateY(-1px);
+            border-color: rgba(0, 229, 153, 0.45);
+            background: rgba(0, 229, 153, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -8px rgba(0, 229, 153, 0.22);
+        }
+
+        .stat-card-box:active {
+            transform: translateY(0);
         }
 
         .stat-card-top {
@@ -992,7 +1001,7 @@
                     <!-- 2. 4 Stats Cards in 1 Row (Exact Screenshot Grid) -->
                     <div class="stats-row-4cards">
                         <!-- Stat 1: Total Requests -->
-                        <div class="stat-card-box">
+                        <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="all" class="stat-card-box" title="View all requests">
                             <div class="stat-card-top">
                                 <span class="stat-label-mono">TOTAL REQUESTS</span>
                                 <div class="stat-icon-circle">
@@ -1003,10 +1012,10 @@
                                 <div class="stat-number-mono">@Model.TotalRequests</div>
                                 <div class="stat-trend-text">All time</div>
                             </div>
-                        </div>
+                        </a>
 
                         <!-- Stat 2: Active Requests -->
-                        <div class="stat-card-box">
+                        <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="active" class="stat-card-box" title="View active in-flight requests">
                             <div class="stat-card-top">
                                 <span class="stat-label-mono">ACTIVE REQUES...</span>
                                 <div class="stat-icon-circle">
@@ -1017,10 +1026,10 @@
                                 <div class="stat-number-mono">@Model.ActiveRequests</div>
                                 <div class="stat-trend-text">In progress</div>
                             </div>
-                        </div>
+                        </a>
 
                         <!-- Stat 3: Completed -->
-                        <div class="stat-card-box">
+                        <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="completed" class="stat-card-box" title="View completed deliveries">
                             <div class="stat-card-top">
                                 <span class="stat-label-mono">COMPLETED</span>
                                 <div class="stat-icon-circle">
@@ -1031,10 +1040,10 @@
                                 <div class="stat-number-mono">@Model.CompletedRequests</div>
                                 <div class="stat-trend-text">Delivered</div>
                             </div>
-                        </div>
+                        </a>
 
                         <!-- Stat 4: Cancelled -->
-                        <div class="stat-card-box">
+                        <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="cancelled" class="stat-card-box" title="View cancelled requests">
                             <div class="stat-card-top">
                                 <span class="stat-label-mono">CANCELLED</span>
                                 <div class="stat-icon-circle">
@@ -1045,7 +1054,7 @@
                                 <div class="stat-number-mono">@Model.CancelledRequests</div>
                                 <div class="stat-trend-text">All clean · 0 iss...</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
 
                     <!-- 3. Active Deliveries Section -->
@@ -1068,7 +1077,7 @@
                             <div style="display: flex; flex-direction: column; gap: 0.7rem;">
                                 @foreach (var req in Model.ActiveDeliveries)
                                 {
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+                                    <a asp-controller="Dashboard" asp-action="LiveRadar" asp-route-id="@req.Id" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,153,0.3)'; this.style.background='rgba(0,229,153,0.04)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)'; this.style.background='rgba(255,255,255,0.02)';" title="Track on Live Radar">
                                         <div>
                                             <b style="color: #ffffff; font-size: 0.85rem;">@req.ItemsDescription</b>
                                             <div style="color: var(--uv-text-dim); font-size: 0.72rem;">To: @req.HostelRoom</div>
@@ -1077,7 +1086,7 @@
                                             <span style="color: #f59e0b; font-size: 0.72rem; font-weight: 700;">● @req.Status</span>
                                             <div style="color: var(--uv-emerald); font-weight: 800; font-family: 'Space Mono', monospace; font-size: 0.9rem;">₹@req.TotalAmount</div>
                                         </div>
-                                    </div>
+                                    </a>
                                 }
                             </div>
                         }
@@ -1166,12 +1175,12 @@
                         <section class="dash-card-section">
                             <div class="section-header-row">
                                 <div class="section-header-title">Requests by Status</div>
-                                <span class="badge-total-pill">@Model.TotalRequests Total</span>
+                                <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="all" class="badge-total-pill" style="text-decoration: none; cursor: pointer;" title="View all requests">@Model.TotalRequests Total</a>
                             </div>
 
                             <div class="status-chart-flex">
                                 <!-- Donut Ring -->
-                                <div class="status-donut-ring">
+                                <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="all" class="status-donut-ring" style="text-decoration: none; color: inherit; cursor: pointer;" title="View all requests">
                                     <svg viewBox="0 0 36 36">
                                         <path stroke="rgba(255, 255, 255, 0.06)" stroke-width="3.2" fill="none"
                                               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -1184,33 +1193,33 @@
                                         <div class="donut-val-mono">@Model.TotalRequests</div>
                                         <div class="donut-tag-mono">TOTAL</div>
                                     </div>
-                                </div>
+                                </a>
 
                                 <!-- Breakdown Rows -->
                                 <div class="status-rows-stack">
-                                    <div class="status-pill-item">
+                                    <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="completed" class="status-pill-item" style="text-decoration: none; color: inherit; cursor: pointer;" title="View completed deliveries">
                                         <div class="status-item-left">
                                             <span class="status-dot-circle dot-c-green"></span>
                                             <span>Completed</span>
                                         </div>
                                         <span class="status-pct-label">@Model.CompletedPercentage%</span>
-                                    </div>
+                                    </a>
 
-                                    <div class="status-pill-item">
+                                    <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="active" class="status-pill-item" style="text-decoration: none; color: inherit; cursor: pointer;" title="View active requests">
                                         <div class="status-item-left">
                                             <span class="status-dot-circle dot-c-amber"></span>
                                             <span>In Progress</span>
                                         </div>
                                         <span class="status-pct-label">@Model.InProgressPercentage%</span>
-                                    </div>
+                                    </a>
 
-                                    <div class="status-pill-item">
+                                    <a asp-controller="Dashboard" asp-action="Requests" asp-route-tab="cancelled" class="status-pill-item" style="text-decoration: none; color: inherit; cursor: pointer;" title="View cancelled requests">
                                         <div class="status-item-left">
                                             <span class="status-dot-circle dot-c-red"></span>
                                             <span>Cancelled</span>
                                         </div>
                                         <span class="status-pct-label">@Model.CancelledPercentage%</span>
-                                    </div>
+                                    </a>
                                 </div>
                             </div>
                         </section>

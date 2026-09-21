@@ -432,11 +432,17 @@
             justify-content: space-between;
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .runner-stat-card:hover {
-            border-color: var(--uv-card-border-hover);
+            border-color: rgba(0, 229, 153, 0.45);
+            background: rgba(0, 229, 153, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -8px rgba(0, 229, 153, 0.22);
         }
 
         .r-stat-left {
@@ -1318,7 +1324,7 @@
         <!-- ── 4 Top Stat Cards Grid ── -->
         <div class="runner-stats-grid">
             <!-- Available -->
-            <div class="runner-stat-card">
+            <a asp-controller="Dashboard" asp-action="Runner" asp-route-tab="available" class="runner-stat-card" title="View available delivery missions">
                 <div class="r-stat-left">
                     <span class="r-stat-label-mono">AVAILABLE</span>
                     <span class="r-stat-val-bold">@Model.AvailableCount</span>
@@ -1330,10 +1336,10 @@
                 <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
                     <i class="bi bi-box-seam" style="color: var(--uv-emerald);"></i>
                 </div>
-            </div>
+            </a>
 
             <!-- Active -->
-            <div class="runner-stat-card">
+            <a asp-controller="Dashboard" asp-action="Runner" asp-route-tab="active" class="runner-stat-card" title="View active runner missions">
                 <div class="r-stat-left">
                     <span class="r-stat-label-mono">ACTIVE</span>
                     <span class="r-stat-val-bold">@Model.ActiveCount</span>
@@ -1344,24 +1350,24 @@
                 <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
                     <i class="bi bi-clock" style="color: var(--uv-emerald);"></i>
                 </div>
-            </div>
+            </a>
 
             <!-- Earnings -->
-            <div class="runner-stat-card">
+            <a asp-controller="Dashboard" asp-action="Wallet" class="runner-stat-card" title="Open UniVerse Wallet">
                 <div class="r-stat-left">
                     <span class="r-stat-label-mono">EARNINGS</span>
                     <span class="r-stat-val-bold">₹ @((int)Model.TotalEarnings)</span>
-                    <span class="r-stat-sub-note">
-                        <a asp-controller="Dashboard" asp-action="Wallet" style="color: #85988e; text-decoration: none;">Wallet →</a>
+                    <span class="r-stat-sub-note" style="color: var(--uv-emerald);">
+                        View Wallet →
                     </span>
                 </div>
                 <div class="r-stat-icon-circle" style="border-color: rgba(0, 229, 153, 0.3);">
                     <i class="bi bi-wallet2" style="color: var(--uv-emerald);"></i>
                 </div>
-            </div>
+            </a>
 
             <!-- Rating -->
-            <div class="runner-stat-card">
+            <a asp-controller="Dashboard" asp-action="Profile" class="runner-stat-card" title="View Student Profile & Rating">
                 <div class="r-stat-left">
                     <span class="r-stat-label-mono">RATING</span>
                     <span class="r-stat-val-bold">@Model.Rating</span>
@@ -1370,7 +1376,7 @@
                 <div class="r-stat-icon-circle" style="border-color: rgba(245, 158, 11, 0.3);">
                     <i class="bi bi-star-fill" style="color: #f59e0b;"></i>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- ══════════════════════════════════════════════════════
