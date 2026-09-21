@@ -35,4 +35,7 @@ public interface IAdoNetDbHelper
     bool UpdateUserProfile(ProfileViewModel profile);
     bool UpdateUserHostelInfo(string email, string hostelBlock, string roomNumber);
     bool UpdateUserPassword(string email, string newPassword);
+    WalletViewModel GetWalletData(string email);
+    bool TopUpWallet(string email, decimal amount, string paymentMethod);
+    bool WithdrawWallet(string email, decimal amount, string upiId);
 }

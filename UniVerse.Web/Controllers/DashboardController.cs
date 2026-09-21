@@ -428,7 +428,49 @@ public class DashboardController : Controller
     [HttpGet]
     public IActionResult Wallet()
     {
-        return RedirectToAction("Index");
+        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        var model = _dbHelper.GetWalletData(studentEmail);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult TopUpWallet(decimal amount, string paymentMethod)
+    {
+        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        if (amount <= 0)
+        {
+            TempData["ErrorMessage"] = "Please enter a valid top-up amount.";
+            return RedirectToAction("Wallet");
+        }
+        _dbHelper.TopUpWallet(studentEmail, amount, string.IsNullOrWhiteSpace(paymentMethod) ? "Google Pay (UPI)" : paymentMethod);
+        TempData["SuccessMessage"] = $"₹{amount:F2} credited to your UniVerse Wallet successfully!";
+        return RedirectToAction("Wallet");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult WithdrawWallet(decimal amount, string upiId)
+    {
+        var studentEmail = User.FindFirst(ClaimTypes.Email)?.Value ?? "archi.kumari126697@marwadiuniversity.ac.in";
+        if (amount <= 0)
+        {
+            TempData["ErrorMessage"] = "Please enter a valid payout withdrawal amount.";
+            return RedirectToAction("Wallet");
+        }
+        if (string.IsNullOrWhiteSpace(upiId))
+        {
+            TempData["ErrorMessage"] = "Please enter your UPI ID for payout.";
+            return RedirectToAction("Wallet");
+        }
+        var success = _dbHelper.WithdrawWallet(studentEmail, amount, upiId);
+        if (!success)
+        {
+            TempData["ErrorMessage"] = "Insufficient wallet balance for this withdrawal.";
+            return RedirectToAction("Wallet");
+        }
+        TempData["SuccessMessage"] = $"Payout of ₹{amount:F2} initiated to UPI ID {upiId}. Funds will reflect shortly.";
+        return RedirectToAction("Wallet");
     }
 
     [HttpGet]

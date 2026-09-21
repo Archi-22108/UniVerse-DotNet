@@ -1,0 +1,1413 @@
+@model UniVerse.Web.Models.WalletViewModel
+@{
+    Layout = null; // Full standalone widescreen layout matching UniVerse dashboard suite
+    ViewData["Title"] = "Campus Wallet · UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            color-scheme: dark;
+            --uv-bg: #030708;
+            --uv-sidebar-bg: #040907;
+            --uv-card-bg: rgba(8, 14, 11, 0.75);
+            --uv-card-border: rgba(0, 229, 153, 0.16);
+            --uv-card-border-hover: rgba(0, 229, 153, 0.35);
+            --uv-emerald: #00e599;
+            --uv-emerald-glow: rgba(0, 229, 153, 0.4);
+            --uv-text-main: #ffffff;
+            --uv-text-muted: #85988e;
+            --uv-text-dim: #54685e;
+            --uv-blue: #3b82f6;
+            --uv-red: #ef4444;
+            --uv-amber: #f59e0b;
+            --uv-purple: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--uv-bg);
+            color: var(--uv-text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Canvas Starfield ── */
+        #starCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           LEFT SIDEBAR (MATCHING SCREENSHOT 1:1)
+           ══════════════════════════════════════════════════════ */
+        .wallet-sidebar {
+            width: 240px;
+            background: var(--uv-sidebar-bg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem 1.15rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 40;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-head {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem 1.5rem;
+        }
+
+        .brand-monogram-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px var(--uv-emerald-glow);
+        }
+
+        .brand-monogram-circle svg {
+            width: 17px;
+            height: 17px;
+            fill: #020806;
+        }
+
+        .brand-text-h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            list-style: none;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            color: #85988e;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-nav-item i {
+            font-size: 1.05rem;
+            color: inherit;
+        }
+
+        .sidebar-nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .sidebar-nav-item.active {
+            color: #ffffff;
+            background: rgba(0, 229, 153, 0.08);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            box-shadow: 0 0 18px rgba(0, 229, 153, 0.12);
+        }
+
+        .sidebar-nav-item.active i {
+            color: var(--uv-emerald);
+        }
+
+        .wallet-indicator-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+        }
+
+        .sidebar-bottom-action {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-sidebar-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-sidebar-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MAIN VIEWPORT CONTAINER
+           ══════════════════════════════════════════════════════ */
+        .wallet-main-viewport {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            padding: 1.8rem 2.8rem 3.5rem;
+            max-width: 1240px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ── Top Header Strip ── */
+        .wallet-top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .header-title-group h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .header-title-group p {
+            font-size: 0.85rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .header-right-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .pill-tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.4rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            background: rgba(0, 229, 153, 0.1);
+            color: var(--uv-emerald);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+        }
+
+        .pill-live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--uv-emerald);
+            box-shadow: 0 0 8px var(--uv-emerald);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @@keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* ── Toast Alerts ── */
+        .wallet-toast {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.85rem 1.15rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .wallet-toast.success {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--uv-emerald);
+        }
+
+        .wallet-toast.error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           HERO BALANCE BANNER CARD
+           ══════════════════════════════════════════════════════ */
+        .wallet-hero-card {
+            background: linear-gradient(135deg, rgba(8, 20, 15, 0.9) 0%, rgba(3, 10, 8, 0.85) 100%);
+            border: 1px solid rgba(0, 229, 153, 0.22);
+            border-radius: 20px;
+            padding: 2.2rem 2.4rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 229, 153, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 229, 153, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-balance-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .balance-subtitle {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--uv-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .balance-figure-h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.1;
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
+
+        .balance-figure-h2 .currency-symbol {
+            color: var(--uv-emerald);
+            font-size: 2.4rem;
+        }
+
+        .hero-account-id-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 0.35rem;
+        }
+
+        .upi-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .upi-chip i {
+            color: var(--uv-emerald);
+        }
+
+        .hero-action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-wallet-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.45rem;
+            border-radius: 12px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+            border: none;
+        }
+
+        .btn-wallet-primary {
+            background: var(--uv-emerald);
+            color: #020806;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.4);
+        }
+
+        .btn-wallet-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.6);
+        }
+
+        .btn-wallet-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .btn-wallet-secondary:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(0, 229, 153, 0.3);
+            color: var(--uv-emerald);
+            transform: translateY(-2px);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           STAT METRICS 3-COLUMN GRID
+           ══════════════════════════════════════════════════════ */
+        .wallet-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        @@media (max-width: 900px) {
+            .wallet-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .wallet-hero-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1.5rem;
+            }
+        }
+
+        .stat-metric-card {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 16px;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.15rem;
+            transition: all 0.2s ease;
+        }
+
+        .stat-metric-card:hover {
+            border-color: var(--uv-card-border-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon-wrapper.green {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--uv-emerald);
+            border: 1px solid rgba(0, 229, 153, 0.2);
+        }
+
+        .stat-icon-wrapper.amber {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--uv-amber);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .stat-icon-wrapper.purple {
+            background: rgba(168, 85, 247, 0.12);
+            color: var(--uv-purple);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .stat-detail-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .stat-label-text {
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--uv-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .stat-value-text {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-sub-text {
+            font-size: 0.72rem;
+            color: var(--uv-text-dim);
+        }
+
+        /* ══════════════════════════════════════════════════════
+           TRANSACTION HISTORY PANEL
+           ══════════════════════════════════════════════════════ */
+        .wallet-tx-panel {
+            background: var(--uv-card-bg);
+            border: 1px solid var(--uv-card-border);
+            border-radius: 18px;
+            padding: 1.6rem 1.8rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .tx-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tx-panel-title-wrap h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .tx-panel-title-wrap p {
+            font-size: 0.78rem;
+            color: var(--uv-text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .tx-filter-pills {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.25rem;
+        }
+
+        .tx-filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--uv-text-muted);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 0.4rem 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .tx-filter-btn:hover {
+            color: #ffffff;
+        }
+
+        .tx-filter-btn.active {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--uv-emerald);
+        }
+
+        .tx-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tx-card-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.15rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .tx-card-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(0, 229, 153, 0.2);
+            transform: translateX(3px);
+        }
+
+        .tx-left-side {
+            display: flex;
+            align-items: center;
+            gap: 0.95rem;
+        }
+
+        .tx-category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .tx-category-icon.runner {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--uv-emerald);
+        }
+
+        .tx-category-icon.topup {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--uv-blue);
+        }
+
+        .tx-category-icon.snack {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--uv-amber);
+        }
+
+        .tx-category-icon.withdrawal {
+            background: rgba(168, 85, 247, 0.12);
+            color: var(--uv-purple);
+        }
+
+        .tx-info-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .tx-title-text {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .tx-meta-text {
+            font-size: 0.74rem;
+            color: var(--uv-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tx-ref-badge {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 0.05rem 0.35rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            color: #94a3b8;
+        }
+
+        .tx-right-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.2rem;
+        }
+
+        .tx-amount-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .tx-amount-text.credit {
+            color: var(--uv-emerald);
+        }
+
+        .tx-amount-text.debit {
+            color: #f1f5f9;
+        }
+
+        .tx-status-pill {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--uv-emerald);
+            background: rgba(0, 229, 153, 0.1);
+            padding: 0.15rem 0.45rem;
+            border-radius: 9999px;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           MODALS (TOP-UP & WITHDRAW & QR)
+           ══════════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 5, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #08130f;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 229, 153, 0.15);
+            animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        @@keyframes modalPop {
+            from { opacity: 0; transform: scale(0.94) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #85988e;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .modal-heading {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-sub {
+            font-size: 0.8rem;
+            color: var(--uv-text-muted);
+            margin-bottom: 1.4rem;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .preset-pills-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.65rem;
+            margin-bottom: 1.15rem;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.6rem 0.4rem;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .preset-btn:hover,
+        .preset-btn.selected {
+            background: rgba(0, 229, 153, 0.12);
+            border-color: var(--uv-emerald);
+            color: var(--uv-emerald);
+        }
+
+        .custom-amount-input-wrap {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .amount-prefix-symbol {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--uv-emerald);
+            font-family: 'Space Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .modal-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.75rem 1rem 0.75rem 2.4rem;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .modal-input:focus {
+            border-color: var(--uv-emerald);
+            box-shadow: 0 0 16px rgba(0, 229, 153, 0.18);
+        }
+
+        .modal-select {
+            width: 100%;
+            background: #08130f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            margin-bottom: 1.35rem;
+            color-scheme: dark;
+        }
+
+        .btn-modal-submit {
+            width: 100%;
+            background: var(--uv-emerald);
+            border: none;
+            color: #020806;
+            font-weight: 800;
+            font-size: 0.9rem;
+            padding: 0.85rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.35);
+        }
+
+        .btn-modal-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.55);
+        }
+
+        /* QR Code Container */
+        .qr-box-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background: #ffffff;
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+        }
+
+        .qr-box-wrap svg {
+            width: 160px;
+            height: 160px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Canvas Particles ── -->
+    <canvas id="starCanvas"></canvas>
+
+    <!-- ══════════════════════════════════════════════════════
+       LEFT SIDEBAR
+       ══════════════════════════════════════════════════════ -->
+    <aside class="wallet-sidebar">
+        <div>
+            <a asp-controller="Home" asp-action="Index" class="sidebar-brand-head">
+                <div class="brand-monogram-circle">
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="brand-text-h1">UniVerse</span>
+            </a>
+
+            <nav class="sidebar-menu-list">
+                <!-- 1. Home -->
+                <a asp-controller="Home" asp-action="Index" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-house"></i>
+                        <span>Home</span>
+                    </div>
+                </a>
+
+                <!-- 2. Dashboard -->
+                <a asp-controller="Dashboard" asp-action="Index" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-grid"></i>
+                        <span>Dashboard</span>
+                    </div>
+                </a>
+
+                <!-- 3. My Requests -->
+                <a asp-controller="Dashboard" asp-action="Requests" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>My Requests</span>
+                    </div>
+                </a>
+
+                <!-- 4. Runner Mode -->
+                <a asp-controller="Dashboard" asp-action="Runner" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-bicycle"></i>
+                        <span>Runner Mode</span>
+                    </div>
+                </a>
+
+                <!-- 5. Wallet (Active Item) -->
+                <a asp-controller="Dashboard" asp-action="Wallet" class="sidebar-nav-item active">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Wallet</span>
+                    </div>
+                    <span class="wallet-indicator-dot"></span>
+                </a>
+
+                <!-- 6. Marketplace -->
+                <a asp-controller="Dashboard" asp-action="Marketplace" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-bag"></i>
+                        <span>Marketplace</span>
+                    </div>
+                </a>
+
+                <!-- 7. Chat -->
+                <a asp-controller="Dashboard" asp-action="Chat" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Chat</span>
+                    </div>
+                </a>
+
+                <!-- 8. Analytics -->
+                <a asp-controller="Dashboard" asp-action="Analytics" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>Analytics</span>
+                    </div>
+                </a>
+
+                <!-- 9. Profile -->
+                <a asp-controller="Dashboard" asp-action="Profile" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-person"></i>
+                        <span>Profile</span>
+                    </div>
+                </a>
+
+                <!-- 10. Setting -->
+                <a asp-controller="Dashboard" asp-action="Setting" class="sidebar-nav-item">
+                    <div class="sidebar-nav-left">
+                        <i class="bi bi-gear"></i>
+                        <span>Setting</span>
+                    </div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-bottom-action">
+            <a asp-controller="Account" asp-action="Logout" class="btn-sidebar-logout">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Log out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════════════════════════
+       MAIN VIEWPORT
+       ══════════════════════════════════════════════════════ -->
+    <main class="wallet-main-viewport">
+        <!-- Top Title Bar -->
+        <header class="wallet-top-header">
+            <div class="header-title-group">
+                <h1>
+                    <i class="bi bi-wallet-fill" style="color: var(--uv-emerald);"></i>
+                    Campus Wallet
+                </h1>
+                <p>Track delivery tip earnings, vending balances, and instant UPI payouts.</p>
+            </div>
+
+            <div class="header-right-meta">
+                <div class="pill-tag-badge">
+                    <span class="pill-live-dot"></span>
+                    <span>Active Student Wallet</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Toast Notifications -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="wallet-toast success">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="wallet-toast error">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>@TempData["ErrorMessage"]</span>
+            </div>
+        }
+
+        <!-- ── HERO WALLET CARD ── -->
+        <section class="wallet-hero-card">
+            <div class="hero-balance-left">
+                <div class="balance-subtitle">
+                    <i class="bi bi-shield-check" style="color: var(--uv-emerald);"></i>
+                    Available Campus Balance
+                </div>
+                <div class="balance-figure-h2">
+                    <span class="currency-symbol">₹</span>@Model.Balance.ToString("F2")
+                </div>
+                <div class="hero-account-id-row">
+                    <span class="upi-chip">
+                        <i class="bi bi-qr-code"></i>
+                        @Model.LinkedUpiId
+                    </span>
+                    <span style="font-size: 0.74rem; color: #64748b;">Instant settlement · 0% campus fee</span>
+                </div>
+            </div>
+
+            <div class="hero-action-buttons">
+                <button type="button" class="btn-wallet-action btn-wallet-primary" onclick="openModal('topupModal')">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>+ Add Money</span>
+                </button>
+                <button type="button" class="btn-wallet-action btn-wallet-secondary" onclick="openModal('withdrawModal')">
+                    <i class="bi bi-arrow-up-right-circle"></i>
+                    <span>Withdraw Payout</span>
+                </button>
+                <button type="button" class="btn-wallet-action btn-wallet-secondary" onclick="openModal('qrModal')" title="Show QR Code">
+                    <i class="bi bi-qr-code-scan"></i>
+                    <span>Receive QR</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ── STAT METRICS 3-COLUMN ── -->
+        <section class="wallet-stats-grid">
+            <div class="stat-metric-card">
+                <div class="stat-icon-wrapper green">
+                    <i class="bi bi-bicycle"></i>
+                </div>
+                <div class="stat-detail-group">
+                    <span class="stat-label-text">Runner Tips Earned</span>
+                    <span class="stat-value-text">₹@Model.TotalEarned.ToString("F2")</span>
+                    <span class="stat-sub-text">From campus hostel room drops</span>
+                </div>
+            </div>
+
+            <div class="stat-metric-card">
+                <div class="stat-icon-wrapper amber">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+                <div class="stat-detail-group">
+                    <span class="stat-label-text">Snacks &amp; Orders Spent</span>
+                    <span class="stat-value-text">₹@Model.TotalSpent.ToString("F2")</span>
+                    <span class="stat-sub-text">Paid via UniVerse 1-tap balance</span>
+                </div>
+            </div>
+
+            <div class="stat-metric-card">
+                <div class="stat-icon-wrapper purple">
+                    <i class="bi bi-award"></i>
+                </div>
+                <div class="stat-detail-group">
+                    <span class="stat-label-text">Deliveries Completed</span>
+                    <span class="stat-value-text">@Model.TotalDeliveriesDone Deliveries</span>
+                    <span class="stat-sub-text">100% on-time verified delivery</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── TRANSACTION FEED PANEL ── -->
+        <section class="wallet-tx-panel">
+            <div class="tx-panel-header">
+                <div class="tx-panel-title-wrap">
+                    <h3>Recent Transactions</h3>
+                    <p>Live ledger of tip credits, snack purchases, and instant withdrawals.</p>
+                </div>
+
+                <div class="tx-filter-pills">
+                    <button type="button" class="tx-filter-btn active" onclick="filterTx('all', this)">All</button>
+                    <button type="button" class="tx-filter-btn" onclick="filterTx('Credit', this)">Credits (+)</button>
+                    <button type="button" class="tx-filter-btn" onclick="filterTx('Debit', this)">Debits (-)</button>
+                </div>
+            </div>
+
+            <div class="tx-list-container" id="txContainer">
+                @if (Model.Transactions.Count == 0)
+                {
+                    <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
+                        <i class="bi bi-receipt" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                        No transactions found yet. Deliver an order or add funds to get started!
+                    </div>
+                }
+                else
+                {
+                    @foreach (var tx in Model.Transactions)
+                    {
+                        var isCredit = tx.Type == "Credit";
+                        var iconClass = tx.Category switch
+                        {
+                            "RunnerReward" => "runner",
+                            "Topup" => "topup",
+                            "Withdrawal" => "withdrawal",
+                            _ => "snack"
+                        };
+                        var iconBi = tx.Category switch
+                        {
+                            "RunnerReward" => "bi-bicycle",
+                            "Topup" => "bi-arrow-down-left-circle-fill",
+                            "Withdrawal" => "bi-bank2",
+                            _ => "bi-cup-straw"
+                        };
+
+                        <div class="tx-card-row" data-type="@tx.Type">
+                            <div class="tx-left-side">
+                                <div class="tx-category-icon @iconClass">
+                                    <i class="bi @iconBi"></i>
+                                </div>
+                                <div class="tx-info-block">
+                                    <div class="tx-title-text">@tx.Title</div>
+                                    <div class="tx-meta-text">
+                                        <span>@tx.FormattedTime</span>
+                                        <span>•</span>
+                                        <span class="tx-ref-badge">@tx.ReferenceId</span>
+                                        <span>•</span>
+                                        <span>@tx.Description</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tx-right-side">
+                                <div class="tx-amount-text @(isCredit ? "credit" : "debit")">
+                                    @(isCredit ? "+₹" : "-₹")@tx.Amount.ToString("F2")
+                                </div>
+                                <span class="tx-status-pill">
+                                    <i class="bi bi-check-circle-fill" style="font-size: 0.6rem;"></i>
+                                    @tx.Status
+                                </span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════
+       MODAL 1: ADD MONEY (TOP-UP)
+       ══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="topupModal" onclick="handleBackdropClick(event, 'topupModal')">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeModal('topupModal')">
+                <i class="bi bi-x"></i>
+            </button>
+            <div class="modal-heading">
+                <i class="bi bi-plus-circle-fill" style="color: var(--uv-emerald);"></i>
+                Add Money to Wallet
+            </div>
+            <div class="modal-sub">Fast, zero-fee recharge via Google Pay, PhonePe, or UPI.</div>
+
+            <form asp-controller="Dashboard" asp-action="TopUpWallet" method="post">
+                @Html.AntiForgeryToken()
+
+                <label class="form-label">Select Quick Amount</label>
+                <div class="preset-pills-row">
+                    <button type="button" class="preset-btn" onclick="setTopUpAmount(50)">+₹50</button>
+                    <button type="button" class="preset-btn selected" onclick="setTopUpAmount(100)">+₹100</button>
+                    <button type="button" class="preset-btn" onclick="setTopUpAmount(200)">+₹200</button>
+                    <button type="button" class="preset-btn" onclick="setTopUpAmount(500)">+₹500</button>
+                </div>
+
+                <label class="form-label">Amount (₹)</label>
+                <div class="custom-amount-input-wrap">
+                    <span class="amount-prefix-symbol">₹</span>
+                    <input type="number" name="amount" id="topupAmountInput" class="modal-input" value="100" min="10" max="10000" step="10" required />
+                </div>
+
+                <label class="form-label">Payment Method</label>
+                <select name="paymentMethod" class="modal-select">
+                    <option value="Google Pay (UPI)">Google Pay (UPI)</option>
+                    <option value="PhonePe (UPI)">PhonePe (UPI)</option>
+                    <option value="Paytm Wallet">Paytm Wallet</option>
+                    <option value="Campus Card (Marwadi Univ)">Campus ID Card Tap</option>
+                </select>
+
+                <button type="submit" class="btn-modal-submit">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    Instant Top-up
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+       MODAL 2: WITHDRAW PAYOUT
+       ══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="withdrawModal" onclick="handleBackdropClick(event, 'withdrawModal')">
+        <div class="modal-card">
+            <button type="button" class="modal-close-btn" onclick="closeModal('withdrawModal')">
+                <i class="bi bi-x"></i>
+            </button>
+            <div class="modal-heading">
+                <i class="bi bi-arrow-up-right-circle" style="color: var(--uv-emerald);"></i>
+                Withdraw to Bank / UPI
+            </div>
+            <div class="modal-sub">Transfer your delivery tip earnings straight to your bank account.</div>
+
+            <form asp-controller="Dashboard" asp-action="WithdrawWallet" method="post">
+                @Html.AntiForgeryToken()
+
+                <label class="form-label">Withdrawal Amount (Available: ₹@Model.Balance.ToString("F2"))</label>
+                <div class="custom-amount-input-wrap">
+                    <span class="amount-prefix-symbol">₹</span>
+                    <input type="number" name="amount" class="modal-input" value="50" min="10" max="@((int)Model.Balance)" step="5" required />
+                </div>
+
+                <label class="form-label">Your UPI ID</label>
+                <div style="margin-bottom: 1.35rem;">
+                    <input type="text" name="upiId" class="modal-input" value="@Model.LinkedUpiId" style="padding-left: 1rem;" placeholder="e.g. yourname@okaxis" required />
+                </div>
+
+                <button type="submit" class="btn-modal-submit" style="background: var(--uv-emerald);">
+                    <i class="bi bi-bank"></i>
+                    Initiate Instant Payout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+       MODAL 3: CAMPUS STUDENT RECEIVE QR
+       ══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="qrModal" onclick="handleBackdropClick(event, 'qrModal')">
+        <div class="modal-card" style="text-align: center;">
+            <button type="button" class="modal-close-btn" onclick="closeModal('qrModal')">
+                <i class="bi bi-x"></i>
+            </button>
+            <div class="modal-heading" style="justify-content: center;">
+                <i class="bi bi-qr-code-scan" style="color: var(--uv-emerald);"></i>
+                UniVerse Campus QR
+            </div>
+            <div class="modal-sub">Scan with any UPI app to pay delivery tip to @Model.StudentName.</div>
+
+            <div class="qr-box-wrap">
+                <!-- Clean Synthesised QR Vector Graphic -->
+                <svg viewBox="0 0 100 100" fill="#020806">
+                    <rect x="5" y="5" width="30" height="30" fill="none" stroke="#020806" stroke-width="6"/>
+                    <rect x="14" y="14" width="12" height="12"/>
+                    <rect x="65" y="5" width="30" height="30" fill="none" stroke="#020806" stroke-width="6"/>
+                    <rect x="74" y="14" width="12" height="12"/>
+                    <rect x="5" y="65" width="30" height="30" fill="none" stroke="#020806" stroke-width="6"/>
+                    <rect x="14" y="74" width="12" height="12"/>
+                    <!-- Data points -->
+                    <rect x="42" y="10" width="8" height="8"/>
+                    <rect x="52" y="25" width="8" height="8"/>
+                    <rect x="42" y="42" width="16" height="16" fill="#00e599"/>
+                    <rect x="25" y="45" width="8" height="8"/>
+                    <rect x="65" y="45" width="12" height="8"/>
+                    <rect x="75" y="65" width="15" height="8"/>
+                    <rect x="45" y="75" width="8" height="15"/>
+                    <rect x="65" y="80" width="15" height="12"/>
+                </svg>
+                <span style="color: #020806; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem;">
+                    @Model.LinkedUpiId
+                </span>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--uv-text-muted);">
+                Marwadi University Verified Student ID · Instant Settlement
+            </p>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+       SCRIPTS: PARTICLES, MODALS, FILTERING
+       ══════════════════════════════════════════════════════ -->
+    <script>
+        // Starfield Particles Animation
+        (function initStars() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w = (canvas.width = window.innerWidth);
+            let h = (canvas.height = window.innerHeight);
+
+            window.addEventListener('resize', () => {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            });
+
+            const starCount = 50;
+            const stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 1.2 + 0.3,
+                alpha: Math.random() * 0.7 + 0.2,
+                speed: Math.random() * 0.02 + 0.005,
+                phase: Math.random() * Math.PI * 2
+            }));
+
+            let t = 0;
+            function render() {
+                t += 0.02;
+                ctx.clearRect(0, 0, w, h);
+                stars.forEach(s => {
+                    const currentAlpha = s.alpha * (0.6 + 0.4 * Math.sin(t * s.speed * 20 + s.phase));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        })();
+
+        // Modal Controls
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.add('active');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('active');
+        }
+
+        function handleBackdropClick(e, id) {
+            if (e.target.id === id) {
+                closeModal(id);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        // Top-up Preset Pill Helper
+        function setTopUpAmount(val) {
+            const inp = document.getElementById('topupAmountInput');
+            if (inp) inp.value = val;
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                if (btn.textContent.includes(val.toString())) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        // Transaction Filtering (All / Credits / Debits)
+        function filterTx(type, btn) {
+            document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const rows = document.querySelectorAll('.tx-card-row');
+            rows.forEach(row => {
+                if (type === 'all') {
+                    row.style.display = 'flex';
+                } else {
+                    const rowType = row.getAttribute('data-type');
+                    row.style.display = (rowType === type) ? 'flex' : 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
