@@ -15,6 +15,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
 
+    <!-- Three.js for 3D Gargantua Black Hole WebGL Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -23,7 +26,7 @@
         }
 
         body {
-            background-color: #030508;
+            background-color: #000002;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -34,32 +37,23 @@
             padding: 24px 14px;
             position: relative;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 45%, rgba(0, 210, 255, 0.08) 0%, rgba(5, 8, 15, 0.8) 55%, #030508 100%),
-                radial-gradient(circle at 20% 20%, rgba(0, 119, 255, 0.06) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
         }
 
-        /* ─── Space Cosmic Stars Canvas Effect ─── */
-        .stars-bg {
+        /* ─── WebGL Canvas Container ─── */
+        #blackHoleContainer {
             position: fixed;
             inset: 0;
-            pointer-events: none;
             z-index: 1;
-            background-image: 
-                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 100px 150px, #00d2ff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 240px 70px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 320px 280px, #00d2ff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 450px 180px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 600px 350px, #00d2ff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 750px 120px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 890px 290px, #00d2ff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 1020px 80px, #ffffff, rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 1200px 240px, #00d2ff, rgba(0,0,0,0));
-            background-repeat: repeat;
-            background-size: 1250px 500px;
-            opacity: 0.65;
+            pointer-events: none;
+        }
+
+        /* ─── Cinematic Vignette ─── */
+        .cinematic-vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            background: radial-gradient(circle at center, transparent 35%, rgba(0, 2, 8, 0.65) 100%);
+            pointer-events: none;
         }
 
         /* ─── Sci-Fi HUD Overlays ─── */
@@ -121,6 +115,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* ─── Brand Logo ─── */
@@ -171,7 +166,7 @@
         /* ─── Sci-Fi Glass Card ─── */
         .scifi-card {
             width: 100%;
-            background: rgba(12, 14, 20, 0.45);
+            background: rgba(12, 14, 20, 0.4);
             backdrop-filter: blur(25px) saturate(140%);
             -webkit-backdrop-filter: blur(25px) saturate(140%);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -257,11 +252,6 @@
         .field-input-box.focused {
             border-color: #00d2ff;
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.25), inset 0 0 10px rgba(0, 210, 255, 0.1);
-        }
-
-        .field-input-box.has-error {
-            border-color: rgba(255, 68, 68, 0.6);
-            box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);
         }
 
         .field-left-icon {
@@ -541,8 +531,9 @@
 </head>
 <body>
 
-    <!-- Stars Background -->
-    <div class="stars-bg"></div>
+    <!-- 3D WebGL Gargantua Black Hole Canvas Background -->
+    <div id="blackHoleContainer"></div>
+    <div class="cinematic-vignette"></div>
 
     <!-- HUD Top-Left -->
     <div class="hud-tl">
@@ -559,7 +550,7 @@
     </div>
 
     <!-- Main Register Container -->
-    <div class="register-container">
+    <div class="register-container" id="mainContainer">
 
         <!-- Logo + Tagline -->
         <a href="/" class="brand-header">
@@ -777,8 +768,282 @@
         </div>
     </div>
 
-    <!-- Client-Side Interactive Validation Logic -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         3D WEBGL GARGANTUA BLACK HOLE ANIMATION SCRIPT
+    ═══════════════════════════════════════════════════════════════════════ -->
     <script>
+        // ─── GLSL Shaders from BlackHoleBackground.tsx ──────────────────────────
+        const VERTEX_SHADER = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const FRAGMENT_SHADER = `
+            uniform float uTime;
+            uniform float uStabilize; 
+            uniform float uAspect;
+            uniform float uExposure;
+            varying vec2 vUv;
+
+            float random(vec2 st) {
+                return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+            }
+            
+            float noise(vec2 st) {
+                vec2 i = floor(st);
+                vec2 f = fract(st);
+                float a = random(i); float b = random(i + vec2(1.0, 0.0));
+                float c = random(i + vec2(0.0, 1.0)); float d = random(i + vec2(1.0, 1.0));
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+            }
+            
+            float fbm(vec2 st) {
+                float v = 0.0; float a = 0.5; vec2 shift = vec2(100.0);
+                mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+                for (int i = 0; i < 5; ++i) {
+                    v += a * noise(st); st = rot * st * 2.0 + shift; a *= 0.5;
+                }
+                return v;
+            }
+
+            void main() {
+                vec2 uv = vUv - 0.5;
+                uv.x *= uAspect;
+                
+                float chaos = 1.0 - uStabilize;
+                float rBase = length(uv);
+
+                // 1. Interactive Gravitational Twist
+                float twist = chaos * 15.0 * exp(-rBase * 6.0); 
+                float angle = atan(uv.y, uv.x) + twist;
+                
+                vec2 p = vec2(cos(angle), sin(angle)) * rBase;
+                float pr = length(p);
+
+                // 2. The Singularity (Event Horizon)
+                float horizon = 0.15;
+                float isVoid = smoothstep(horizon - 0.005, horizon + 0.005, pr);
+
+                // 3. The Lensed Halo
+                float haloRadius = horizon * 1.5;
+                float haloThickness = abs(pr - haloRadius);
+                float pinch = smoothstep(0.0, 0.15, abs(p.y));
+                
+                float halo = exp(-haloThickness * 40.0) * pinch;
+                halo += exp(-haloThickness * 10.0) * 0.4 * pinch;
+
+                // 4. The Front Accretion Disk
+                float diskY = abs(p.y);
+                float diskX = abs(p.x);
+                float innerEllipse = length(vec2(p.x, p.y * 5.0));
+                float diskCutout = smoothstep(horizon * 1.1, horizon * 1.4, innerEllipse);
+                
+                float frontDisk = exp(-diskY * 80.0) * diskCutout;
+                frontDisk += exp(-diskY * 15.0) * 0.5 * diskCutout; 
+                frontDisk *= smoothstep(1.3, 0.3, diskX);
+
+                // 5. Volumetric Noise Details
+                vec2 polar = vec2(atan(p.y, p.x), pr);
+                float nHalo = fbm(vec2(polar.x * 4.0 - uTime * 0.15, pr * 50.0));
+                halo *= (nHalo * 0.7 + 0.3);
+                
+                float nDisk = fbm(vec2(p.x * 10.0 - uTime * 0.45, p.y * 100.0));
+                frontDisk *= (nDisk * 0.8 + 0.2);
+
+                // 6. Composition
+                float density = (halo * isVoid) + frontDisk;
+                float nebula = fbm(p * 3.0 + uTime * 0.03) * 0.1;
+                nebula *= smoothstep(0.0, 0.6, pr); 
+                density += nebula;
+
+                // 7. Cinematic Interstellar Color Grading
+                vec3 cDark = vec3(0.18, 0.05, 0.01);
+                vec3 cMid = vec3(1.0, 0.45, 0.15);
+                vec3 cLight = vec3(1.0, 0.95, 0.9);
+                
+                vec3 color = mix(vec3(0.0), cDark, smoothstep(0.0, 0.15, density));
+                color = mix(color, cMid, smoothstep(0.15, 0.4, density));
+                color = mix(color, cLight, smoothstep(0.4, 1.0, density));
+
+                // 8. Doppler Beaming Physics
+                float doppler = 1.0 - p.x * 0.6;
+                color *= mix(1.0, doppler, smoothstep(0.0, 1.0, pr * 2.0));
+
+                // 9. Lensed Background Stars
+                vec2 starPos = p * 150.0;
+                float starGrid = random(floor(starPos));
+                float starShape = smoothstep(0.4, 0.0, length(fract(starPos) - 0.5));
+                float lensedStars = smoothstep(0.98, 1.0, starGrid) * starShape;
+                lensedStars *= smoothstep(horizon * 1.05, horizon * 1.5, pr); 
+                lensedStars *= smoothstep(0.4, 0.0, density); 
+                
+                vec3 starColor = mix(vec3(0.5, 0.8, 1.0), vec3(1.0, 0.7, 0.4), random(floor(starPos) + 1.0));
+                color += starColor * lensedStars * 3.0 * isVoid;
+
+                // 10. Absolute Vantablack Singularity & Exposure
+                color *= isVoid;
+                color *= 1.45 * uExposure;
+
+                float alphaMask = smoothstep(1.0, 0.4, pr);
+                alphaMask = max(alphaMask, smoothstep(0.1, 0.5, density));
+
+                gl_FragColor = vec4(color, alphaMask);
+            }
+        `;
+
+        function createStarTexture() {
+            const canvas = document.createElement("canvas");
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return null;
+            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, "rgba(255,255,255,1)");
+            gradient.addColorStop(0.3, "rgba(255,255,255,0.8)");
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Initialize 3D WebGL Black Hole Scene
+        const container = document.getElementById("blackHoleContainer");
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 7.5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        container.appendChild(renderer.domElement);
+
+        const uniforms = {
+            uTime: { value: 0.0 },
+            uStabilize: { value: 0.3 },
+            uAspect: { value: window.innerWidth / window.innerHeight },
+            uExposure: { value: 0.4 }
+        };
+
+        const portalGeometry = new THREE.PlaneGeometry(12, 12);
+        const portalMaterial = new THREE.ShaderMaterial({
+            vertexShader: VERTEX_SHADER,
+            fragmentShader: FRAGMENT_SHADER,
+            uniforms: uniforms,
+            transparent: true,
+            depthWrite: false
+        });
+        const portal = new THREE.Mesh(portalGeometry, portalMaterial);
+        scene.add(portal);
+
+        // 3,000 Starfield Particles
+        const starsCount = 2800;
+        const starsGeometry = new THREE.BufferGeometry();
+        const posArray = new Float32Array(starsCount * 3);
+        const colArray = new Float32Array(starsCount * 3);
+
+        for (let i = 0; i < starsCount * 3; i += 3) {
+            posArray[i] = (Math.random() - 0.5) * 30;
+            posArray[i + 1] = (Math.random() - 0.5) * 30;
+            posArray[i + 2] = (Math.random() - 0.5) * 20;
+            const isWarm = Math.random() > 0.6;
+            colArray[i] = 1.0;
+            colArray[i + 1] = isWarm ? 0.6 + Math.random() * 0.2 : 0.8 + Math.random() * 0.2;
+            colArray[i + 2] = isWarm ? 0.3 + Math.random() * 0.2 : 0.9 + Math.random() * 0.1;
+        }
+
+        starsGeometry.setAttribute("position", new THREE.BufferAttribute(posArray, 3));
+        starsGeometry.setAttribute("color", new THREE.BufferAttribute(colArray, 3));
+
+        const starTexture = createStarTexture();
+        const starsMaterial = new THREE.PointsMaterial({
+            size: 0.055,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            map: starTexture || undefined,
+            depthWrite: false
+        });
+        const starMesh = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starMesh);
+
+        // Interactive Parallax
+        let targetX = 0, targetY = 0, mouseX = 0, mouseY = 0;
+        let lastTime = performance.now();
+        let introProgress = 0;
+        let isWarping = false;
+
+        window.addEventListener("mousemove", (e) => {
+            if (isWarping) return;
+            targetX = (e.clientX / window.innerWidth) * 2 - 1;
+            targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+        }, { passive: true });
+
+        window.addEventListener("resize", () => {
+            const w = window.innerWidth, h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            uniforms.uAspect.value = w / h;
+        });
+
+        // 60FPS Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            const now = performance.now();
+            const delta = Math.min((now - lastTime) / 1000, 0.1);
+            lastTime = now;
+
+            if (isWarping) {
+                uniforms.uTime.value += delta * 12.0;
+                uniforms.uStabilize.value = Math.max(-1.0, uniforms.uStabilize.value - delta * 4.0);
+                uniforms.uExposure.value += delta * 3.0;
+                camera.position.z -= delta * 15.0;
+                camera.lookAt(0, 0, -20);
+            } else {
+                uniforms.uTime.value += delta * 1.0;
+
+                if (introProgress < 1.0) {
+                    introProgress = Math.min(1.0, introProgress + delta * 0.8);
+                    const ease = 1.0 - Math.pow(1.0 - introProgress, 3.0);
+                    camera.position.z = THREE.MathUtils.lerp(7.5, 4.0, ease);
+                    uniforms.uExposure.value = THREE.MathUtils.lerp(0.4, 1.05, ease);
+                    uniforms.uStabilize.value = THREE.MathUtils.lerp(0.3, 1.0, ease);
+                } else {
+                    camera.position.z = 4.0;
+                    uniforms.uExposure.value = 1.05;
+                    uniforms.uStabilize.value = 1.0;
+                }
+
+                // Drift stars forward towards camera
+                const pos = starMesh.geometry.attributes.position.array;
+                for (let i = 2; i < pos.length; i += 3) {
+                    pos[i] += 1.2 * delta;
+                    if (pos[i] > camera.position.z) pos[i] = -20;
+                }
+                starMesh.geometry.attributes.position.needsUpdate = true;
+
+                // Subtle smooth idle & mouse parallax
+                const t = uniforms.uTime.value;
+                const idleX = Math.sin(t * 0.15) * 0.06;
+                const idleY = Math.cos(t * 0.1) * 0.06;
+                mouseX += (targetX * 0.12 - mouseX) * 0.05;
+                mouseY += (targetY * 0.12 - mouseY) * 0.05;
+                camera.position.x = idleX + mouseX;
+                camera.position.y = idleY + mouseY;
+                camera.lookAt(0, 0, 0);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // ─── Form Client-side Logic & Warp Effect ─────────────────────────────
         const nameInput = document.getElementById('nameInput');
         const emailInput = document.getElementById('emailInput');
         const passInput = document.getElementById('passwordInput');
@@ -790,11 +1055,11 @@
         const checkboxSvg = document.getElementById('checkboxSvg');
         const registerForm = document.getElementById('registerForm');
         const clientErrorBox = document.getElementById('clientErrorBox');
+        const mainContainer = document.getElementById('mainContainer');
 
         let agreedToTerms = false;
         const MU_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@@marwadiuniversity\.ac\.in$/i;
 
-        // Focus styling
         [
             { input: nameInput, box: document.getElementById('nameBox') },
             { input: emailInput, box: document.getElementById('emailBox') },
@@ -805,17 +1070,10 @@
             pair.input.addEventListener('blur', () => pair.box.classList.remove('focused'));
         });
 
-        // Email validation
         emailInput.addEventListener('input', () => {
-            const val = emailInput.value.trim();
-            if (MU_EMAIL_REGEX.test(val)) {
-                emailCheck.style.display = 'flex';
-            } else {
-                emailCheck.style.display = 'none';
-            }
+            emailCheck.style.display = MU_EMAIL_REGEX.test(emailInput.value.trim()) ? 'flex' : 'none';
         });
 
-        // Password strength meter
         passInput.addEventListener('input', () => {
             const val = passInput.value;
             if (val.length === 0) {
@@ -824,64 +1082,37 @@
             }
             const strength = Math.min(100, (val.length * 8) + (/[A-Z]/.test(val) ? 15 : 0) + (/[0-9]/.test(val) ? 15 : 0) + (/[^A-Za-z0-9]/.test(val) ? 20 : 0));
             strengthBar.style.width = strength + '%';
-            if (strength < 40) {
-                strengthBar.style.background = '#ff4444';
-                strengthBar.style.boxShadow = '0 0 10px #ff4444';
-            } else if (strength < 75) {
-                strengthBar.style.background = '#ff8c42';
-                strengthBar.style.boxShadow = '0 0 10px #ff8c42';
-            } else {
-                strengthBar.style.background = '#00d2ff';
-                strengthBar.style.boxShadow = '0 0 10px #00d2ff';
-            }
-
+            strengthBar.style.background = strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff';
+            strengthBar.style.boxShadow = '0 0 10px ' + (strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff');
             checkPasswordsMatch();
         });
 
-        // Confirm password match check
         confirmInput.addEventListener('input', checkPasswordsMatch);
 
         function checkPasswordsMatch() {
-            if (passInput.value.length >= 8 && passInput.value === confirmInput.value) {
-                confirmCheck.style.display = 'flex';
-            } else {
-                confirmCheck.style.display = 'none';
-            }
+            confirmCheck.style.display = (passInput.value.length >= 8 && passInput.value === confirmInput.value) ? 'flex' : 'none';
         }
 
-        // Toggle Password Visibility
         const togglePassBtn = document.getElementById('togglePassBtn');
         const eyePassOpen = document.getElementById('eyePassOpen');
         const eyePassClose = document.getElementById('eyePassClose');
         togglePassBtn.addEventListener('click', () => {
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                eyePassOpen.style.display = 'none';
-                eyePassClose.style.display = 'block';
-            } else {
-                passInput.type = 'password';
-                eyePassOpen.style.display = 'block';
-                eyePassClose.style.display = 'none';
-            }
+            const isPass = passInput.type === 'password';
+            passInput.type = isPass ? 'text' : 'password';
+            eyePassOpen.style.display = isPass ? 'none' : 'block';
+            eyePassClose.style.display = isPass ? 'block' : 'none';
         });
 
-        // Toggle Confirm Visibility
         const toggleConfirmBtn = document.getElementById('toggleConfirmBtn');
         const eyeConfirmOpen = document.getElementById('eyeConfirmOpen');
         const eyeConfirmClose = document.getElementById('eyeConfirmClose');
         toggleConfirmBtn.addEventListener('click', () => {
-            if (confirmInput.type === 'password') {
-                confirmInput.type = 'text';
-                eyeConfirmOpen.style.display = 'none';
-                eyeConfirmClose.style.display = 'block';
-            } else {
-                confirmInput.type = 'password';
-                eyeConfirmOpen.style.display = 'block';
-                eyeConfirmClose.style.display = 'none';
-            }
+            const isPass = confirmInput.type === 'password';
+            confirmInput.type = isPass ? 'text' : 'password';
+            eyeConfirmOpen.style.display = isPass ? 'none' : 'block';
+            eyeConfirmClose.style.display = isPass ? 'block' : 'none';
         });
 
-        // Terms toggle
         termsCheckbox.addEventListener('click', toggleTerms);
         termsCheckbox.addEventListener('keydown', (e) => {
             if (e.key === ' ' || e.key === 'Enter') {
@@ -892,16 +1123,10 @@
 
         function toggleTerms() {
             agreedToTerms = !agreedToTerms;
-            if (agreedToTerms) {
-                termsCheckbox.classList.add('checked');
-                checkboxSvg.style.display = 'block';
-            } else {
-                termsCheckbox.classList.remove('checked');
-                checkboxSvg.style.display = 'none';
-            }
+            termsCheckbox.classList.toggle('checked', agreedToTerms);
+            checkboxSvg.style.display = agreedToTerms ? 'block' : 'none';
         }
 
-        // Client-side submit validation matching page.tsx
         registerForm.addEventListener('submit', (e) => {
             clientErrorBox.style.display = 'none';
             clientErrorBox.innerText = '';
@@ -941,8 +1166,12 @@
                 return;
             }
 
-            // If valid, button shows INITIALIZING...
-            document.getElementById('submitBtn').innerHTML = '<span>INITIALIZING…</span>';
+            // Trigger Warp Speed animation on valid submission!
+            isWarping = true;
+            document.getElementById('submitBtn').innerHTML = '<span>ENTERING…</span>';
+            mainContainer.style.transform = 'scale(0) rotate(-10deg)';
+            mainContainer.style.opacity = '0';
+            mainContainer.style.filter = 'blur(10px)';
         });
 
         function showError(msg) {
