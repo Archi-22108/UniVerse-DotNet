@@ -7,6 +7,220 @@
 
 @section Styles {
 <style>
+    /* Interactive Online/Offline Duty Switcher (Ultra-Tactile Apple/Tesla Style) */
+    .uv-tactile-duty-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 7px 18px 7px 9px;
+        border-radius: 9999px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        overflow: hidden;
+        border: 1px solid transparent;
+        background: transparent;
+        box-sizing: border-box;
+    }
+    .uv-tactile-duty-btn:active {
+        transform: scale(0.96);
+    }
+    .uv-tactile-duty-btn.duty-online {
+        border-color: rgba(16, 185, 129, 0.5);
+        background: rgba(10, 22, 16, 0.95);
+        box-shadow: 0 0 28px rgba(16, 185, 129, 0.22);
+    }
+    .uv-tactile-duty-btn.duty-online:hover {
+        border-color: rgba(52, 211, 153, 0.7);
+        box-shadow: 0 0 38px rgba(16, 185, 129, 0.35);
+    }
+    .uv-tactile-duty-btn.duty-offline {
+        border-color: rgba(245, 158, 11, 0.4);
+        background: rgba(20, 18, 14, 0.95);
+        box-shadow: 0 0 22px rgba(245, 158, 11, 0.15);
+    }
+    .uv-tactile-duty-btn.duty-offline:hover {
+        border-color: rgba(251, 191, 36, 0.6);
+        box-shadow: 0 0 32px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Ambient inner rim glow */
+    .uv-tactile-ambient-glow {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        opacity: 0;
+    }
+    .uv-tactile-duty-btn:hover .uv-tactile-ambient-glow {
+        opacity: 1;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-ambient-glow {
+        background: linear-gradient(to right, rgba(16, 185, 129, 0.15), transparent);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-ambient-glow {
+        background: linear-gradient(to right, rgba(245, 158, 11, 0.15), transparent);
+    }
+
+    /* Tactile iOS Slider Track */
+    .uv-tactile-track {
+        width: 52px;
+        height: 30px;
+        border-radius: 9999px;
+        padding: 2px;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+        box-sizing: border-box;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-track {
+        background: #062414;
+        border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-track {
+        background: #1f1912;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Smooth Sliding Thumb with Glow */
+    .uv-tactile-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 9999px;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, box-shadow 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-thumb {
+        transform: translateX(22px);
+        background: linear-gradient(135deg, #00E676 0%, #6ee7b7 100%);
+        box-shadow: 0 0 14px rgba(0, 230, 118, 0.95), 0 2px 5px rgba(0, 0, 0, 0.6);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-thumb {
+        transform: translateX(0px);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Micro Core Dot inside Thumb */
+    .uv-tactile-micro-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 9999px;
+        transition: background 0.3s;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-micro-dot {
+        background: rgba(4, 36, 17, 0.85);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-micro-dot {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Two-Tone Status Label */
+    .uv-tactile-label-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 2;
+    }
+    .uv-tactile-beacon {
+        position: relative;
+        display: inline-flex;
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+    }
+    .uv-tactile-beacon-ping {
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: rgba(52, 211, 153, 0.75);
+        animation: uvBeaconPing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .uv-tactile-beacon-core {
+        position: relative;
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-beacon-core {
+        background: #00E676;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.8);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-beacon-core {
+        background: #fbbf24;
+        box-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+    }
+    .uv-tactile-status-texts {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        white-space: nowrap;
+    }
+    .uv-tactile-status-title {
+        font-weight: 900;
+        font-size: 14.5px;
+        letter-spacing: -0.02em;
+        transition: color 0.3s;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-status-title {
+        color: #00E676;
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-status-title {
+        color: #fcd34d;
+    }
+    .uv-tactile-status-sub {
+        font-family: var(--font-mono, monospace);
+        font-size: 12.5px;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+    .uv-tactile-duty-btn.duty-online .uv-tactile-status-sub {
+        color: rgba(255, 255, 255, 0.65);
+    }
+    .uv-tactile-duty-btn.duty-offline .uv-tactile-status-sub {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    @@keyframes uvBeaconPing {
+        0% { transform: scale(0.9); opacity: 0.9; }
+        75%, 100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    /* Radar scan wave animations */
+    @@keyframes uvPulseCircle {
+        0% { transform: scale(0.95); opacity: 0.8; }
+        50% { transform: scale(1.15); opacity: 0.2; }
+        100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .uv-radar-wave-1 {
+        position: absolute;
+        inset: -12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        animation: uvPulseCircle 2.8s ease-in-out infinite;
+    }
+    .uv-radar-wave-2 {
+        position: absolute;
+        inset: -24px;
+        border-radius: 9999px;
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        animation: uvPulseCircle 2.8s ease-in-out infinite 0.6s;
+    }
+
     .uv-runner-playbook {
         background: linear-gradient(135deg, rgba(12, 20, 16, 0.9) 0%, rgba(9, 16, 12, 0.95) 100%);
         border: 1px solid rgba(16, 185, 129, 0.25);
@@ -96,8 +310,8 @@
 </style>
 }
 
-<div style="max-w: 1200px; margin: 0 auto;">
-    <!-- Top Header -->
+<div style="max-width: 1200px; margin: 0 auto;">
+    <!-- Top Header with Ultra-Tactile Duty Switcher -->
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
         <div>
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -111,53 +325,46 @@
                 <span style="color: var(--accent-green); font-size: 22px;">✦</span>
             </h1>
             <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
-                Earn instant pocket cash during your daily hostel and canteen walks.
+                Deliver on campus, help peers, and earn instant cash during your hostel and canteen walks.
             </p>
         </div>
 
+        <!-- Interactive Online/Offline Duty Switcher (Ultra-Tactile Apple/Tesla Style) -->
         <div style="display: flex; align-items: center; gap: 12px;">
-            <form method="post" action="/Dashboard/ToggleDuty">
-                <input type="hidden" name="active" value="@(!Model.IsOnDuty ? "true" : "false")" />
-                <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s; border: 1px solid @(Model.IsOnDuty ? "rgba(0, 230, 118, 0.35)" : "rgba(255, 255, 255, 0.15)"); background: @(Model.IsOnDuty ? "rgba(0, 230, 118, 0.15)" : "rgba(255, 255, 255, 0.05)"); color: @(Model.IsOnDuty ? "var(--accent-green)" : "rgba(255, 255, 255, 0.6)");">
-                    <span class="uv-live-dot" style="background: @(Model.IsOnDuty ? "var(--accent-green)" : "#94a3b8");"></span>
-                    <span>@(Model.IsOnDuty ? "ON DUTY (Accepting Orders)" : "OFF DUTY (Paused)")</span>
-                </button>
+            <button id="runnerDutyBtn"
+                    type="button"
+                    onclick="toggleRunnerDuty()"
+                    class="uv-tactile-duty-btn @(Model.IsOnDuty ? "duty-online" : "duty-offline")"
+                    title="@(Model.IsOnDuty ? "Runner Mode Active · Click to Pause" : "Runner Mode Paused · Click to go Online")">
+                <!-- Ambient inner rim glow -->
+                <div class="uv-tactile-ambient-glow"></div>
+
+                <!-- Tactile iOS Slider Track -->
+                <div class="uv-tactile-track">
+                    <!-- Smooth Sliding Thumb with Glow -->
+                    <div class="uv-tactile-thumb">
+                        <!-- Micro Core Dot inside Thumb -->
+                        <div class="uv-tactile-micro-dot"></div>
+                    </div>
+                </div>
+
+                <!-- Two-Tone Status Label -->
+                <div class="uv-tactile-label-container">
+                    <span class="uv-tactile-beacon">
+                        <span class="uv-tactile-beacon-ping" style="@(Model.IsOnDuty ? "" : "display: none;")"></span>
+                        <span class="uv-tactile-beacon-core"></span>
+                    </span>
+                    <div class="uv-tactile-status-texts">
+                        <span class="uv-tactile-status-title">@(Model.IsOnDuty ? "Online" : "Offline")</span>
+                        <span class="uv-tactile-status-sub">@(Model.IsOnDuty ? "· Accepting Orders" : "· Mode Paused")</span>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Standard Fallback Form (for no-JS or server redirect) -->
+            <form id="runnerDutyFallbackForm" method="post" action="/Dashboard/ToggleDuty" style="display: none;">
+                <input type="hidden" name="active" id="dutyFormActiveInput" value="@(!Model.IsOnDuty ? "true" : "false")" />
             </form>
-        </div>
-    </div>
-
-    <!-- Playbook Guide Banner -->
-    <div class="uv-runner-playbook">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="bi bi-compass text-success" style="font-size: 18px;"></i>
-                <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0;">How UniVerse Runner Works</h3>
-            </div>
-            <span style="font-size: 12px; color: var(--text-muted);">3 Quick steps to pocket earnings</span>
-        </div>
-
-        <div class="uv-steps-grid">
-            <div class="uv-step-card">
-                <span class="uv-step-badge">Step 1</span>
-                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Accept Available Run</h4>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                    Check the radar feed below for orders matching your current campus route.
-                </p>
-            </div>
-            <div class="uv-step-card">
-                <span class="uv-step-badge">Step 2</span>
-                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Collect from Pickup Spot</h4>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                    Head to Central Canteen or Stationery, pick items up, and notify the student.
-                </p>
-            </div>
-            <div class="uv-step-card">
-                <span class="uv-step-badge">Step 3</span>
-                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Deliver & Get OTP</h4>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                    Drop at the hostel room, enter student's 4-digit PIN, and get instant wallet cash!
-                </p>
-            </div>
         </div>
     </div>
 
@@ -193,7 +400,7 @@
         </div>
     </div>
 
-    <!-- Active Deliveries (Need OTP) -->
+    <!-- Active In-Transit Deliveries (Need OTP) -->
     @if (Model.MyActiveDeliveries.Count > 0)
     {
         <div style="margin-bottom: 32px;">
@@ -246,11 +453,75 @@
         </div>
     }
 
-    <!-- Available Campus Orders Radar -->
-    <div style="margin-bottom: 32px;">
+    <!-- ── OFFLINE / PAUSED STATE CARD ── -->
+    <div id="runnerOfflineSection" style="@(Model.IsOnDuty ? "display: none;" : "display: block;") margin-bottom: 32px;">
+        <div style="position: relative; overflow: hidden; border-radius: 24px; background: linear-gradient(180deg, #121914 0%, #0d1410 50%, #090f0c 100%); border: 2px solid rgba(245, 158, 11, 0.35); padding: 36px 24px; text-align: center; box-shadow: 0 0 35px rgba(245, 158, 11, 0.08);">
+            <div style="width: 64px; height: 64px; border-radius: 18px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b; margin: 0 auto 16px auto; box-shadow: 0 0 20px rgba(245, 158, 11, 0.18); font-size: 28px;">
+                <i class="bi bi-moon-stars-fill"></i>
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; border-radius: 9999px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fcd34d; font-size: 11px; font-family: var(--font-mono); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+                <span>● Runner Mode is Paused</span>
+            </div>
+            <h3 style="font-size: clamp(1.3rem, 2.5vw, 1.6rem); font-weight: 900; color: #fff; margin: 0 0 8px 0; letter-spacing: -0.02em;">
+                You are Currently Offline
+            </h3>
+            <p style="color: rgba(255, 255, 255, 0.65); font-size: 13.5px; max-width: 520px; margin: 0 auto; line-height: 1.6;">
+                Jab aap class me hon, library me study kar rahe hon ya rest kar rahe hon, to Runner Mode ko Paused rakhein taaki koi order notification disturb na kare.
+            </p>
+            <p style="color: #6ee7b7; font-size: 13px; max-width: 520px; margin: 8px auto 0 auto; font-weight: 600;">
+                Jab bhi aap campus me walk kar rahe hon (Canteen, Gate ya Hostel ke raste), 1-click me Online ho kar orders deliver karein aur pocket money kamayein!
+            </p>
+
+            <button type="button"
+                    onclick="toggleRunnerDuty(true)"
+                    class="btn-accept-order"
+                    style="margin-top: 24px; padding: 12px 24px; font-size: 13.5px; border-radius: 14px; text-decoration: none; cursor: pointer;">
+                <i class="bi bi-broadcast"></i>
+                <span>Go Online & Start Accepting Orders ➔</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Playbook Guide Banner (Always helpful campus guidance) -->
+    <div class="uv-runner-playbook">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-compass text-success" style="font-size: 18px;"></i>
+                <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0;">How UniVerse Runner Works</h3>
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted);">3 Quick steps to pocket earnings</span>
+        </div>
+
+        <div class="uv-steps-grid">
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 1</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Accept Available Run</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Check the radar feed below for orders matching your current campus route.
+                </p>
+            </div>
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 2</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Collect from Pickup Spot</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Head to Central Canteen or Stationery, pick items up, and notify the student.
+                </p>
+            </div>
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 3</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Deliver & Get OTP</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Drop at the hostel room, enter student's 4-digit PIN, and get instant wallet cash!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Campus Orders Radar (Active Feed) -->
+    <div id="runnerRadarSection" style="@(Model.IsOnDuty ? "display: block;" : "display: none;") margin-bottom: 32px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
             <h2 style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
-                <i class="bi bi-radar text-success"></i>
+                <i class="bi bi-broadcast text-success"></i>
                 <span>Available Campus Radar</span>
                 <span class="uv-live-dot ms-1"></span>
             </h2>
@@ -261,10 +532,23 @@
 
         @if (Model.PendingDeliveries.Count == 0)
         {
-            <div style="text-align: center; padding: 48px; background: rgba(10, 16, 13, 0.6); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 20px;">
-                <i class="bi bi-clock-history" style="font-size: 32px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 10px;"></i>
-                <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">No pending orders in your zone</h4>
-                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Stay on duty. New student requests will broadcast to your radar immediately!</p>
+            <!-- Live Radar Scanning HUD (Empty State) -->
+            <div style="position: relative; overflow: hidden; border-radius: 24px; background: linear-gradient(180deg, #0e1713 0%, #0a110e 50%, #070b09 100%); border: 1px solid rgba(16, 185, 129, 0.3); padding: 44px 24px; text-align: center; box-shadow: 0 0 35px rgba(16, 185, 129, 0.08);">
+                <div style="position: relative; width: 72px; height: 72px; margin: 0 auto 18px auto; display: flex; align-items: center; justify-content: center;">
+                    <div class="uv-radar-wave-1"></div>
+                    <div class="uv-radar-wave-2"></div>
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 26px; box-shadow: 0 0 25px rgba(0, 230, 118, 0.35);">
+                        <i class="bi bi-broadcast"></i>
+                    </div>
+                </div>
+
+                <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; font-size: 11px; font-family: var(--font-mono); font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                    <span class="uv-live-dot" style="background: var(--accent-green);"></span>
+                    <span>Campus Radar Active · Listening for Orders</span>
+                </div>
+
+                <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">No Active Requests on Radar Right Now</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Stay on duty. New student requests will broadcast to your radar immediately!</p>
             </div>
         }
         else
@@ -324,6 +608,120 @@
 
 @section Scripts {
 <script>
+    // Initial duty state from Razor model
+    let isRunnerDutyOn = @(Model.IsOnDuty ? "true" : "false");
+    let isTogglingDuty = false;
+
+    // Pleasant Apple-style haptic synth click
+    function playDutySound(turnOn) {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (turnOn) {
+                osc.frequency.setValueAtTime(540, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(920, ctx.currentTime + 0.1);
+            } else {
+                osc.frequency.setValueAtTime(750, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(360, ctx.currentTime + 0.1);
+            }
+
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.13);
+        } catch (e) {
+            // AudioContext not allowed or unsupported
+        }
+    }
+
+    async function toggleRunnerDuty(forceState) {
+        if (isTogglingDuty) return;
+        const targetState = typeof forceState === 'boolean' ? forceState : !isRunnerDutyOn;
+        if (targetState === isRunnerDutyOn && typeof forceState === 'boolean') return;
+
+        isTogglingDuty = true;
+        const previousState = isRunnerDutyOn;
+        isRunnerDutyOn = targetState;
+
+        playDutySound(targetState);
+
+        // Instant 60fps tactile UI update
+        const btn = document.getElementById('runnerDutyBtn');
+        const ping = btn ? btn.querySelector('.uv-tactile-beacon-ping') : null;
+        const title = btn ? btn.querySelector('.uv-tactile-status-title') : null;
+        const sub = btn ? btn.querySelector('.uv-tactile-status-sub') : null;
+        const offlineSec = document.getElementById('runnerOfflineSection');
+        const radarSec = document.getElementById('runnerRadarSection');
+
+        if (btn) {
+            if (targetState) {
+                btn.classList.remove('duty-offline');
+                btn.classList.add('duty-online');
+                btn.setAttribute('title', 'Runner Mode Active · Click to Pause');
+                if (ping) ping.style.display = 'inline-block';
+                if (title) title.textContent = 'Online';
+                if (sub) sub.textContent = '· Accepting Orders';
+                if (offlineSec) offlineSec.style.display = 'none';
+                if (radarSec) radarSec.style.display = 'block';
+            } else {
+                btn.classList.remove('duty-online');
+                btn.classList.add('duty-offline');
+                btn.setAttribute('title', 'Runner Mode Paused · Click to go Online');
+                if (ping) ping.style.display = 'none';
+                if (title) title.textContent = 'Offline';
+                if (sub) sub.textContent = '· Mode Paused';
+                if (offlineSec) offlineSec.style.display = 'block';
+                if (radarSec) radarSec.style.display = 'none';
+            }
+        }
+
+        try {
+            localStorage.setItem('universe_runner_online', String(targetState));
+        } catch (e) {}
+
+        // Send AJAX request to server
+        try {
+            const formData = new URLSearchParams();
+            formData.append('active', String(targetState));
+
+            const response = await fetch('/Dashboard/ToggleDuty', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData.toString()
+            });
+
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Operation failed');
+            }
+        } catch (err) {
+            console.warn('AJAX duty toggle failed, falling back to form submit:', err);
+            const formInput = document.getElementById('dutyFormActiveInput');
+            const form = document.getElementById('runnerDutyFallbackForm');
+            if (form && formInput) {
+                formInput.value = String(targetState);
+                form.submit();
+                return;
+            }
+            isRunnerDutyOn = previousState;
+        } finally {
+            isTogglingDuty = false;
+        }
+    }
+
     // Real-time radar sync: polls for newly broadcasted campus orders
     const currentPendingCount = @Model.PendingDeliveries.Count;
     setInterval(async () => {

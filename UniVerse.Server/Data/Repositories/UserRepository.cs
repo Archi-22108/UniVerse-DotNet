@@ -61,7 +61,7 @@ ORDER BY created_at ASC;";
             string sql = $@"
 SELECT {UserSelectFields}
 FROM users
-WHERE role = 'runner' AND is_active_runner = 1
+WHERE is_active_runner = 1
 ORDER BY full_name ASC;";
 
             return await _db.ExecuteReaderAsync(sql, MapUserFromReader);
@@ -101,7 +101,7 @@ VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, @role, @hos
             const string sql = @"
 UPDATE users
 SET is_active_runner = @isActive, updated_at = @updated_at
-WHERE id = @id AND role = 'runner';";
+WHERE id = @id;";
 
             var parameters = new[]
             {

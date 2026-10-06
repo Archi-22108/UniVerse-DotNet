@@ -224,10 +224,30 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ToggleDuty(bool active)
+        [HttpGet]
+        public async Task<IActionResult> ToggleDuty(bool? active)
         {
             var user = await GetCurrentUserAsync();
-            await _userRepo.ToggleRunnerDutyAsync(user.Id, active);
+            bool newStatus = active.HasValue ? active.Value : !user.IsActiveRunner;
+            await _userRepo.ToggleRunnerDutyAsync(user.Id, newStatus);
+            user.IsActiveRunner = newStatus;
+
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
+                          Request.Headers.Accept.ToString().Contains("application/json") ||
+                          Request.ContentType?.Contains("application/json") == true;
+
+            if (isAjax)
+            {
+                return Json(new
+                {
+                    success = true,
+                    isOnDuty = newStatus,
+                    statusText = newStatus ? "Online" : "Offline",
+                    subText = newStatus ? "· Accepting Orders" : "· Mode Paused",
+                    message = newStatus ? "Runner mode ACTIVE. Accepting campus delivery orders." : "Runner mode PAUSED."
+                });
+            }
+
             return RedirectToAction(nameof(Runner));
         }
 
