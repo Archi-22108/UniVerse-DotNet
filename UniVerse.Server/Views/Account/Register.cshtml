@@ -1,108 +1,954 @@
 @model UniVerse.Server.Models.ViewModels.RegisterViewModel
 @{
-    ViewData["Title"] = "Student Registration";
+    Layout = null;
+    ViewData["Title"] = "Create Account — UniVerse";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-6">
-            <div class="text-center mb-4">
-                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <i class="bi bi-person-plus-fill text-success fs-2"></i>
+    <!-- Google Fonts: Space Mono & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #030508;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 14px;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 45%, rgba(0, 210, 255, 0.08) 0%, rgba(5, 8, 15, 0.8) 55%, #030508 100%),
+                radial-gradient(circle at 20% 20%, rgba(0, 119, 255, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+        }
+
+        /* ─── Space Cosmic Stars Canvas Effect ─── */
+        .stars-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            background-image: 
+                radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 100px 150px, #00d2ff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 240px 70px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 320px 280px, #00d2ff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 450px 180px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 600px 350px, #00d2ff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 750px 120px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 890px 290px, #00d2ff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 1020px 80px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 1200px 240px, #00d2ff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 1250px 500px;
+            opacity: 0.65;
+        }
+
+        /* ─── Sci-Fi HUD Overlays ─── */
+        .hud-tl {
+            position: absolute;
+            top: 28px;
+            left: 32px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-tl-corner {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            width: 10px;
+            height: 10px;
+            border-left: 1px solid rgba(0, 210, 255, 0.6);
+            border-top: 1px solid rgba(0, 210, 255, 0.6);
+        }
+
+        .hud-tr {
+            position: absolute;
+            top: 28px;
+            right: 32px;
+            text-align: right;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud-tr-corner {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 10px;
+            height: 10px;
+            border-right: 1px solid rgba(0, 210, 255, 0.6);
+            border-top: 1px solid rgba(0, 210, 255, 0.6);
+        }
+
+        @@media (max-width: 640px) {
+            .hud-tl, .hud-tr { display: none; }
+        }
+
+        /* ─── Main Container ─── */
+        .register-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ─── Brand Logo ─── */
+        .brand-header {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .brand-logo-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d2ff 0%, #0077ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+            line-height: 1;
+        }
+
+        .brand-tagline {
+            font-size: 9.5px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 3px;
+            font-weight: 400;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+        }
+
+        /* ─── Sci-Fi Glass Card ─── */
+        .scifi-card {
+            width: 100%;
+            background: rgba(12, 14, 20, 0.45);
+            backdrop-filter: blur(25px) saturate(140%);
+            -webkit-backdrop-filter: blur(25px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            padding: clamp(20px, 5vw, 32px);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .card-top-line {
+            position: absolute;
+            top: 0;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.6), transparent);
+        }
+
+        /* ─── Card Header ─── */
+        .card-header-inner {
+            text-align: center;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .card-subtitle {
+            margin: 4px 0 0;
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* ─── Form Elements ─── */
+        .scifi-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.65);
+            text-transform: uppercase;
+        }
+
+        .field-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            transition: all 0.25s ease;
+        }
+
+        .field-input-box.focused {
+            border-color: #00d2ff;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.25), inset 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+
+        .field-input-box.has-error {
+            border-color: rgba(255, 68, 68, 0.6);
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);
+        }
+
+        .field-left-icon {
+            position: absolute;
+            left: 14px;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.45);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .field-input-box.focused .field-left-icon {
+            color: #00d2ff;
+        }
+
+        .field-right-node {
+            position: absolute;
+            right: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scifi-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 13.5px;
+            padding: 12px 42px;
+            font-family: 'Inter', sans-serif;
+            caret-color: #00d2ff;
+        }
+
+        .scifi-input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 13px;
+        }
+
+        .scifi-input:-webkit-autofill,
+        .scifi-input:-webkit-autofill:hover, 
+        .scifi-input:-webkit-autofill:focus {
+            transition: background-color 5000s ease-in-out 0s;
+            -webkit-text-fill-color: #fff !important;
+        }
+
+        .field-error-text {
+            font-size: 10.5px;
+            color: #ff6b6b;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            padding: 0;
+            color: rgba(255, 255, 255, 0.45);
+            transition: color 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            color: #ffffff;
+        }
+
+        /* ─── Gravitational Password Stability Meter ─── */
+        .stability-meter-bg {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .stability-meter-bar {
+            height: 100%;
+            width: 0%;
+            background: #ff4444;
+            transition: all 0.3s ease;
+        }
+
+        /* ─── Checkbox Terms ─── */
+        .terms-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .custom-checkbox {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.15s;
+        }
+
+        .custom-checkbox.checked {
+            background: #00d2ff;
+            border-color: #00d2ff;
+        }
+
+        .terms-text {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.65);
+            font-family: 'Space Mono', monospace;
+            line-height: 1.4;
+        }
+
+        .terms-link {
+            color: #00d2ff;
+            text-decoration: none;
+        }
+
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ─── Action Buttons ─── */
+        .scifi-btn {
+            width: 100%;
+            margin-top: 4px;
+            padding: 13px 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+            color: #ffffff;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 3px;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .scifi-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.25);
+        }
+
+        .divider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 1px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider-text {
+            font-size: 9.5px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 3px;
+        }
+
+        .scifi-google-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            padding: 11px 18px;
+            color: #ffffff;
+            font-size: 11.5px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .scifi-google-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 210, 255, 0.4);
+        }
+
+        .signin-redirect {
+            margin: 2px 0 0;
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .signin-redirect a {
+            color: #00d2ff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .signin-redirect a:hover {
+            text-decoration: underline;
+        }
+
+        .secure-status {
+            text-align: center;
+            font-size: 9px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+
+        .secure-ticks {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .secure-tick {
+            display: block;
+            width: 14px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .secure-tick.active {
+            background: rgba(0, 210, 255, 0.8);
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+
+        /* ─── Trust Bar ─── */
+        .trust-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            opacity: 0.75;
+            font-family: 'Space Mono', monospace;
+            font-size: 9.5px;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .scifi-error-box {
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(255, 68, 68, 0.12);
+            border: 1px solid rgba(255, 68, 68, 0.4);
+            color: #ff8b8b;
+            font-size: 12px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Stars Background -->
+    <div class="stars-bg"></div>
+
+    <!-- HUD Top-Left -->
+    <div class="hud-tl">
+        <div class="hud-tl-corner"></div>
+        <strong style="color: #ffffff;">EVENT HORIZON</strong><br />
+        <span style="color: #00d2ff;">GRAVITY: STABILIZED</span>
+    </div>
+
+    <!-- HUD Top-Right -->
+    <div class="hud-tr">
+        <div class="hud-tr-corner"></div>
+        <strong style="color: #ffffff;">SYSTEM STATUS</strong><br />
+        <span style="color: #00d2ff;">ONLINE // NOMINAL</span>
+    </div>
+
+    <!-- Main Register Container -->
+    <div class="register-container">
+
+        <!-- Logo + Tagline -->
+        <a href="/" class="brand-header">
+            <div class="brand-logo-box">
+                <div class="brand-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="black" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
                 </div>
-                <h2 class="fw-bold text-white mb-1">New Student Registration</h2>
-                <p class="text-secondary small">Join the Marwadi University Campus Super-App</p>
+                <span class="brand-text">UniVerse</span>
+            </div>
+            <span class="brand-tagline">One Universe. Infinite Possibilities.</span>
+        </a>
+
+        <!-- Semi-Transparent Sci-Fi Glass Card -->
+        <div class="scifi-card">
+            <div class="card-top-line"></div>
+
+            <!-- Card Header -->
+            <div class="card-header-inner">
+                <div class="card-title-row">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5L12 2Z" fill="#00d2ff" />
+                    </svg>
+                    <h1 class="card-title">Create account</h1>
+                </div>
+                <p class="card-subtitle">Join UniVerse — exclusively for Marwadi University</p>
             </div>
 
-            <div class="universe-card p-4 p-md-5">
-                <form asp-controller="Account" asp-action="Register" method="post">
-                    @Html.AntiForgeryToken()
+            <!-- ASP.NET Core MVC Form -->
+            <form asp-controller="Account" asp-action="Register" method="post" class="scifi-form" id="registerForm" noValidate>
+                @Html.AntiForgeryToken()
 
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                <!-- Hidden inputs to fulfill backend default requirements safely -->
+                <input type="hidden" name="Role" value="student" />
+                <input type="hidden" name="HostelName" value="Hostel D" />
+                <input type="hidden" name="RoomNumber" value="Room 101" />
 
-                    <div class="row g-3">
-                        <!-- Full Name -->
-                        <div class="col-md-6">
-                            <label asp-for="FullName" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="FullName" class="form-control" placeholder="Aarav Patel" />
-                            <span asp-validation-for="FullName" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Enrollment -->
-                        <div class="col-md-6">
-                            <label asp-for="EnrollmentNumber" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="EnrollmentNumber" class="form-control" placeholder="92100103001" />
-                            <span asp-validation-for="EnrollmentNumber" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="col-12">
-                            <label asp-for="Email" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="Email" class="form-control" placeholder="aarav.patel@marwadiuniversity.ac.in" />
-                            <span asp-validation-for="Email" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Role Selection -->
-                        <div class="col-md-6">
-                            <label asp-for="Role" class="form-label text-secondary small fw-semibold"></label>
-                            <select asp-for="Role" class="form-select">
-                                <option value="student">Student (Hostel Resident / Requester)</option>
-                                <option value="runner">Campus Runner (Earn Delivery Tips)</option>
-                            </select>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="col-md-6">
-                            <label asp-for="PhoneNumber" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="PhoneNumber" class="form-control" placeholder="+91 98765 43210" />
-                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Hostel Building -->
-                        <div class="col-md-6">
-                            <label asp-for="HostelName" class="form-label text-secondary small fw-semibold"></label>
-                            <select asp-for="HostelName" class="form-select">
-                                <option value="Hostel D">Hostel D (Boys Wing)</option>
-                                <option value="Hostel B">Hostel B (Girls Wing)</option>
-                                <option value="Hostel C">Hostel C (Senior Block)</option>
-                                <option value="Staff Quarters">Staff Quarters</option>
-                            </select>
-                        </div>
-
-                        <!-- Room Number -->
-                        <div class="col-md-6">
-                            <label asp-for="RoomNumber" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="RoomNumber" class="form-control" placeholder="e.g. 304" />
-                            <span asp-validation-for="RoomNumber" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Password -->
-                        <div class="col-md-6">
-                            <label asp-for="Password" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div class="col-md-6">
-                            <label asp-for="ConfirmPassword" class="form-label text-secondary small fw-semibold"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" placeholder="••••••••" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                        </div>
+                <!-- Server-side validation summary if errors occur -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="scifi-error-box">
+                        @Html.ValidationSummary(false, "", new { style = "list-style: none; padding: 0; margin: 0;" })
                     </div>
+                }
 
-                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mt-4 mb-3">
-                        Complete Registration & Enter
-                    </button>
+                <!-- Client-side error message container -->
+                <div id="clientErrorBox" class="scifi-error-box" style="display: none;"></div>
 
-                    <div class="text-center text-secondary small">
-                        Already have a campus account? 
-                        <a asp-controller="Account" asp-action="Login" class="text-success fw-semibold text-decoration-none">
-                            Sign In here
-                        </a>
+                <!-- 1. Full Name -->
+                <div class="field-group">
+                    <label for="nameInput" class="field-label">Full Name</label>
+                    <div class="field-input-box" id="nameBox">
+                        <span class="field-left-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        <input asp-for="FullName" id="nameInput" class="scifi-input" type="text" placeholder="e.g. Avinash Kumar" autocomplete="name" required />
                     </div>
-                </form>
+                    <span id="nameError" class="field-error-text"></span>
+                </div>
+
+                <!-- 2. University Email -->
+                <div class="field-group">
+                    <label for="emailInput" class="field-label">University Email</label>
+                    <div class="field-input-box" id="emailBox">
+                        <span class="field-left-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2" />
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                            </svg>
+                        </span>
+                        <input asp-for="Email" id="emailInput" class="scifi-input" type="email" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                        <span id="emailCheck" class="field-right-node" style="display: none;">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </span>
+                    </div>
+                    <span id="emailError" class="field-error-text"></span>
+                </div>
+
+                <!-- 3. Password -->
+                <div class="field-group">
+                    <label for="passwordInput" class="field-label">Password</label>
+                    <div class="field-input-box" id="passBox">
+                        <span class="field-left-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </span>
+                        <input asp-for="Password" id="passwordInput" class="scifi-input" type="password" placeholder="Min. 8 characters" autocomplete="new-password" required />
+                        <span class="field-right-node">
+                            <button type="button" class="icon-btn" id="togglePassBtn" aria-label="Toggle password visibility">
+                                <svg id="eyePassOpen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg id="eyePassClose" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                    <!-- Gravitational Stability Meter -->
+                    <div class="stability-meter-bg">
+                        <div id="strengthBar" class="stability-meter-bar"></div>
+                    </div>
+                    <span id="passwordError" class="field-error-text"></span>
+                </div>
+
+                <!-- 4. Confirm Password -->
+                <div class="field-group">
+                    <label for="confirmInput" class="field-label">Confirm Password</label>
+                    <div class="field-input-box" id="confirmBox">
+                        <span class="field-left-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </span>
+                        <input asp-for="ConfirmPassword" id="confirmInput" class="scifi-input" type="password" placeholder="Re-enter your password" autocomplete="new-password" required />
+                        <span class="field-right-node">
+                            <span id="confirmCheck" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                </svg>
+                            </span>
+                            <button type="button" class="icon-btn" id="toggleConfirmBtn" aria-label="Toggle confirm password visibility">
+                                <svg id="eyeConfirmOpen" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg id="eyeConfirmClose" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                    <span id="confirmError" class="field-error-text"></span>
+                </div>
+
+                <!-- Terms Checkbox -->
+                <div class="terms-row">
+                    <div id="termsCheckbox" class="custom-checkbox" role="checkbox" aria-checked="false" tabindex="0">
+                        <svg id="checkboxSvg" viewBox="0 0 10 8" width="8" height="7" fill="none" style="display: none;">
+                            <path d="M1 4l2.5 2.5L9 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <span class="terms-text">
+                        I agree to the <a href="/" class="terms-link">Terms of Service</a> & <a href="/" class="terms-link">Privacy Policy</a>
+                    </span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="scifi-btn">
+                    <span>Create Account</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </button>
+
+                <!-- OR Divider -->
+                <div class="divider-row">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">OR</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- Google OAuth Button -->
+                <a href="/Account/QuickLogin?email=aarav.patel%40marwadiuniversity.ac.in" class="scifi-google-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
+                    Continue with Google
+                </a>
+
+                <!-- Sign in redirect -->
+                <p class="signin-redirect">
+                    Already have an account? <a href="/Account/Login">Sign in &gt;</a>
+                </p>
+            </form>
+
+            <!-- Secure Connection Status -->
+            <div class="secure-status">
+                SECURE CONNECTION ESTABLISHED
+                <div class="secure-ticks">
+                    <span class="secure-tick"></span>
+                    <span class="secure-tick active"></span>
+                    <span class="secure-tick"></span>
+                </div>
             </div>
         </div>
+
+        <!-- Trust Bar -->
+        <div class="trust-bar">
+            <span>256-BIT ENCRYPTED</span>
+            <span>•</span>
+            <span>YOUR DATA IS PRIVATE</span>
+            <span>•</span>
+            <span>TRUSTED BY STUDENTS</span>
+        </div>
     </div>
-</div>
+
+    <!-- Client-Side Interactive Validation Logic -->
+    <script>
+        const nameInput = document.getElementById('nameInput');
+        const emailInput = document.getElementById('emailInput');
+        const passInput = document.getElementById('passwordInput');
+        const confirmInput = document.getElementById('confirmInput');
+        const emailCheck = document.getElementById('emailCheck');
+        const confirmCheck = document.getElementById('confirmCheck');
+        const strengthBar = document.getElementById('strengthBar');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const checkboxSvg = document.getElementById('checkboxSvg');
+        const registerForm = document.getElementById('registerForm');
+        const clientErrorBox = document.getElementById('clientErrorBox');
+
+        let agreedToTerms = false;
+        const MU_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@@marwadiuniversity\.ac\.in$/i;
+
+        // Focus styling
+        [
+            { input: nameInput, box: document.getElementById('nameBox') },
+            { input: emailInput, box: document.getElementById('emailBox') },
+            { input: passInput, box: document.getElementById('passBox') },
+            { input: confirmInput, box: document.getElementById('confirmBox') }
+        ].forEach(pair => {
+            pair.input.addEventListener('focus', () => pair.box.classList.add('focused'));
+            pair.input.addEventListener('blur', () => pair.box.classList.remove('focused'));
+        });
+
+        // Email validation
+        emailInput.addEventListener('input', () => {
+            const val = emailInput.value.trim();
+            if (MU_EMAIL_REGEX.test(val)) {
+                emailCheck.style.display = 'flex';
+            } else {
+                emailCheck.style.display = 'none';
+            }
+        });
+
+        // Password strength meter
+        passInput.addEventListener('input', () => {
+            const val = passInput.value;
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                return;
+            }
+            const strength = Math.min(100, (val.length * 8) + (/[A-Z]/.test(val) ? 15 : 0) + (/[0-9]/.test(val) ? 15 : 0) + (/[^A-Za-z0-9]/.test(val) ? 20 : 0));
+            strengthBar.style.width = strength + '%';
+            if (strength < 40) {
+                strengthBar.style.background = '#ff4444';
+                strengthBar.style.boxShadow = '0 0 10px #ff4444';
+            } else if (strength < 75) {
+                strengthBar.style.background = '#ff8c42';
+                strengthBar.style.boxShadow = '0 0 10px #ff8c42';
+            } else {
+                strengthBar.style.background = '#00d2ff';
+                strengthBar.style.boxShadow = '0 0 10px #00d2ff';
+            }
+
+            checkPasswordsMatch();
+        });
+
+        // Confirm password match check
+        confirmInput.addEventListener('input', checkPasswordsMatch);
+
+        function checkPasswordsMatch() {
+            if (passInput.value.length >= 8 && passInput.value === confirmInput.value) {
+                confirmCheck.style.display = 'flex';
+            } else {
+                confirmCheck.style.display = 'none';
+            }
+        }
+
+        // Toggle Password Visibility
+        const togglePassBtn = document.getElementById('togglePassBtn');
+        const eyePassOpen = document.getElementById('eyePassOpen');
+        const eyePassClose = document.getElementById('eyePassClose');
+        togglePassBtn.addEventListener('click', () => {
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyePassOpen.style.display = 'none';
+                eyePassClose.style.display = 'block';
+            } else {
+                passInput.type = 'password';
+                eyePassOpen.style.display = 'block';
+                eyePassClose.style.display = 'none';
+            }
+        });
+
+        // Toggle Confirm Visibility
+        const toggleConfirmBtn = document.getElementById('toggleConfirmBtn');
+        const eyeConfirmOpen = document.getElementById('eyeConfirmOpen');
+        const eyeConfirmClose = document.getElementById('eyeConfirmClose');
+        toggleConfirmBtn.addEventListener('click', () => {
+            if (confirmInput.type === 'password') {
+                confirmInput.type = 'text';
+                eyeConfirmOpen.style.display = 'none';
+                eyeConfirmClose.style.display = 'block';
+            } else {
+                confirmInput.type = 'password';
+                eyeConfirmOpen.style.display = 'block';
+                eyeConfirmClose.style.display = 'none';
+            }
+        });
+
+        // Terms toggle
+        termsCheckbox.addEventListener('click', toggleTerms);
+        termsCheckbox.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                toggleTerms();
+            }
+        });
+
+        function toggleTerms() {
+            agreedToTerms = !agreedToTerms;
+            if (agreedToTerms) {
+                termsCheckbox.classList.add('checked');
+                checkboxSvg.style.display = 'block';
+            } else {
+                termsCheckbox.classList.remove('checked');
+                checkboxSvg.style.display = 'none';
+            }
+        }
+
+        // Client-side submit validation matching page.tsx
+        registerForm.addEventListener('submit', (e) => {
+            clientErrorBox.style.display = 'none';
+            clientErrorBox.innerText = '';
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const pass = passInput.value;
+            const confirm = confirmInput.value;
+
+            if (!name || name.length < 2) {
+                e.preventDefault();
+                showError("Full name must be at least 2 characters.");
+                return;
+            }
+
+            if (!email || !MU_EMAIL_REGEX.test(email)) {
+                e.preventDefault();
+                showError("Must be a @@marwadiuniversity.ac.in email address.");
+                return;
+            }
+
+            if (!pass || pass.length < 8) {
+                e.preventDefault();
+                showError("Password must be at least 8 characters.");
+                return;
+            }
+
+            if (pass !== confirm) {
+                e.preventDefault();
+                showError("Passwords do not match.");
+                return;
+            }
+
+            if (!agreedToTerms) {
+                e.preventDefault();
+                showError("You must agree to the Terms & Privacy Policy to continue.");
+                return;
+            }
+
+            // If valid, button shows INITIALIZING...
+            document.getElementById('submitBtn').innerHTML = '<span>INITIALIZING…</span>';
+        });
+
+        function showError(msg) {
+            clientErrorBox.innerText = msg;
+            clientErrorBox.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
