@@ -168,8 +168,7 @@ namespace UniVerse.Server.Controllers
             return Json(new
             {
                 success = true,
-                message = $"Verification code successfully dispatched to {cleanEmail}. Check your university inbox.",
-                demoOtp = otp // Visible in demo toast for frictionless viva evaluation
+                message = $"Verification code successfully dispatched to {cleanEmail}. Please check your student email inbox or spam folder."
             });
         }
 

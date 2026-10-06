@@ -1022,26 +1022,25 @@
                      STEP 2: Enter University Email Verification Code
                      ═════════════════════════════════════════════════════════════ -->
                 <div id="step2Content" style="display: none;">
-                    <!-- Live Campus Inbox Simulation Notification Banner -->
-                    <div id="liveCampusMailToast" class="campus-mail-toast" style="display: none;">
-                        <i class="bi bi-envelope-paper-heart-fill" style="font-size: 24px; color: #34d399; shrink: 0;"></i>
+                    <!-- University Mail Dispatch Notice -->
+                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; text-align: left;">
+                        <i class="bi bi-envelope-check-fill" style="font-size: 24px; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
-                            <div style="font-weight: 700; color: #a7f3d0; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;">
-                                MARWADI UNIVERSITY MAIL GATEWAY
+                            <div style="font-weight: 700; color: #6ee7b7; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;">
+                                VERIFICATION CODE SENT
                             </div>
-                            <div style="font-size: 11.5px; color: #ecfdf5; margin-top: 2px;">
-                                Verification OTP sent to <strong id="toastEmailTarget"></strong>:
+                            <div style="font-size: 12px; color: #ecfdf5; margin-top: 4px; line-height: 1.4;">
+                                We have sent a 6-digit verification code to your official student email:
+                                <br /><strong id="step2TargetEmail" style="color: #38bdf8;"></strong>
                             </div>
-                            <div class="campus-otp-badge" id="toastOtpCode">------</div>
-                            <div style="font-size: 10px; color: #a7f3d0; opacity: 0.85; margin-top: 3px;">
-                                🛡️ Official 6-digit campus code &bull; Valid for 10 minutes
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">
+                                Please check your student inbox (or spam folder) and enter the code below to continue.
                             </div>
                         </div>
                     </div>
 
                     <p style="font-size: 11.5px; color: rgba(255, 255, 255, 0.7); text-align: center; margin-bottom: 12px; line-height: 1.5;">
-                        Enter the 6-digit verification code sent to your official student inbox:
-                        <br /><span id="step2TargetEmail" style="color: #00d2ff; font-weight: 600;"></span>
+                        Enter the 6-digit verification code from your email:
                     </p>
 
                     <div class="field-group">
@@ -1207,53 +1206,23 @@
             <div class="gmodal-body">
                 <div id="gmodalError" class="gmodal-error"></div>
 
-                <p style="font-size: 11px; color: #9aa0a6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">
-                    Choose a Student Account
-                </p>
-
-                <!-- Pre-configured MU Accounts -->
-                <div class="gaccount-item" onclick="triggerGoogleLogin('aarav.patel@@marwadiuniversity.ac.in', 'Aarav Patel')">
-                    <div class="gaccount-avatar" style="background: #2563eb;">A</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Aarav Patel</div>
-                        <div class="gaccount-email">aarav.patel@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel D</span>
+                <div style="margin-bottom: 16px; text-align: left;">
+                    <label style="font-size: 11px; color: #cbd5e1; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 8px;">
+                        Student University Google ID
+                    </label>
+                    <input type="email" id="customGoogleEmail" class="ginput" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                    <span style="display: block; font-size: 11px; color: #34d399; margin-top: 6px;">
+                        <i class="bi bi-shield-check"></i> Official Marwadi University Gmail account only
+                    </span>
                 </div>
 
-                <div class="gaccount-item" onclick="triggerGoogleLogin('priya.sharma@@marwadiuniversity.ac.in', 'Priya Sharma')">
-                    <div class="gaccount-avatar" style="background: #7c3aed;">P</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Priya Sharma</div>
-                        <div class="gaccount-email">priya.sharma@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel B</span>
-                </div>
+                <button type="button" id="btnCustomGoogleLogin" class="scifi-btn" style="width: 100%; margin-top: 6px;">
+                    <span>Continue with Google ID</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
 
-                <div class="gaccount-item" onclick="triggerGoogleLogin('archi.kumar@@marwadiuniversity.ac.in', 'Archi Kumar')">
-                    <div class="gaccount-avatar" style="background: #059669;">A</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Archi Kumar</div>
-                        <div class="gaccount-email">archi.kumar@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel A</span>
-                </div>
-
-                <div class="gmodal-divider"></div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-size: 11.5px; color: #cbd5e1; font-weight: 600;">Use Another University Account</span>
-                    <span style="font-size: 10.5px; color: #00d2ff; font-weight: 600;">@@marwadiuniversity.ac.in</span>
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                    <input type="email" id="customGoogleEmail" class="ginput" placeholder="student@@marwadiuniversity.ac.in" />
-                    <button type="button" id="btnCustomGoogleLogin" class="scifi-btn" style="width: auto; padding: 0 16px; margin: 0; white-space: nowrap; font-size: 11px;">
-                        <span>Sign In</span>
-                    </button>
-                </div>
-                <div style="margin-top: 12px; font-size: 10.5px; color: #9aa0a6; text-align: center;">
-                    🔒 Strict University Policy: Non-MU Gmail accounts are rejected automatically.
+                <div style="margin-top: 14px; font-size: 10.5px; color: #64748b; text-align: center;">
+                    🔒 Strict University Policy: Only @@marwadiuniversity.ac.in accounts are permitted. External Gmail accounts will be rejected.
                 </div>
             </div>
         </div>
@@ -1553,9 +1522,6 @@
         const connector1 = document.getElementById('connector1');
         const connector2 = document.getElementById('connector2');
 
-        const liveCampusMailToast = document.getElementById('liveCampusMailToast');
-        const toastEmailTarget = document.getElementById('toastEmailTarget');
-        const toastOtpCode = document.getElementById('toastOtpCode');
         const step2TargetEmail = document.getElementById('step2TargetEmail');
         const otpInput = document.getElementById('otpInput');
         const btnVerifyOtp = document.getElementById('btnVerifyOtp');
@@ -1658,9 +1624,6 @@
 
                 currentTargetEmail = email;
                 step2TargetEmail.innerText = email;
-                toastEmailTarget.innerText = email;
-                toastOtpCode.innerText = data.demoOtp || "SENT";
-                liveCampusMailToast.style.display = 'flex';
 
                 // Transition to Step 2
                 step1Content.style.display = 'none';
@@ -1752,8 +1715,6 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    toastOtpCode.innerText = data.demoOtp || "SENT";
-                    liveCampusMailToast.style.display = 'flex';
                     startResendTimer();
                 } else {
                     showError(data.message || "Failed to resend code.");

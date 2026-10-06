@@ -6,9 +6,15 @@
     ViewBag.ActiveRequestsCount = 2;
 
     var user = Model.CurrentUser;
-    var rawName = string.IsNullOrEmpty(user.FullName) ? "Aarav Patel" : user.FullName;
-    var firstName = "Aarav";
-    var rollPrefix = "3001";
+    var rawName = string.IsNullOrEmpty(user?.FullName) ? "Student" : user.FullName;
+    var firstName = rawName.Split(' ')[0];
+    var userInitial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "U";
+    var rollPrefix = !string.IsNullOrEmpty(user?.EnrollmentNumber) ? user.EnrollmentNumber : "Student";
+    var userEmail = user?.Email ?? "student@marwadiuniversity.ac.in";
+    var userHostel = string.IsNullOrEmpty(user?.HostelName) ? "Hostel D" : user.HostelName;
+    var userRoom = string.IsNullOrEmpty(user?.RoomNumber) ? "304" : user.RoomNumber;
+    var userPhone = string.IsNullOrEmpty(user?.PhoneNumber) ? "" : user.PhoneNumber;
+    var userBalance = user?.RewardBalance ?? 0.0;
 }
 
 @section Styles {
@@ -943,37 +949,40 @@
         <!-- 1. Profile Summary Card -->
         <div class="uv-side-card">
             <div class="uv-profile-header">
-                <div class="uv-avatar-box">A</div>
+                <div class="uv-avatar-box">@userInitial</div>
                 <div>
-                    <h3 class="uv-name-title">Aarav Patel</h3>
+                    <h3 class="uv-name-title">@rawName</h3>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span class="uv-status-pill uv-status-active" style="background: #00E676; color: #022c22; font-weight: 900; padding: 2px 8px; font-size: 10px;">
                             VERIFIED STUDENT
                         </span>
-                        <span class="uv-roll-tag">#3001</span>
+                        <span class="uv-roll-tag">#@rollPrefix</span>
                     </div>
                 </div>
             </div>
 
             <div class="uv-detail-item">
                 <i class="bi bi-envelope"></i>
-                <span style="word-break: break-all;">aarav.patel@marwadiuniversity.ac.in</span>
+                <span style="word-break: break-all;">@userEmail</span>
             </div>
 
             <div class="uv-detail-item">
                 <i class="bi bi-geo-alt"></i>
-                <span>Hostel D &bull; Room 304</span>
+                <span>@userHostel &bull; Room @userRoom</span>
             </div>
 
-            <div class="uv-detail-item">
-                <i class="bi bi-telephone"></i>
-                <span>+91 98765 43210</span>
-            </div>
+            @if (!string.IsNullOrEmpty(userPhone))
+            {
+                <div class="uv-detail-item">
+                    <i class="bi bi-telephone"></i>
+                    <span>@userPhone</span>
+                </div>
+            }
 
             <div class="uv-detail-item" style="margin-bottom: 0;">
                 <i class="bi bi-wallet2"></i>
                 <span style="font-family: var(--font-mono); font-weight: 800; color: #00E676;">
-                    Wallet: ₹250.00
+                    Wallet: ₹@userBalance.ToString("F2")
                 </span>
             </div>
 

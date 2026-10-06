@@ -955,53 +955,23 @@
             <div class="gmodal-body">
                 <div id="gmodalError" class="gmodal-error"></div>
 
-                <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">
-                    Choose a Verified Student Account
-                </p>
-
-                <!-- Pre-configured MU Student Accounts -->
-                <div class="gaccount-item" onclick="triggerGoogleLogin('aarav.patel@@marwadiuniversity.ac.in', 'Aarav Patel')">
-                    <div class="gaccount-avatar" style="background: #2563eb;">A</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Aarav Patel</div>
-                        <div class="gaccount-email">aarav.patel@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel D</span>
+                <div style="margin-bottom: 16px; text-align: left;">
+                    <label style="font-size: 11px; color: #cbd5e1; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 8px;">
+                        Student University Google ID
+                    </label>
+                    <input type="email" id="customGoogleEmail" class="ginput" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                    <span style="display: block; font-size: 11px; color: #34d399; margin-top: 6px;">
+                        <i class="bi bi-shield-check"></i> Official Marwadi University Gmail account only
+                    </span>
                 </div>
 
-                <div class="gaccount-item" onclick="triggerGoogleLogin('priya.sharma@@marwadiuniversity.ac.in', 'Priya Sharma')">
-                    <div class="gaccount-avatar" style="background: #7c3aed;">P</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Priya Sharma</div>
-                        <div class="gaccount-email">priya.sharma@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel B</span>
-                </div>
+                <button type="button" id="btnCustomGoogleLogin" class="luminous-btn" style="width: 100%; margin-top: 6px;">
+                    <span>Continue with Google ID</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
 
-                <div class="gaccount-item" onclick="triggerGoogleLogin('archi.kumar@@marwadiuniversity.ac.in', 'Archi Kumar')">
-                    <div class="gaccount-avatar" style="background: #059669;">A</div>
-                    <div class="gaccount-details">
-                        <div class="gaccount-name">Archi Kumar</div>
-                        <div class="gaccount-email">archi.kumar@@marwadiuniversity.ac.in</div>
-                    </div>
-                    <span class="gaccount-domain-badge">Hostel A</span>
-                </div>
-
-                <div class="gmodal-divider"></div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <span style="font-size: 11.5px; color: #cbd5e1; font-weight: 600;">Use Another University Account</span>
-                    <span style="font-size: 10.5px; color: #34d399; font-weight: 600;">@@marwadiuniversity.ac.in only</span>
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                    <input type="email" id="customGoogleEmail" class="ginput" placeholder="student.name@@marwadiuniversity.ac.in" />
-                    <button type="button" id="btnCustomGoogleLogin" class="luminous-btn" style="width: auto; padding: 0 16px; margin: 0; white-space: nowrap; font-size: 12px;">
-                        <span>Sign In</span>
-                    </button>
-                </div>
-                <div style="margin-top: 12px; font-size: 10.5px; color: #64748b; text-align: center;">
-                    🔒 University Security Protocol: Non-MU Gmail accounts are rejected automatically.
+                <div style="margin-top: 14px; font-size: 10.5px; color: #64748b; text-align: center;">
+                    🔒 Strict University Policy: Only @@marwadiuniversity.ac.in accounts are permitted. External Gmail accounts will be rejected.
                 </div>
             </div>
         </div>

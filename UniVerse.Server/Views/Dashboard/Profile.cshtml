@@ -5,8 +5,8 @@
     ViewBag.ActivePage = "profile";
 
     var user = Model.CurrentUser;
-    var rawName = string.IsNullOrEmpty(user.FullName) ? "Aarav Patel" : user.FullName;
-    var initial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "A";
+    var rawName = string.IsNullOrEmpty(user.FullName) ? "Student" : user.FullName;
+    var initial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "S";
     var currentSemester = string.IsNullOrEmpty(user.Semester) ? "Semester 6" : user.Semester;
     var currentDept = string.IsNullOrEmpty(user.Department) ? "Computer Science & Engineering" : user.Department;
 }
