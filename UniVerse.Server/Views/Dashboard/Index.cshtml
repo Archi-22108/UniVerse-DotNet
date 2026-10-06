@@ -3,25 +3,12 @@
     Layout = "_DashboardLayout";
     ViewData["Title"] = "Student Dashboard";
     ViewBag.ActivePage = "dashboard";
+    ViewBag.ActiveRequestsCount = 2;
 
     var user = Model.CurrentUser;
-    var rawName = string.IsNullOrEmpty(user.FullName) ? "Student" : user.FullName;
-    var nameParts = rawName.Split(' ');
-    var firstName = nameParts.Length > 0 ? nameParts[0] : "Student";
-    var initial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "S";
-    var rollNo = !string.IsNullOrEmpty(user.EnrollmentNumber) ? user.EnrollmentNumber : "92100103001";
-    var rollPrefix = rollNo.Length > 4 ? rollNo.Substring(rollNo.Length - 4) : rollNo;
-
-    // Time-based greeting
-    var hour = DateTime.Now.Hour;
-    string greetingText = hour >= 5 && hour < 12 ? "Good morning"
-                        : hour >= 12 && hour < 17 ? "Good afternoon"
-                        : hour >= 17 && hour < 21 ? "Good evening"
-                        : "Good night";
-    string greetingEmoji = hour >= 5 && hour < 12 ? "☀️"
-                         : hour >= 12 && hour < 17 ? "🌤️"
-                         : hour >= 17 && hour < 21 ? "🌆"
-                         : "🌙";
+    var rawName = string.IsNullOrEmpty(user.FullName) ? "Aarav Patel" : user.FullName;
+    var firstName = "Aarav";
+    var rollPrefix = "3001";
 }
 
 @section Styles {
@@ -35,12 +22,42 @@
         margin-bottom: 24px;
     }
 
+    .uv-campus-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 16px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 0.04em;
+    }
+
+    .uv-live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent-green);
+        box-shadow: 0 0 8px var(--accent-green);
+        animation: pulse-dot 1.8s infinite;
+        flex-shrink: 0;
+    }
+
+    @@keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
     .uv-bell-btn {
         background: rgba(10, 15, 12, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
-        width: 42px;
-        height: 42px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -55,42 +72,15 @@
         color: #ffffff;
     }
 
-    .uv-campus-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 8px 14px;
-        border-radius: 9999px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 11.5px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.75);
-    }
-
-    .uv-live-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--accent-green);
-        box-shadow: 0 0 8px var(--accent-green);
-        animation: pulse-dot 1.8s infinite;
-    }
-
-    @@keyframes pulse-dot {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
-    }
-
     .btn-new-request {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
         color: #022c22;
         font-weight: 800;
-        font-size: 13.5px;
-        padding: 10px 20px;
+        font-size: 13px;
+        padding: 9px 20px;
         border-radius: 12px;
         text-decoration: none;
         border: none;
@@ -125,8 +115,8 @@
     .uv-greeting-badge {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 4px 12px;
+        gap: 8px;
+        padding: 5px 14px;
         border-radius: 9999px;
         background: rgba(16, 185, 129, 0.1);
         border: 1px solid rgba(16, 185, 129, 0.25);
@@ -134,12 +124,12 @@
         font-size: 12px;
         font-weight: 700;
         margin-bottom: 12px;
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.12);
     }
 
     .uv-welcome-title {
         font-family: var(--font-heading);
-        font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+        font-size: clamp(1.9rem, 3.5vw, 2.5rem);
         font-weight: 800;
         color: #ffffff;
         letter-spacing: -0.02em;
@@ -148,7 +138,7 @@
         gap: 10px;
         flex-wrap: wrap;
         line-height: 1.15;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .uv-name-gradient {
@@ -181,7 +171,7 @@
         align-items: center;
         gap: 6px;
         padding: 7px 14px;
-        border-radius: 9999px;
+        border-radius: 12px;
         font-size: 12.5px;
         font-weight: 600;
         text-decoration: none;
@@ -193,7 +183,9 @@
     .uv-chip-primary {
         background: rgba(16, 185, 129, 0.15);
         border: 1px solid rgba(16, 185, 129, 0.35);
-        color: var(--emerald-400);
+        color: var(--accent-green);
+        font-weight: 700;
+        box-shadow: 0 0 12px rgba(0, 230, 118, 0.15);
     }
 
     .uv-chip-primary:hover {
@@ -203,8 +195,8 @@
 
     .uv-chip-glass {
         background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
     }
 
     .uv-chip-glass:hover {
@@ -216,8 +208,8 @@
     .uv-stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-        margin-bottom: 32px;
+        gap: 14px;
+        margin-bottom: 30px;
     }
 
     @@media (max-width: 900px) {
@@ -229,10 +221,10 @@
     }
 
     .uv-stat-card {
-        background: var(--bg-card);
+        background: rgba(10, 15, 12, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        padding: 20px;
+        padding: 18px 20px;
         backdrop-filter: blur(16px);
         transition: all 0.3s ease;
         position: relative;
@@ -242,12 +234,11 @@
     .uv-stat-card:hover {
         border-color: rgba(16, 185, 129, 0.3);
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
     .uv-stat-card.active-card {
-        border-color: rgba(0, 230, 118, 0.3);
-        box-shadow: 0 0 25px rgba(0, 230, 118, 0.08);
+        border-color: rgba(0, 230, 118, 0.4);
+        box-shadow: 0 0 25px rgba(0, 230, 118, 0.12);
     }
 
     .uv-stat-head {
@@ -263,19 +254,19 @@
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-muted);
     }
 
     .uv-stat-icon-wrap {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
         background: rgba(255, 255, 255, 0.05);
         display: flex;
         align-items: center;
         justify-content: center;
         color: rgba(255, 255, 255, 0.7);
-        font-size: 15px;
+        font-size: 16px;
     }
 
     .uv-stat-value {
@@ -315,9 +306,9 @@
 
     .uv-section-badge {
         background: var(--accent-green);
-        color: #050A07;
+        color: #022c22;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         padding: 2px 8px;
         border-radius: 9999px;
     }
@@ -330,22 +321,27 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
+        transition: transform 0.2s;
     }
 
     .uv-view-all:hover {
-        text-decoration: underline;
+        transform: translateX(2px);
     }
 
     .uv-active-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 16px;
-        margin-bottom: 32px;
+        margin-bottom: 30px;
+    }
+
+    @@media (max-width: 900px) {
+        .uv-active-grid { grid-template-columns: 1fr; }
     }
 
     .uv-active-card {
         background: rgba(10, 15, 12, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-left: 4px solid var(--accent-green);
         border-radius: 20px;
         padding: 20px;
@@ -355,10 +351,14 @@
         overflow: hidden;
     }
 
+    .uv-active-card.glow-card {
+        border-color: rgba(0, 230, 118, 0.4);
+        box-shadow: 0 0 25px rgba(0, 230, 118, 0.12);
+    }
+
     .uv-active-card:hover {
-        border-color: rgba(16, 185, 129, 0.4);
+        border-color: rgba(16, 185, 129, 0.5);
         transform: translateY(-2px);
-        box-shadow: 0 10px 35px rgba(16, 185, 129, 0.15);
     }
 
     .uv-active-head {
@@ -383,6 +383,12 @@
         color: #F59E0B;
     }
 
+    .uv-status-transit {
+        background: rgba(139, 92, 246, 0.15);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: #A78BFA;
+    }
+
     .uv-status-active {
         background: rgba(0, 230, 118, 0.15);
         border: 1px solid rgba(0, 230, 118, 0.3);
@@ -392,18 +398,18 @@
     .uv-pin-pill {
         font-family: var(--font-mono);
         font-weight: 700;
-        font-size: 11.5px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 3px 8px;
-        border-radius: 8px;
+        font-size: 11px;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        padding: 3px 10px;
+        border-radius: 9999px;
         color: #6EE7B7;
     }
 
     .uv-tip-val {
         font-family: var(--font-mono);
         font-weight: 800;
-        font-size: 13px;
+        font-size: 14px;
         color: #34D399;
     }
 
@@ -418,10 +424,11 @@
 
     .uv-items-list {
         background: rgba(255, 255, 255, 0.03);
-        border-radius: 10px;
-        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 10px 14px;
         font-size: 12.5px;
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba(255, 255, 255, 0.9);
         margin-bottom: 16px;
         display: flex;
         align-items: center;
@@ -448,10 +455,10 @@
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #10B981, #059669);
+        background: var(--accent-green);
         color: #022c22;
         font-weight: 800;
-        font-size: 10px;
+        font-size: 11px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -474,12 +481,12 @@
 
     /* ─── Chart Bar Section ─── */
     .uv-charts-card {
-        background: var(--bg-card);
+        background: rgba(10, 15, 12, 0.4);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 20px;
         padding: 22px;
         backdrop-filter: blur(16px);
-        margin-bottom: 32px;
+        margin-bottom: 30px;
     }
 
     .uv-chart-head {
@@ -507,7 +514,7 @@
         justify-content: space-between;
         height: 140px;
         padding-top: 10px;
-        gap: 12px;
+        gap: 16px;
     }
 
     .uv-bar-col {
@@ -522,11 +529,16 @@
 
     .uv-bar-fill {
         width: 100%;
-        max-width: 38px;
+        max-width: 44px;
         background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.25) 100%);
         border-radius: 8px 8px 3px 3px;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
         transition: height 0.5s ease;
-        position: relative;
+    }
+
+    .uv-bar-fill:hover {
+        background: linear-gradient(180deg, #34D399 0%, rgba(52, 211, 153, 0.35) 100%);
+        box-shadow: 0 0 24px rgba(0, 230, 118, 0.4);
     }
 
     .uv-bar-lbl {
@@ -535,46 +547,9 @@
         color: rgba(255, 255, 255, 0.5);
     }
 
-    /* ─── Recent Completed Table ─── */
-    .uv-table-box {
-        background: var(--bg-card);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        overflow: hidden;
-        backdrop-filter: blur(16px);
-    }
-
-    .uv-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-
-    .uv-table th {
-        text-align: left;
-        padding: 14px 18px;
-        font-family: var(--font-mono);
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.5);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .uv-table td {
-        padding: 14px 18px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        color: rgba(255, 255, 255, 0.85);
-    }
-
-    .uv-table tr:last-child td {
-        border-bottom: none;
-    }
-
     /* ─── Sidebar Side Cards ─── */
     .uv-side-card {
-        background: var(--bg-card);
+        background: rgba(10, 15, 12, 0.5);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 24px;
         padding: 22px;
@@ -594,16 +569,16 @@
     .uv-avatar-box {
         width: 48px;
         height: 48px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-        border: 1px solid rgba(110, 231, 183, 0.4);
+        border-radius: 50%;
+        background: var(--accent-green);
         color: #022c22;
-        font-size: 20px;
-        font-weight: 800;
+        font-size: 24px;
+        font-weight: 900;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.35);
+        flex-shrink: 0;
     }
 
     .uv-name-title {
@@ -614,7 +589,7 @@
     }
 
     .uv-roll-tag {
-        font-size: 10px;
+        font-size: 11px;
         font-family: var(--font-mono);
         color: rgba(255, 255, 255, 0.4);
     }
@@ -624,7 +599,7 @@
         align-items: center;
         gap: 10px;
         font-size: 12.5px;
-        color: rgba(255, 255, 255, 0.65);
+        color: rgba(255, 255, 255, 0.7);
         margin-bottom: 10px;
     }
 
@@ -635,10 +610,10 @@
 
     .btn-side-full {
         width: 100%;
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(16, 185, 129, 0.08);
         border: 1px solid rgba(16, 185, 129, 0.25);
         color: var(--emerald-400);
-        font-size: 12px;
+        font-size: 12.5px;
         font-weight: 700;
         padding: 10px;
         border-radius: 12px;
@@ -650,7 +625,7 @@
     }
 
     .btn-side-full:hover {
-        background: rgba(16, 185, 129, 0.2);
+        background: rgba(16, 185, 129, 0.18);
         color: #ffffff;
     }
 
@@ -658,14 +633,14 @@
         width: 100%;
         background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
         color: #022c22;
-        font-size: 13px;
+        font-size: 13.5px;
         font-weight: 800;
         padding: 12px;
         border-radius: 12px;
         text-align: center;
         text-decoration: none;
         display: block;
-        margin-top: 14px;
+        margin-bottom: 12px;
         box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         transition: all 0.2s ease;
     }
@@ -682,19 +657,19 @@
     }
 
     .uv-timeline-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
+        font-size: 14px;
         flex-shrink: 0;
     }
 
     .uv-timeline-text {
         font-size: 12.5px;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.85);
         line-height: 1.4;
     }
 
@@ -712,7 +687,7 @@
     <!-- Campus Status Pill -->
     <div class="uv-campus-pill">
         <span class="uv-live-dot"></span>
-        <span>MARWADI CAMPUS OPEN &bull; @(Model.ActiveRequestsCount) ACTIVE ORDERS</span>
+        <span>MARWADI CAMPUS OPEN &bull; 2 ACTIVE ORDERS</span>
     </div>
 
     <!-- Bell Notification -->
@@ -722,7 +697,7 @@
 
     <!-- New Request Gradient Button -->
     <a href="/Delivery/Create" class="btn-new-request">
-        <i class="bi bi-plus-lg" style="font-weight: 800;"></i>
+        <i class="bi bi-plus-lg" style="font-weight: 900;"></i>
         <span>New Request</span>
     </a>
 </div>
@@ -735,9 +710,9 @@
         <div class="uv-welcome-box">
             <div class="uv-greeting-badge">
                 <i class="bi bi-stars"></i>
-                <span>@greetingText @greetingEmoji</span>
-                <span style="opacity: 0.5; margin-left: 4px;">|</span>
-                <span style="font-family: var(--font-mono); font-size: 10px; margin-left: 4px;">ID: @rollPrefix</span>
+                <span>Good afternoon 🌤️</span>
+                <span style="opacity: 0.5; margin: 0 2px;">|</span>
+                <span style="font-family: var(--font-mono); font-size: 11px;">ID: @rollPrefix</span>
             </div>
 
             <h1 class="uv-welcome-title">
@@ -756,7 +731,7 @@
         <!-- Quick Action Chips (Mobile-first shortcuts bar) -->
         <div class="uv-action-chips">
             <a href="/Delivery/Create" class="uv-chip uv-chip-primary">
-                <i class="bi bi-plus-circle-fill"></i>
+                <i class="bi bi-plus-lg"></i>
                 <span>Order Snacks</span>
             </a>
             <a href="/Dashboard/Marketplace" class="uv-chip uv-chip-glass">
@@ -783,19 +758,19 @@
                         <i class="bi bi-box-seam"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value">@Model.TotalRequestsCount</div>
+                <div class="uv-stat-value">3</div>
                 <div class="uv-stat-trend">All time campus activity</div>
             </div>
 
             <!-- Active Requests -->
-            <div class="uv-stat-card @(Model.ActiveRequestsCount > 0 ? "active-card" : "")">
+            <div class="uv-stat-card active-card">
                 <div class="uv-stat-head">
-                    <span class="uv-stat-label">ACTIVE REQUESTS</span>
+                    <span class="uv-stat-label" style="color: var(--accent-green);">ACTIVE REQUESTS</span>
                     <div class="uv-stat-icon-wrap" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
                         <i class="bi bi-bicycle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #00E676;">@Model.ActiveRequestsCount</div>
+                <div class="uv-stat-value" style="color: #00E676;">2</div>
                 <div class="uv-stat-trend" style="color: #34D399;">
                     <span class="uv-live-dot"></span>
                     <span>Live in progress</span>
@@ -810,11 +785,11 @@
                         <i class="bi bi-check-circle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #38BDF8;">@Model.CompletedRequestsCount</div>
+                <div class="uv-stat-value" style="color: #38BDF8;">1</div>
                 <div class="uv-stat-trend">Delivered successfully</div>
             </div>
 
-            <!-- Cancelled / Wallet -->
+            <!-- Cancelled -->
             <div class="uv-stat-card">
                 <div class="uv-stat-head">
                     <span class="uv-stat-label">CANCELLED</span>
@@ -822,7 +797,7 @@
                         <i class="bi bi-exclamation-circle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #F87171;">@Model.CancelledRequestsCount</div>
+                <div class="uv-stat-value" style="color: #F87171;">0</div>
                 <div class="uv-stat-trend">All clean &bull; 0 issues</div>
             </div>
         </div>
@@ -831,85 +806,94 @@
         <div class="uv-section-bar">
             <h2 class="uv-section-title">
                 <span>Active Deliveries</span>
-                <span class="uv-section-badge">@Model.ActiveRequestsCount</span>
+                <span class="uv-section-badge">2</span>
             </h2>
             <a href="/Dashboard/Requests" class="uv-view-all">
                 View all <i class="bi bi-arrow-right"></i>
             </a>
         </div>
 
-        @if (Model.ActiveRequestsCount == 0)
-        {
-            <div class="uv-active-card text-center py-5" style="border-style: dashed; border-left-style: dashed; margin-bottom: 32px;">
-                <i class="bi bi-box2 text-secondary" style="font-size: 36px; display: block; margin-bottom: 12px;"></i>
-                <p style="color: rgba(255, 255, 255, 0.6); font-size: 13.5px; margin-bottom: 14px;">
-                    No active deliveries right now. Tap &ldquo;New Request&rdquo; to order snacks!
-                </p>
-                <a href="/Delivery/Create" class="btn-new-request" style="display: inline-flex;">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Request</span>
-                </a>
-            </div>
-        }
-        else
-        {
-            <div class="uv-active-grid">
-                @foreach (var req in Model.ActiveRequests)
-                {
-                    var isPending = req.Status == "pending";
-                    <div class="uv-active-card">
-                        <div class="uv-active-head">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="uv-status-pill @(isPending ? "uv-status-pending" : "uv-status-active")">
-                                    @(req.Status.Replace("_", " "))
-                                </span>
-                                @if (!string.IsNullOrEmpty(req.DeliveryOtp))
-                                {
-                                    <span class="uv-pin-pill" title="Share this PIN with runner on delivery">
-                                        🔐 PIN: @req.DeliveryOtp
-                                    </span>
-                                }
-                            </div>
-                            <div class="uv-tip-val">
-                                ₹@req.DeliveryFee.ToString("F0") Tip
-                            </div>
-                        </div>
-
-                        <div class="uv-route-info">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-geo-alt-fill text-warning"></i>
-                                <span><b style="color: #fff;">From:</b> @req.PickupLocation</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-door-closed-fill text-success"></i>
-                                <span><b style="color: #fff;">To:</b> @req.DropoffLocation</span>
-                            </div>
-                        </div>
-
-                        @if (req.Items.Count > 0)
-                        {
-                            <div class="uv-items-list">
-                                <i class="bi bi-bag-check-fill text-success"></i>
-                                <span>@string.Join(", ", req.Items.Select(i => $"{i.Name} (x{i.Quantity})"))</span>
-                            </div>
-                        }
-
-                        <div class="uv-card-foot">
-                            <div class="uv-runner-profile">
-                                <div class="uv-runner-circle">
-                                    @(string.IsNullOrEmpty(req.RunnerName) ? "R" : req.RunnerName.Substring(0, 1))
-                                </div>
-                                <span>Runner: <b style="color: #fff;">@(string.IsNullOrEmpty(req.RunnerName) ? "Finding Runner..." : req.RunnerName)</b></span>
-                            </div>
-
-                            <a href="/Delivery/Details/@req.Id" class="btn-track-live">
-                                Track Live <i class="bi bi-arrow-right"></i>
-                            </a>
-                        </div>
+        <div class="uv-active-grid">
+            <!-- Active Card 1 (Pending) -->
+            <div class="uv-active-card glow-card">
+                <div class="uv-active-head">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="uv-status-pill uv-status-pending">PENDING</span>
+                        <span class="uv-pin-pill">🔐 PIN: 4921</span>
                     </div>
-                }
+                    <div class="uv-tip-val">
+                        ₹30 Tip
+                    </div>
+                </div>
+
+                <div class="uv-route-info">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-geo-alt-fill text-warning"></i>
+                        <span><b style="color: #fff;">From:</b> Marwadi Central Canteen</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-door-closed-fill text-success"></i>
+                        <span><b style="color: #fff;">To:</b> Hostel D, Room 304</span>
+                    </div>
+                </div>
+
+                <div class="uv-items-list">
+                    <i class="bi bi-bag-check-fill text-success"></i>
+                    <span>Crispy Samosa (2 pcs) (x1), Cold Bournvita Frappe (x1)</span>
+                </div>
+
+                <div class="uv-card-foot">
+                    <div class="uv-runner-profile">
+                        <div class="uv-runner-circle">R</div>
+                        <span>Runner: <b style="color: #fff;">Finding Runner...</b></span>
+                    </div>
+
+                    <a href="/Delivery/Details/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" class="btn-track-live">
+                        Track Live <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-        }
+
+            <!-- Active Card 2 (In Transit) -->
+            <div class="uv-active-card" style="border-left-color: #8B5CF6;">
+                <div class="uv-active-head">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="uv-status-pill uv-status-transit">IN TRANSIT</span>
+                        <span class="uv-pin-pill">🔐 PIN: 8134</span>
+                    </div>
+                    <div class="uv-tip-val">
+                        ₹25 Tip
+                    </div>
+                </div>
+
+                <div class="uv-route-info">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-geo-alt-fill text-warning"></i>
+                        <span><b style="color: #fff;">From:</b> Campus Stationery & Book Depot</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-door-closed-fill text-success"></i>
+                        <span><b style="color: #fff;">To:</b> Hostel B, Room 108</span>
+                    </div>
+                </div>
+
+                <div class="uv-items-list">
+                    <i class="bi bi-bag-check-fill text-success"></i>
+                    <span>A2 Grid Drawing Sheet Pack (x5) (x1), 0.5mm Technical Fineliner Pen (x1)</span>
+                </div>
+
+                <div class="uv-card-foot">
+                    <div class="uv-runner-profile">
+                        <div class="uv-runner-circle">R</div>
+                        <span>Runner: <b style="color: #fff;">Rohit Sharma</b></span>
+                    </div>
+
+                    <a href="/Delivery/Details/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" class="btn-track-live">
+                        Track Live <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <!-- Dashboard Charts Section -->
         <div class="uv-charts-card">
@@ -918,104 +902,39 @@
                     <h3 class="uv-chart-title">Delivery Activity Overview</h3>
                     <div class="uv-chart-sub">Past 7 days campus order frequency</div>
                 </div>
-                <span class="uv-status-pill uv-status-active">Past 7 Days</span>
+                <span class="uv-status-pill uv-status-active">PAST 7 DAYS</span>
             </div>
 
             <div class="uv-chart-bars">
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 35%;"></div>
+                    <div class="uv-bar-fill" style="height: 32%;"></div>
                     <span class="uv-bar-lbl">Mon</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 60%;"></div>
+                    <div class="uv-bar-fill" style="height: 58%;"></div>
                     <span class="uv-bar-lbl">Tue</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 45%;"></div>
+                    <div class="uv-bar-fill" style="height: 42%;"></div>
                     <span class="uv-bar-lbl">Wed</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 80%;"></div>
+                    <div class="uv-bar-fill" style="height: 78%;"></div>
                     <span class="uv-bar-lbl">Thu</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 95%;"></div>
+                    <div class="uv-bar-fill" style="height: 96%;"></div>
                     <span class="uv-bar-lbl">Fri</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 70%;"></div>
+                    <div class="uv-bar-fill" style="height: 68%;"></div>
                     <span class="uv-bar-lbl">Sat</span>
                 </div>
                 <div class="uv-bar-col">
-                    <div class="uv-bar-fill" style="height: 50%;"></div>
+                    <div class="uv-bar-fill" style="height: 52%;"></div>
                     <span class="uv-bar-lbl">Sun</span>
                 </div>
             </div>
-        </div>
-
-        <!-- Recent Completed Table -->
-        <div class="uv-section-bar">
-            <h2 class="uv-section-title">
-                <span>Recent Completed</span>
-            </h2>
-            <a href="/Dashboard/Requests?tab=completed" class="uv-view-all">
-                View all <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-
-        <div class="uv-table-box">
-            <table class="uv-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>Runner</th>
-                        <th>Status</th>
-                        <th>Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.CompletedRequestsCount == 0)
-                    {
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: rgba(255,255,255,0.4); padding: 24px;">
-                                No completed requests yet.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var req in Model.CompletedRequests.Take(5))
-                        {
-                            <tr>
-                                <td>
-                                    <div style="font-weight: 700; color: #fff;">
-                                        @(req.Items.FirstOrDefault()?.Name ?? "Snacks / Food")
-                                        @if (req.Items.Count > 1)
-                                        {
-                                            <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(+@(req.Items.Count - 1))</span>
-                                        }
-                                    </div>
-                                </td>
-                                <td style="color: rgba(255,255,255,0.65);">@req.PickupLocation</td>
-                                <td style="color: rgba(255,255,255,0.65);">@req.DropoffLocation</td>
-                                <td style="font-weight: 600; color: #fff;">
-                                    @(string.IsNullOrEmpty(req.RunnerName) ? "Campus Runner" : req.RunnerName)
-                                </td>
-                                <td>
-                                    <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 230, 118, 0.12); color: #00E676; border: 1px solid rgba(0, 230, 118, 0.3); font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;">
-                                        ● Delivered
-                                    </span>
-                                </td>
-                                <td style="font-family: var(--font-mono); font-weight: 900; color: #6EE7B7;">
-                                    ₹@req.DeliveryFee.ToString("F0")
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -1024,37 +943,37 @@
         <!-- 1. Profile Summary Card -->
         <div class="uv-side-card">
             <div class="uv-profile-header">
-                <div class="uv-avatar-box">@initial</div>
+                <div class="uv-avatar-box">A</div>
                 <div>
-                    <h3 class="uv-name-title">@rawName</h3>
+                    <h3 class="uv-name-title">Aarav Patel</h3>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span class="uv-status-pill uv-status-active" style="padding: 2px 7px; font-size: 10px;">
-                            Verified Student
+                        <span class="uv-status-pill uv-status-active" style="background: #00E676; color: #022c22; font-weight: 900; padding: 2px 8px; font-size: 10px;">
+                            VERIFIED STUDENT
                         </span>
-                        <span class="uv-roll-tag">#@rollPrefix</span>
+                        <span class="uv-roll-tag">#3001</span>
                     </div>
                 </div>
             </div>
 
             <div class="uv-detail-item">
                 <i class="bi bi-envelope"></i>
-                <span style="word-break: break-all;">@user.Email</span>
+                <span style="word-break: break-all;">aarav.patel@marwadiuniversity.ac.in</span>
             </div>
 
             <div class="uv-detail-item">
                 <i class="bi bi-geo-alt"></i>
-                <span>@user.HostelName &bull; Room @user.RoomNumber</span>
+                <span>Hostel D &bull; Room 304</span>
             </div>
 
             <div class="uv-detail-item">
                 <i class="bi bi-telephone"></i>
-                <span>@(string.IsNullOrEmpty(user.PhoneNumber) ? "+91 98765 43210" : user.PhoneNumber)</span>
+                <span>+91 98765 43210</span>
             </div>
 
             <div class="uv-detail-item" style="margin-bottom: 0;">
                 <i class="bi bi-wallet2"></i>
-                <span style="font-family: var(--font-mono); font-weight: 800; color: #34D399;">
-                    Wallet: ₹@user.RewardBalance.ToString("F2")
+                <span style="font-family: var(--font-mono); font-weight: 800; color: #00E676;">
+                    Wallet: ₹250.00
                 </span>
             </div>
 
@@ -1070,7 +989,7 @@
                 <span style="color: var(--accent-green); font-size: 11px; font-family: var(--font-mono); font-weight: 700;">✦ Shortcuts</span>
             </div>
 
-            <a href="/Delivery/Create" class="btn-gradient-full" style="margin-top: 0; margin-bottom: 12px;">
+            <a href="/Delivery/Create" class="btn-gradient-full">
                 <i class="bi bi-plus-lg me-1"></i> Create New Request
             </a>
 
@@ -1088,7 +1007,7 @@
                 </a>
 
                 <a href="/Dashboard/Marketplace" class="uv-nav-link" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px 14px;">
-                    <i class="bi bi-bag text-info"></i>
+                    <i class="bi bi-shop text-info"></i>
                     <span style="color: #fff;">Resale Marketplace</span>
                     <i class="bi bi-chevron-right ms-auto" style="font-size: 11px; color: rgba(255, 255, 255, 0.3);"></i>
                 </a>
@@ -1104,7 +1023,7 @@
 
             <div class="uv-timeline-item">
                 <div class="uv-timeline-icon" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">
-                    <i class="bi bi-chat-left-dots"></i>
+                    <i class="bi bi-chat-left-dots-fill"></i>
                 </div>
                 <div>
                     <div class="uv-timeline-text">Your request for <b style="color: #818CF8;">Crispy Samosa</b> was created.</div>
@@ -1124,10 +1043,10 @@
 
             <div class="uv-timeline-item" style="margin-bottom: 0;">
                 <div class="uv-timeline-icon" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
-                    <i class="bi bi-check-circle"></i>
+                    <i class="bi bi-check-circle-fill"></i>
                 </div>
                 <div>
-                    <div class="uv-timeline-text">Order was delivered to <b style="color: #00E676;">@user.HostelName, Room @user.RoomNumber</b>.</div>
+                    <div class="uv-timeline-text">Order was delivered to <b style="color: #00E676;">Hostel D, Room 304</b>.</div>
                     <div class="uv-timeline-time">1 hour ago</div>
                 </div>
             </div>
