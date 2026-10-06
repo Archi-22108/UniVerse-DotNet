@@ -247,15 +247,37 @@ namespace UniVerse.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> QuickLogin(string email)
         {
-            var cleanEmail = email.Trim().ToLowerInvariant();
+            var cleanEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
             if (cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
             {
                 var user = await _userRepo.GetByEmailAsync(cleanEmail);
-                if (user != null)
+                if (user == null)
                 {
-                    await SignInUserAsync(user, true);
-                    return RedirectToAction("Index", "Dashboard");
+                    var prefix = cleanEmail.Split('@')[0];
+                    var rawName = prefix.Replace(".", " ");
+                    var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(rawName);
+                    var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+                    var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
+
+                    user = new User
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Email = cleanEmail,
+                        FullName = formattedName,
+                        EnrollmentNumber = enr,
+                        PasswordHash = DbInitializer.HashPassword("Student123!"),
+                        Role = "student",
+                        HostelName = "Hostel D",
+                        RoomNumber = "304",
+                        RewardBalance = 50.0,
+                        CreatedAt = DateTime.UtcNow.ToString("o"),
+                        UpdatedAt = DateTime.UtcNow.ToString("o")
+                    };
+                    await _userRepo.CreateUserAsync(user);
                 }
+
+                await SignInUserAsync(user, true);
+                return RedirectToAction("Index", "Dashboard");
             }
             return RedirectToAction("Login");
         }
