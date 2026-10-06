@@ -171,6 +171,9 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpGet]
+        [Route("Delivery/Details/{id}")]
+        [Route("Deliveries/Details/{id}")]
+        [Route("dashboard/requests/{id}")]
         public async Task<IActionResult> Details(string id)
         {
             var req = await _deliveryRepo.GetRequestByIdAsync(id);
@@ -184,6 +187,53 @@ namespace UniVerse.Server.Controllers
             ViewBag.IsAssignedRunner = currentUserId == req.RunnerId;
 
             return View(req);
+        }
+
+        [HttpPost]
+        [Route("Delivery/BoostReward")]
+        [Route("api/requests/boost")]
+        public async Task<IActionResult> BoostReward([FromForm] string? id, [FromForm] double? amount)
+        {
+            var targetId = id ?? Request.Query["id"].ToString();
+            var boostAmt = amount ?? (double.TryParse(Request.Query["amount"], out var a) ? a : 5.0);
+
+            if (!string.IsNullOrEmpty(targetId))
+            {
+                await _deliveryRepo.BoostRewardAsync(targetId, boostAmt);
+            }
+            var updated = !string.IsNullOrEmpty(targetId) ? await _deliveryRepo.GetRequestByIdAsync(targetId) : null;
+            return Json(new { success = true, newFee = updated?.DeliveryFee ?? 0 });
+        }
+
+        [HttpPost]
+        [Route("Delivery/Cancel")]
+        [Route("api/requests/cancel")]
+        public async Task<IActionResult> Cancel([FromForm] string? id)
+        {
+            var targetId = id ?? Request.Query["id"].ToString();
+            if (!string.IsNullOrEmpty(targetId))
+            {
+                await _deliveryRepo.UpdateStatusAsync(targetId, "cancelled");
+            }
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        [Route("api/requests/status/{id}")]
+        public async Task<IActionResult> GetStatus(string id)
+        {
+            var req = await _deliveryRepo.GetRequestByIdAsync(id);
+            if (req == null) return NotFound();
+            return Json(new
+            {
+                id = req.Id,
+                status = req.Status,
+                deliveryFee = req.DeliveryFee,
+                runnerId = req.RunnerId,
+                runnerName = req.RunnerName,
+                runnerPhone = req.RunnerPhone,
+                otp = req.DeliveryOtp
+            });
         }
 
         [Authorize]

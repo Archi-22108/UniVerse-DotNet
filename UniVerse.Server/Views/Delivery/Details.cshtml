@@ -1,183 +1,1847 @@
 @model UniVerse.Server.Models.DeliveryRequestDetailDto
 @{
-    ViewData["Title"] = "Order Details #" + Model.Id.Substring(0, 8);
+    Layout = null;
+    ViewData["Title"] = "Live Order Tracking • UniVerse";
     bool isRequester = ViewBag.IsRequester ?? false;
     bool isAssignedRunner = ViewBag.IsAssignedRunner ?? false;
 
-    int progressPercent = Model.Status switch
+    var displayPin = !string.IsNullOrEmpty(Model.DeliveryOtp)
+        ? Model.DeliveryOtp
+        : (Math.Abs(Model.Id.GetHashCode()) % 900000 + 100000).ToString();
+
+    var stageList = new[]
     {
-        "pending" => 20,
-        "accepted" => 40,
-        "picked_up" => 65,
-        "in_transit" => 85,
-        "delivered" => 100,
+        new { Id = "pending", Label = "Broadcasted", Subtext = "Searching for runners", Icon = "bi-broadcast" },
+        new { Id = "accepted", Label = "Assigned", Subtext = "Runner accepted", Icon = "bi-person-check" },
+        new { Id = "picked_up", Label = "Picked Up", Subtext = "Items collected", Icon = "bi-box-seam" },
+        new { Id = "in_transit", Label = "In Transit", Subtext = "Runner on the way", Icon = "bi-truck" },
+        new { Id = "delivered", Label = "Delivered", Subtext = "Completed", Icon = "bi-check-circle" }
+    };
+
+    int currentStageIndex = Model.Status switch
+    {
+        "pending" => 0,
+        "accepted" => 1,
+        "picked_up" => 2,
+        "in_transit" => 3,
+        "delivered" => 4,
         _ => 0
     };
-}
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <a asp-action="Index" class="btn btn-glass btn-sm">
-                    &larr; Back to Delivery Feed
-                </a>
-                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
-                    STATUS: @Model.Status.Replace("_", " ")
+    DateTime createdAtParsed;
+    DateTime.TryParse(Model.CreatedAt, out createdAtParsed);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Live Order Tracking • UniVerse Campus Delivery Network</title>
+
+    <!-- Google Fonts: Outfit, Plus Jakarta Sans, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --color-bg: #080b09;
+            --accent-green: #00E676;
+            --emerald-primary: #10B981;
+            --emerald-hover: #00C853;
+            --text-muted: #A7B8B0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: #ffffff;
+            font-family: var(--font-body);
+            min-height: 100vh;
+            min-height: 100dvh;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Container */
+        .tracker-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 4rem;
+        }
+
+        @@media (min-width: 640px) {
+            .tracker-container {
+                padding: 2rem 1.5rem 5rem;
+            }
+        }
+
+        /* Top breadcrumb bar */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .network-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: rgba(52, 211, 153, 0.9);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .network-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            background-color: var(--accent-green);
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        /* Toolbar */
+        .radar-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding: 0 0.25rem;
+        }
+
+        .radar-status-label {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .beacon-dot-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .beacon-core-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        .beacon-ping-ring {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid var(--accent-green);
+            animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+            opacity: 0.6;
+        }
+
+        .radar-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .radar-subtitle {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toolbar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .toolbar-btn.active-chime {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
+        }
+
+        .audio-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 12px;
+            margin-left: 2px;
+        }
+
+        .audio-bar {
+            width: 2px;
+            background-color: var(--accent-green);
+            border-radius: 9999px;
+            animation: sound-bounce 1s ease-in-out infinite alternate;
+        }
+
+        .audio-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+        .audio-bar:nth-child(2) { height: 12px; animation-delay: 0.3s; }
+        .audio-bar:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+
+        /* ============================================================
+           CASE 1: RADAR (PENDING STATE)
+           ============================================================ */
+        .radar-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            background-color: rgba(10, 16, 12, 0.96);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-col: column;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 230, 118, 0.12);
+            margin-bottom: 1.5rem;
+        }
+
+        @@media (min-width: 640px) {
+            .radar-card {
+                padding: 2.5rem 2rem;
+            }
+        }
+
+        .radar-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at center, rgba(0, 230, 118, 0.12) 0%, transparent 70%);
+        }
+
+        /* Reticles */
+        .reticle-tl { position: absolute; top: 1rem; left: 1rem; width: 1rem; height: 1rem; border-top: 2px solid rgba(16, 185, 129, 0.4); border-left: 2px solid rgba(16, 185, 129, 0.4); pointer-events: none; }
+        .reticle-tr { position: absolute; top: 1rem; right: 1rem; width: 1rem; height: 1rem; border-top: 2px solid rgba(16, 185, 129, 0.4); border-right: 2px solid rgba(16, 185, 129, 0.4); pointer-events: none; }
+        .reticle-bl { position: absolute; bottom: 1rem; left: 1rem; width: 1rem; height: 1rem; border-bottom: 2px solid rgba(16, 185, 129, 0.4); border-left: 2px solid rgba(16, 185, 129, 0.4); pointer-events: none; }
+        .reticle-br { position: absolute; bottom: 1rem; right: 1rem; width: 1rem; height: 1rem; border-bottom: 2px solid rgba(16, 185, 129, 0.4); border-right: 2px solid rgba(16, 185, 129, 0.4); pointer-events: none; }
+
+        .radar-freq-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: rgba(52, 211, 153, 0.7);
+            padding-bottom: 0.5rem;
+        }
+
+        .freq-badge {
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        /* Circular Holographic Radar */
+        .radar-scope {
+            position: relative;
+            width: 230px;
+            height: 230px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+        }
+
+        @@media (min-width: 640px) {
+            .radar-scope {
+                width: 290px;
+                height: 290px;
+            }
+        }
+
+        .radar-ring-4 {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 25px rgba(0, 230, 118, 0.15);
+        }
+
+        .radar-ring-3 {
+            position: absolute;
+            inset: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .radar-ring-2 {
+            position: absolute;
+            inset: 64px;
+            border-radius: 50%;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .radar-ring-1 {
+            position: absolute;
+            inset: 96px;
+            border-radius: 50%;
+            border: 1px dashed rgba(16, 185, 129, 0.4);
+        }
+
+        .radar-crosshair-h {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .radar-crosshair-h::before {
+            content: '';
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(16, 185, 129, 0.35), transparent);
+        }
+
+        .radar-crosshair-v {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .radar-crosshair-v::before {
+            content: '';
+            height: 100%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(16, 185, 129, 0.35), transparent);
+        }
+
+        .cardinal-label {
+            position: absolute;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 900;
+            color: var(--accent-green);
+        }
+
+        .cardinal-n { top: -2px; }
+        .cardinal-s { bottom: -2px; }
+        .cardinal-e { right: -2px; }
+        .cardinal-w { left: -2px; }
+
+        .range-label-300 {
+            position: absolute;
+            top: 6px;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: rgba(52, 211, 153, 0.6);
+        }
+
+        .range-label-200 {
+            position: absolute;
+            top: 38px;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            color: rgba(52, 211, 153, 0.6);
+        }
+
+        /* Sweep Cone */
+        .radar-sweep-cone {
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            overflow: hidden;
+            pointer-events: none;
+            animation: radar-spin 3.5s linear infinite;
+        }
+
+        .radar-sweep-gradient {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(0, 230, 118, 0.15) 340deg, rgba(0, 230, 118, 0.6) 360deg);
+        }
+
+        /* Runner Blips */
+        .blip-1 {
+            position: absolute;
+            top: 40px;
+            right: 45px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 5;
+        }
+
+        .blip-dot-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .blip-core {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        .blip-ping {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #34d399;
+            animation: ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+            opacity: 0.7;
+        }
+
+        .blip-tag {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 700;
+            color: #6ee7b7;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            white-space: nowrap;
+        }
+
+        .blip-2 {
+            position: absolute;
+            bottom: 45px;
+            left: 35px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 5;
+        }
+
+        .blip-3 {
+            position: absolute;
+            top: 90px;
+            left: 30px;
+            z-index: 5;
+        }
+
+        /* Central Store Beacon */
+        .central-beacon {
+            position: relative;
+            z-index: 10;
+            width: 75px;
+            height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @@media (min-width: 640px) {
+            .central-beacon {
+                width: 90px;
+                height: 90px;
+            }
+        }
+
+        .beacon-ping-outer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background-color: rgba(0, 230, 118, 0.2);
+            animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .beacon-pulse-border {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 230, 118, 0.5);
+            animation: pulse-dot 2s infinite;
+        }
+
+        .beacon-core-box {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #00C853, #00E676);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 35px rgba(0, 230, 118, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: #050805;
+            font-size: 1.5rem;
+        }
+
+        @@media (min-width: 640px) {
+            .beacon-core-box {
+                width: 64px;
+                height: 64px;
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Radar Headlines */
+        .radar-broadcast-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 1rem;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: var(--accent-green);
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+            margin-bottom: 0.75rem;
+        }
+
+        .radar-headline {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #ffffff, #d1fae5, #00E676);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        @@media (min-width: 640px) {
+            .radar-headline {
+                font-size: 1.875rem;
+            }
+        }
+
+        /* Route Flow Ribbon */
+        .route-ribbon {
+            width: 100%;
+            max-width: 580px;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.75rem;
+        }
+
+        .route-point {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .route-point-dest {
+            text-align: right;
+            justify-content: flex-end;
+        }
+
+        .route-icon-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 0.5rem;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            font-size: 13px;
+        }
+
+        .route-arrow-flow {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            flex-shrink: 0;
+            animation: pulse-dot 1s infinite alternate;
+        }
+
+        /* Order Items Collapsible Drawer */
+        .items-drawer-btn {
+            width: 100%;
+            max-width: 580px;
+            padding: 0.6rem 0.875rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .items-drawer-btn:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .items-drawer-content {
+            width: 100%;
+            max-width: 580px;
+            margin-top: 0.5rem;
+            padding: 0.875rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            text-align: left;
+            font-size: 0.75rem;
+        }
+
+        /* Metrics HUD */
+        .metrics-hud {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 580px;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .hud-tile {
+            padding: 0.875rem 0.5rem;
+            border-radius: 1rem;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hud-tile:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .hud-label {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--text-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .hud-value {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        @@media (min-width: 640px) {
+            .hud-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Turbo Booster Banner */
+        .booster-banner {
+            width: 100%;
+            max-width: 580px;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            box-shadow: 0 0 25px rgba(0, 230, 118, 0.1);
+        }
+
+        @@media (min-width: 640px) {
+            .booster-banner {
+                flex-direction: row;
+                text-align: left;
+                padding: 1rem 1.25rem;
+            }
+        }
+
+        .boost-btn-sub {
+            padding: 0.5rem 0.875rem;
+            border-radius: 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .boost-btn-sub:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .boost-btn-turbo {
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            background: linear-gradient(to right, #00C853, #00E676);
+            color: #050805;
+            font-size: 0.75rem;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .boost-btn-turbo:hover {
+            box-shadow: 0 0 30px rgba(0, 230, 118, 0.6);
+            transform: scale(1.02);
+        }
+
+        /* ============================================================
+           CASE 2: ACTIVE STATUS & PIN CARD
+           ============================================================ */
+        .status-alert-banner {
+            padding: 1.25rem;
+            border-radius: 1.5rem;
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            backdrop-filter: blur(12px);
+            background: linear-gradient(to right, rgba(12, 26, 17, 0.95), rgba(8, 19, 12, 0.95), rgba(12, 26, 17, 0.95));
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1.5rem;
+        }
+
+        @@media (min-width: 640px) {
+            .status-alert-banner {
+                flex-direction: row;
+                align-items: center;
+                padding: 1.5rem;
+            }
+        }
+
+        .status-alert-banner.is-delivered {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.35);
+            box-shadow: 0 0 35px rgba(0, 230, 118, 0.15);
+        }
+
+        .status-alert-banner.is-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .status-icon-box {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        /* Handover Security PIN Card */
+        .pin-security-card {
+            background: linear-gradient(to right, rgba(6, 78, 59, 0.5), rgba(12, 31, 20, 0.9), rgba(6, 78, 59, 0.5));
+            border: 2px solid rgba(16, 185, 129, 0.5);
+            border-radius: 1.5rem;
+            padding: 1.25rem;
+            box-shadow: 0 0 35px rgba(0, 230, 118, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            backdrop-filter: blur(12px);
+            margin-bottom: 1.5rem;
+        }
+
+        @@media (min-width: 640px) {
+            .pin-security-card {
+                flex-direction: row;
+                padding: 1.5rem;
+            }
+        }
+
+        .pin-digit-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pin-digit-box {
+            width: 2.75rem;
+            height: 3.5rem;
+            border-radius: 0.875rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 1.75rem;
+            font-weight: 900;
+            color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+            user-select: all;
+        }
+
+        @@media (min-width: 640px) {
+            .pin-digit-box {
+                width: 3.25rem;
+                height: 4rem;
+                font-size: 2rem;
+            }
+        }
+
+        /* 5-Stage Timeline */
+        .timeline-card {
+            padding: 1.25rem;
+            border-radius: 1.5rem;
+            background: rgba(9, 18, 12, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            margin-bottom: 1.5rem;
+        }
+
+        @@media (min-width: 640px) {
+            .timeline-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .timeline-track-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .timeline-track-bg {
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            top: 1rem;
+            transform: translateY(-50%);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+
+        .timeline-track-fill {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            transform: translateY(-50%);
+            height: 4px;
+            background: var(--accent-green);
+            border-radius: 9999px;
+            box-shadow: 0 0 12px var(--accent-green);
+            transition: width 0.7s ease;
+        }
+
+        .timeline-node {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .timeline-node-circle {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        @@media (min-width: 640px) {
+            .timeline-node-circle {
+                width: 2.25rem;
+                height: 2.25rem;
+                font-size: 1rem;
+            }
+        }
+
+        .timeline-node-circle.is-completed {
+            background-color: var(--accent-green);
+            color: #050805;
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        .timeline-node-circle.is-current {
+            background: linear-gradient(to right, #00C853, #00E676);
+            color: #050805;
+            box-shadow: 0 0 20px var(--accent-green);
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        .timeline-node-circle.is-pending {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .timeline-node-label {
+            margin-top: 0.5rem;
+            font-size: 10px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+            max-width: 60px;
+        }
+
+        @@media (min-width: 640px) {
+            .timeline-node-label {
+                font-size: 12px;
+                max-width: none;
+            }
+        }
+
+        /* 2-Column Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @@media (min-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .content-card {
+            padding: 1.25rem;
+            border-radius: 1.5rem;
+            background: rgba(9, 18, 12, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .content-card:hover {
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        @@media (min-width: 640px) {
+            .content-card {
+                padding: 1.5rem;
+            }
+        }
+
+        .card-header-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Runner details */
+        .runner-info-box {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.875rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .runner-avatar-initial {
+            width: 3.25rem;
+            height: 3.25rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #059669, #34d399);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #ffffff;
+            box-shadow: 0 0 18px rgba(0, 230, 118, 0.3);
+            flex-shrink: 0;
+        }
+
+        .runner-chat-btn {
+            width: 100%;
+            background: linear-gradient(to right, #00C853, #00E676);
+            color: #050805;
+            font-weight: 800;
+            font-size: 0.875rem;
+            padding: 0.875rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .runner-chat-btn:hover {
+            color: #050805;
+            box-shadow: 0 0 28px rgba(0, 230, 118, 0.5);
+            transform: scale(1.01);
+        }
+
+        /* Route cards */
+        .route-step-card {
+            padding: 0.875rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Items list */
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.75rem;
+        }
+
+        .item-qty-badge {
+            color: var(--accent-green);
+            font-weight: 900;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.375rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            position: relative;
+            width: 100%;
+            max-width: 24rem;
+            border-radius: 1.5rem;
+            background: #0a100c;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Runner Simulation Panel */
+        .runner-sim-panel {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 1.5rem;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Animations */
+        @@keyframes radar-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @@keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.96); }
+        }
+
+        @@keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        @@keyframes sound-bounce {
+            0% { transform: scaleY(0.4); }
+            100% { transform: scaleY(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tracker-container">
+
+        <!-- ── Top Nav / Breadcrumb Toolbar ── -->
+        <div class="top-nav">
+            <a href="/Deliveries" class="back-link">
+                <i class="bi bi-arrow-left" style="color: #00E676;"></i>
+                Back to My Requests
+            </a>
+
+            <div class="network-badge">
+                <span class="network-dot"></span>
+                UniVerse Runner Network
+            </div>
+        </div>
+
+        <!-- ── Radar Header Toolbar ── -->
+        <div class="radar-toolbar">
+            <div class="radar-status-label">
+                <div class="beacon-dot-wrap">
+                    <span class="beacon-core-dot"></span>
+                    <span class="beacon-ping-ring"></span>
+                </div>
+                <span class="radar-title">
+                    Live Campus Radar
+                    <span style="color: rgba(255,255,255,0.3); font-weight: normal;">•</span>
+                    <span class="radar-subtitle">Real-Time Sync</span>
                 </span>
             </div>
 
-            <!-- Main Order Card -->
-            <div class="universe-card p-4 p-md-5 mb-4">
-                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
-                    <div>
-                        <h2 class="fw-bold text-white mb-1">@Model.PickupLocation</h2>
-                        <div class="text-secondary small">
-                            <i class="bi bi-clock me-1"></i> Requested: @DateTime.Parse(Model.CreatedAt).ToLocalTime().ToString("f")
+            <div class="toolbar-actions">
+                <button type="button" id="btnShareLink" class="toolbar-btn" title="Copy Request Link to Share">
+                    <i class="bi bi-link-45deg" id="iconShare"></i>
+                    <span id="textShare">Share Link</span>
+                </button>
+
+                <button type="button" id="btnToggleSound" class="toolbar-btn active-chime" title="Notification sound active">
+                    <i class="bi bi-volume-up-fill" style="color: #00E676;" id="iconAudio"></i>
+                    <span id="textAudio">Chime Active</span>
+                    <span class="audio-bars" id="barsAudio">
+                        <span class="audio-bar"></span>
+                        <span class="audio-bar"></span>
+                        <span class="audio-bar"></span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Match Celebration Banner (Pop-in upon runner assignment) ── -->
+        <div id="matchCelebration" style="display: none; margin-bottom: 1.5rem; padding: 1.25rem; border-radius: 1.5rem; background: linear-gradient(to right, rgba(16,185,129,0.25), #0c1f14, rgba(16,185,129,0.25)); border: 2px solid #00E676; box-shadow: 0 0 40px rgba(0,230,118,0.4); align-items: center; justify-content: space-between; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.875rem;">
+                <div style="width: 44px; height: 44px; border-radius: 1rem; background: linear-gradient(135deg, #00C853, #00E676); color: #050805; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; box-shadow: 0 0 20px #00E676;">
+                    ⚡
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 900; color: #ffffff;">Runner Found & Matched!</h3>
+                    <p style="font-size: 0.75rem; color: #6ee7b7;" id="matchRunnerText">
+                        A campus runner has accepted your request and is heading to the pickup spot.
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('matchCelebration').style.display='none'" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.25rem; cursor: pointer;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        @if (Model.Status == "pending")
+        {
+            <!-- ============================================================ -->
+            <!-- ── CASE 1: SCI-FI / RAPIDO CAMPUS RADAR (PENDING STATE) ─── -->
+            <!-- ============================================================ -->
+            <div class="radar-card">
+                <div class="radar-glow"></div>
+
+                <!-- Tactical Corner Reticles -->
+                <div class="reticle-tl"></div>
+                <div class="reticle-tr"></div>
+                <div class="reticle-bl"></div>
+                <div class="reticle-br"></div>
+
+                <!-- Frequency Tags -->
+                <div class="radar-freq-bar">
+                    <span style="display: none;" class="d-sm-inline">RADAR FREQ: 5.8 GHz // CH-04</span>
+                    <span class="freq-badge">● 14 CAMPUS RUNNERS NEARBY</span>
+                    <span style="display: none;" class="d-sm-inline">CAMPUS MESH: ~500m</span>
+                </div>
+
+                <!-- ── High-Tech Circular Holographic Radar ── -->
+                <div class="radar-scope">
+                    <div class="radar-ring-4"></div>
+                    <div class="radar-ring-3"></div>
+                    <span class="range-label-300">300m</span>
+
+                    <div class="radar-ring-2"></div>
+                    <span class="range-label-200">200m</span>
+
+                    <div class="radar-ring-1"></div>
+
+                    <!-- Crosshairs -->
+                    <div class="radar-crosshair-h"></div>
+                    <div class="radar-crosshair-v"></div>
+
+                    <!-- Cardinals -->
+                    <span class="cardinal-label cardinal-n">N</span>
+                    <span class="cardinal-label cardinal-s">S</span>
+                    <span class="cardinal-label cardinal-e">E</span>
+                    <span class="cardinal-label cardinal-w">W</span>
+
+                    <!-- Rotating Radar Sweep Cone -->
+                    <div class="radar-sweep-cone">
+                        <div class="radar-sweep-gradient"></div>
+                    </div>
+
+                    <!-- Simulated Active Runner Pings -->
+                    <div class="blip-1">
+                        <div class="blip-dot-wrap">
+                            <span class="blip-core"></span>
+                            <span class="blip-ping"></span>
+                        </div>
+                        <span class="blip-tag">Runner • 140m</span>
+                    </div>
+
+                    <div class="blip-2">
+                        <div class="blip-dot-wrap">
+                            <span class="blip-core" style="width: 8px; height: 8px;"></span>
+                        </div>
+                        <span class="blip-tag">Runner • 220m</span>
+                    </div>
+
+                    <div class="blip-3">
+                        <div class="blip-core" style="width: 6px; height: 6px;"></div>
+                    </div>
+
+                    <!-- Central Beacon -->
+                    <div class="central-beacon">
+                        <div class="beacon-ping-outer"></div>
+                        <div class="beacon-pulse-border"></div>
+                        <div class="beacon-core-box">
+                            <i class="bi bi-shop"></i>
                         </div>
                     </div>
-                    <div class="text-end">
-                        <span class="fs-3 fw-bold text-success">₹@Model.TotalEstimatedAmount.ToString("F2")</span>
-                        <small class="text-muted d-block">+ ₹@Model.DeliveryFee.ToString("F2") Runner Fee</small>
-                    </div>
                 </div>
 
-                <!-- Status Progress Bar -->
-                <div class="my-4">
-                    <div class="d-flex justify-content-between text-secondary small fw-semibold mb-2">
-                        <span class="@(progressPercent >= 20 ? "text-success fw-bold" : "")">Pending</span>
-                        <span class="@(progressPercent >= 40 ? "text-success fw-bold" : "")">Accepted</span>
-                        <span class="@(progressPercent >= 65 ? "text-success fw-bold" : "")">Picked Up</span>
-                        <span class="@(progressPercent >= 85 ? "text-success fw-bold" : "")">In Transit</span>
-                        <span class="@(progressPercent >= 100 ? "text-success fw-bold" : "")">Delivered</span>
-                    </div>
-                    <div class="progress bg-dark" style="height: 10px;">
-                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: @progressPercent%"></div>
-                    </div>
-                </div>
-
-                <!-- Delivery OTP Banner (Visible to Requester and Runner) -->
-                @if (!string.IsNullOrEmpty(Model.DeliveryOtp))
-                {
-                    <div class="p-3 rounded-3 mb-4 text-center border border-warning border-opacity-50" style="background: rgba(245, 158, 11, 0.1);">
-                        <small class="text-warning text-uppercase fw-bold d-block mb-1">
-                            <i class="bi bi-shield-check me-1"></i> 6-DIGIT DELIVERY CONFIRMATION OTP
-                        </small>
-                        <span class="font-monospace fs-2 fw-bolder text-white tracking-wider">
-                            @Model.DeliveryOtp
+                <!-- Status Badge & Dynamic Headline -->
+                <div style="position: relative; z-index: 10; max-width: 580px; width: 100%;">
+                    <div class="radar-broadcast-pill">
+                        <span style="position: relative; display: flex; width: 8px; height: 8px;">
+                            <span style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #34d399; animation: ping 1.2s infinite; opacity: 0.75;"></span>
+                            <span style="position: relative; width: 8px; height: 8px; border-radius: 50%; background: #00E676;"></span>
                         </span>
-                        <p class="text-secondary small mb-0 mt-1">
-                            Share this OTP with the runner when they arrive at your room to confirm receipt.
+                        Broadcasting on Campus Network
+                    </div>
+
+                    <h2 class="radar-headline">Looking for Student Runners</h2>
+
+                    <!-- High-Tech Route Flow Ribbon -->
+                    <div class="route-ribbon">
+                        <div class="route-point">
+                            <div class="route-icon-box">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div style="min-width: 0;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Pickup</span>
+                                <strong style="color: #ffffff; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">@Model.PickupLocation</strong>
+                            </div>
+                        </div>
+
+                        <div class="route-arrow-flow">
+                            <i class="bi bi-arrow-right"></i>
+                            <i class="bi bi-arrow-right d-none d-sm-inline" style="opacity: 0.7;"></i>
+                        </div>
+
+                        <div class="route-point route-point-dest">
+                            <div style="min-width: 0;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Deliver To</span>
+                                <strong style="color: #00E676; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">@Model.DropoffLocation</strong>
+                            </div>
+                            <div class="route-icon-box">
+                                <i class="bi bi-send-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Order Items Drawer -->
+                    @if (Model.Items != null && Model.Items.Count > 0)
+                    {
+                        <div style="width: 100%; max-width: 580px; margin: 0 auto;">
+                            <button type="button" class="items-drawer-btn" id="btnToggleItems">
+                                <span style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
+                                    <i class="bi bi-box-seam" style="color: #34d399;"></i>
+                                    <strong style="color: #ffffff;">@Model.Items.Count @(Model.Items.Count == 1 ? "Item" : "Items"):</strong>
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #d4d4d8; font-size: 11px;">
+                                        @string.Join(", ", Model.Items.Select(i => $"{i.Quantity}x {i.Name}"))
+                                    </span>
+                                </span>
+                                <span style="color: #34d399; font-family: var(--font-mono); font-size: 11px; margin-left: 0.5rem;" id="drawerArrow">
+                                    ~₹@Model.TotalEstimatedAmount.ToString("F0") ▼
+                                </span>
+                            </button>
+
+                            <div class="items-drawer-content" id="itemsDrawerContent" style="display: none;">
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 160px; overflow-y: auto; padding-right: 0.25rem;">
+                                    @foreach (var itm in Model.Items)
+                                    {
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                                            <span style="color: #ffffff; font-weight: 500;">
+                                                <span style="color: #00E676; font-family: var(--font-mono); font-weight: 700; margin-right: 0.35rem;">@itm.Quantity x</span>
+                                                @itm.Name
+                                            </span>
+                                            <span style="color: #34d399; font-family: var(--font-mono);">
+                                                @(itm.EstimatedPrice > 0 ? $"~₹{(itm.EstimatedPrice * itm.Quantity):F0}" : "Custom")
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                                    <span>Estimated Items Total</span>
+                                    <strong style="color: #ffffff; font-family: var(--font-mono);">~₹@Model.TotalEstimatedAmount.ToString("F2")</strong>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Live Metrics HUD -->
+                <div class="metrics-hud">
+                    <div class="hud-tile">
+                        <div class="hud-label">
+                            <i class="bi bi-clock" style="color: #34d399;"></i> Duration
+                        </div>
+                        <span class="hud-value" style="color: #ffffff;" id="hudTimer">0:00</span>
+                        <span style="font-size: 10px; color: rgba(52,211,153,0.8); margin-top: 2px;">● Live Timer</span>
+                    </div>
+
+                    <div class="hud-tile">
+                        <div class="hud-label">
+                            <i class="bi bi-activity" style="color: #00E676;"></i> Est. Match
+                        </div>
+                        <span class="hud-value" style="color: #00E676;">~2–4 min</span>
+                        <span style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">High Density</span>
+                    </div>
+
+                    <div class="hud-tile">
+                        <div class="hud-label">
+                            <i class="bi bi-shield-check" style="color: #34d399;"></i> Reward
+                        </div>
+                        <span class="hud-value" style="color: #ffffff;" id="hudReward">₹@Model.DeliveryFee.ToString("F0")</span>
+                        <span style="font-size: 10px; color: rgba(52,211,153,0.8); margin-top: 2px;">Escrow Locked</span>
+                    </div>
+                </div>
+
+                <!-- Quick Tip Booster Banner -->
+                <div class="booster-banner">
+                    <div>
+                        <p style="font-size: 0.75rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                            <i class="bi bi-fire" style="color: #00E676;"></i>
+                            Turbocharge Matching Speed
+                        </p>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                            Add an extra tip to move your order to the top of nearby runners' screens.
                         </p>
                     </div>
-                }
 
-                <!-- Location Details -->
-                <div class="row g-3 my-2">
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
-                            <small class="text-muted d-block mb-1">PICKUP LOCATION</small>
-                            <span class="text-white fw-semibold"><i class="bi bi-shop me-1 text-warning"></i> @Model.PickupLocation</span>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
-                            <small class="text-muted d-block mb-1">DROPOFF HOSTEL ROOM</small>
-                            <span class="text-white fw-semibold"><i class="bi bi-geo-alt-fill me-1 text-danger"></i> @Model.DropoffLocation</span>
-                        </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                        <button type="button" class="boost-btn-sub" onclick="handleBoost(5)">
+                            +₹5 Boost
+                        </button>
+                        <button type="button" class="boost-btn-turbo" onclick="handleBoost(10)">
+                            +₹10 Turbo ⚡
+                        </button>
                     </div>
                 </div>
 
-                <!-- Items Table -->
-                <div class="mt-4">
-                    <h5 class="fw-bold text-white mb-3">Items in this Delivery</h5>
-                    <div class="table-responsive">
-                        <table class="table table-dark table-borderless align-middle mb-0">
-                            <thead class="border-bottom border-white border-opacity-10 text-secondary small text-uppercase">
-                                <tr>
-                                    <th>Item</th>
-                                    <th class="text-center">Qty</th>
-                                    <th class="text-end">Est. Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var itm in Model.Items)
-                                {
-                                    <tr>
-                                        <td class="text-white fw-semibold">
-                                            @itm.Name
-                                            @if (!string.IsNullOrEmpty(itm.Notes))
-                                            {
-                                                <small class="text-muted d-block">@itm.Notes</small>
-                                            }
-                                        </td>
-                                        <td class="text-center text-white">@itm.Quantity</td>
-                                        <td class="text-end text-success fw-bold">₹@itm.EstimatedPrice.ToString("F2")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <!-- Boost Feedback Message -->
+                <div id="boostFeedback" style="display: none; margin-top: 0.75rem; padding: 0.35rem 1rem; border-radius: 9999px; background: rgba(0,230,118,0.2); border: 1px solid rgba(0,230,118,0.4); color: #00E676; font-size: 0.75rem; font-weight: 700;"></div>
 
-                <!-- Student Parties -->
-                <div class="row g-3 mt-4 pt-3 border-top border-white border-opacity-10">
-                    <div class="col-sm-6">
-                        <small class="text-muted d-block">Requester Student</small>
-                        <span class="text-white fw-semibold">@Model.RequesterName</span>
-                        @if (!string.IsNullOrEmpty(Model.RequesterPhone))
+                <!-- Cancel Option -->
+                <div style="margin-top: 1.5rem;">
+                    <button type="button" onclick="showCancelModal()" style="background: none; border: none; font-size: 0.75rem; color: rgba(248,113,113,0.8); text-decoration: underline; cursor: pointer;">
+                        Cancel this request
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- ============================================================ -->
+            <!-- ── CASE 2: ACTIVE ORDER TRACKER (MATCHED / TRANSIT / DONE) ─ -->
+            <!-- ============================================================ -->
+            <div class="status-alert-banner @(Model.Status == "delivered" ? "is-delivered" : Model.Status == "cancelled" ? "is-cancelled" : "")">
+                <div style="display: flex; align-items: center; gap: 0.875rem;">
+                    <div class="status-icon-box">
+                        @if (Model.Status == "delivered")
                         {
-                            <span class="text-secondary small d-block">@Model.RequesterPhone</span>
+                            <i class="bi bi-check2-circle" style="color: #00E676;"></i>
                         }
-                    </div>
-                    <div class="col-sm-6">
-                        <small class="text-muted d-block">Assigned Runner</small>
-                        @if (!string.IsNullOrEmpty(Model.RunnerName))
+                        else if (Model.Status == "cancelled")
                         {
-                            <span class="text-white fw-semibold">@Model.RunnerName</span>
-                            @if (!string.IsNullOrEmpty(Model.RunnerPhone))
-                            {
-                                <span class="text-secondary small d-block">@Model.RunnerPhone</span>
-                            }
+                            <i class="bi bi-x-circle" style="color: #f87171;"></i>
                         }
                         else
                         {
-                            <span class="text-warning small fst-italic">Waiting for a runner to accept...</span>
+                            <i class="bi bi-truck" style="color: #00E676;"></i>
                         }
+                    </div>
+
+                    <div>
+                        <h2 style="font-size: 1.125rem; font-weight: 800; color: #ffffff;">
+                            @if (Model.Status == "accepted")
+                            {
+                                @:Runner Matched & Heading to Pickup
+                            }
+                            else if (Model.Status == "picked_up")
+                            {
+                                @:Items Picked Up from Spot
+                            }
+                            else if (Model.Status == "in_transit")
+                            {
+                                @:Runner On the Way to Your Room
+                            }
+                            else if (Model.Status == "delivered")
+                            {
+                                @:Order Delivered Successfully! 🎉
+                            }
+                            else if (Model.Status == "cancelled")
+                            {
+                                @:Request Cancelled
+                            }
+                        </h2>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                            @if (Model.Status == "accepted")
+                            {
+                                @:Runner is collecting your items. Keep your Handover PIN ready.
+                            }
+                            else if (Model.Status == "picked_up")
+                            {
+                                @:Items safely collected and heading towards your hostel.
+                            }
+                            else if (Model.Status == "in_transit")
+                            {
+                                @:Runner is arriving at @Model.DropoffLocation.
+                            }
+                            else if (Model.Status == "delivered")
+                            {
+                                @:Escrow delivery reward has been released to your runner.
+                            }
+                            else if (Model.Status == "cancelled")
+                            {
+                                @:This delivery request has been closed.
+                            }
+                        </p>
                     </div>
                 </div>
 
-                <!-- Runner Action Bar -->
-                @if (isAssignedRunner && Model.Status != "delivered" && Model.Status != "cancelled")
+                <div style="text-align: right; flex-shrink: 0;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Runner Reward</span>
+                    <span style="font-size: 1.5rem; font-weight: 900; color: #00E676; font-family: var(--font-mono);">₹@Model.DeliveryFee.ToString("F0")</span>
+                </div>
+            </div>
+
+            <!-- Handover Security PIN Card (Visible until delivered/cancelled) -->
+            @if (Model.Status != "delivered" && Model.Status != "cancelled")
+            {
+                <div class="pin-security-card">
+                    <div style="text-align: left; max-width: 420px;">
+                        <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.75rem; border-radius: 9999px; background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); font-size: 11px; font-weight: 900; text-transform: uppercase; color: #6ee7b7; margin-bottom: 0.5rem;">
+                            <i class="bi bi-shield-check" style="color: #00E676;"></i>
+                            Delivery Handover PIN
+                        </div>
+                        <h3 style="font-size: 1.125rem; font-weight: 900; color: #ffffff; margin-bottom: 0.25rem;">
+                            Share this PIN with your runner
+                        </h3>
+                        <p style="font-size: 0.75rem; color: #d4d4d8; line-height: 1.4;">
+                            The runner cannot complete this order or claim payment without this PIN. Share it only when you physically receive your items.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="pin-digit-group">
+                            @foreach (var digit in displayPin.ToCharArray())
+                            {
+                                <div class="pin-digit-box">@digit</div>
+                            }
+                        </div>
+
+                        <button type="button" id="btnCopyOtp" class="toolbar-btn" style="padding: 0.875rem; border-radius: 0.875rem;" title="Copy PIN">
+                            <i class="bi bi-clipboard" id="iconCopyOtp"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <!-- Dynamic Stages Timeline -->
+            <div class="timeline-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Live Order Progress
+                    </span>
+                    <span style="color: #00E676; font-family: var(--font-mono); font-size: 11px;">
+                        Stage @(currentStageIndex + 1) of 5
+                    </span>
+                </div>
+
+                <div class="timeline-track-wrap">
+                    <div class="timeline-track-bg"></div>
+                    <div class="timeline-track-fill" style="width: calc(@(currentStageIndex * 25)% + 4px);"></div>
+
+                    @for (int i = 0; i < stageList.Length; i++)
+                    {
+                        var st = stageList[i];
+                        bool isCompleted = i < currentStageIndex;
+                        bool isCurrent = i == currentStageIndex;
+
+                        <div class="timeline-node">
+                            <div class="timeline-node-circle @(isCompleted ? "is-completed" : isCurrent ? "is-current" : "is-pending")">
+                                <i class="bi @st.Icon"></i>
+                            </div>
+                            <span class="timeline-node-label" style="color: @(isCurrent ? "#00E676" : isCompleted ? "#ffffff" : "rgba(255,255,255,0.3)");">
+                                @st.Label
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- ============================================================ -->
+        <!-- ── RUNNER PROFILE & DETAILS SECTION ──────────────────────── -->
+        <!-- ============================================================ -->
+        <div class="details-grid">
+            <!-- Left Column: Runner Information & Route -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Assigned Student Runner Card -->
+                <div class="content-card">
+                    <span class="card-header-tag">
+                        <i class="bi bi-person"></i> Assigned Student Runner
+                    </span>
+
+                    @if (!string.IsNullOrEmpty(Model.RunnerName))
+                    {
+                        <div class="runner-info-box">
+                            <div class="runner-avatar-initial">
+                                @Model.RunnerName.Substring(0, 1).ToUpper()
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <strong style="color: #ffffff; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        @Model.RunnerName
+                                    </strong>
+                                    <span style="font-size: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px;">
+                                        Verified
+                                    </span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                    Campus Student Runner • UniVerse Verified
+                                </p>
+                                @if (!string.IsNullOrEmpty(Model.RunnerPhone))
+                                {
+                                    <p style="font-size: 0.75rem; color: #34d399; font-family: var(--font-mono); margin-top: 2px;">
+                                        <i class="bi bi-telephone me-1"></i> @Model.RunnerPhone
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                        <a href="/Dashboard/Chat" class="runner-chat-btn">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            Message @Model.RunnerName.Split(' ')[0]
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <div style="padding: 1.5rem; border-radius: 1rem; background: rgba(0,0,0,0.5); border: 1px dashed rgba(16,185,129,0.25); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.625rem;">
+                            <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); display: flex; align-items: center; justify-content: center; color: #00E676;">
+                                <i class="bi bi-broadcast"></i>
+                            </div>
+                            <strong style="color: #ffffff; font-size: 0.875rem;">Awaiting Runner Pickup</strong>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); max-width: 260px;">
+                                Nearby campus runners have received your request notification. You will hear an instant audio chime when matched.
+                            </p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Logistics Route Card -->
+                <div class="content-card">
+                    <span class="card-header-tag">
+                        <i class="bi bi-geo-alt"></i> Logistics Route
+                    </span>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                        <div class="route-step-card">
+                            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="bi bi-shop" style="color: #34d399;"></i> Pickup Spot
+                            </span>
+                            <p style="font-size: 0.875rem; font-weight: 800; color: #ffffff; margin-top: 2px;">
+                                @Model.PickupLocation
+                            </p>
+                        </div>
+
+                        <div class="route-step-card">
+                            <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="bi bi-send-fill" style="color: #00E676;"></i> Destination Room
+                            </span>
+                            <p style="font-size: 0.875rem; font-weight: 800; color: #00E676; margin-top: 2px;">
+                                @Model.DropoffLocation
+                            </p>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Instructions))
+                        {
+                            <div class="route-step-card" style="background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2);">
+                                <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+                                    <i class="bi bi-file-text"></i> Notes for Runner
+                                </span>
+                                <p style="color: #d4d4d8; font-size: 0.75rem; font-style: italic; margin-top: 2px;">
+                                    @Model.Instructions
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Requested Items & Financial Breakdown -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="card-header-tag">
+                            <i class="bi bi-box-seam"></i> Requested Items (@(Model.Items?.Count ?? 0))
+                        </span>
+                        <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">
+                            Est. ~₹@Model.TotalEstimatedAmount.ToString("F2")
+                        </span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto;">
+                        @if (Model.Items != null)
+                        {
+                            @foreach (var itm in Model.Items)
+                            {
+                                <div class="item-row">
+                                    <div style="display: flex; align-items: center;">
+                                        <span class="item-qty-badge">@itm.Quantity x</span>
+                                        <span style="color: #ffffff; font-weight: 600;">@itm.Name</span>
+                                    </div>
+                                    <span style="color: #34d399; font-family: var(--font-mono); font-weight: 700;">
+                                        @(itm.EstimatedPrice > 0 ? $"~₹{(itm.EstimatedPrice * itm.Quantity):F2}" : "Custom")
+                                    </span>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div style="padding-top: 0.875rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.625rem; font-size: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                            <span>Estimated Items Cost</span>
+                            <span style="font-family: var(--font-mono); color: #ffffff;">~₹@Model.TotalEstimatedAmount.ToString("F2")</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                            <span>Campus Runner Reward</span>
+                            <span style="font-family: var(--font-mono); color: #00E676; font-weight: 700;">₹@Model.DeliveryFee.ToString("F2")</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: #ffffff; font-weight: 700; padding-top: 0.625rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.875rem;">
+                            <span>Total Expected Amount</span>
+                            <span style="font-family: var(--font-mono); color: #00E676; font-size: 1rem;">
+                                ~₹@((Model.TotalEstimatedAmount + Model.DeliveryFee).ToString("F2"))
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Meta Card -->
+                <div style="padding: 1rem 1.25rem; border-radius: 1.5rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(8px);">
+                    <span>
+                        Request ID:
+                        <strong style="color: #ffffff; font-family: var(--font-mono);">
+                            #@Model.Id.Substring(0, Math.Min(8, Model.Id.Length)).ToUpper()
+                        </strong>
+                    </span>
+                    <span style="font-family: var(--font-mono);">
+                        @(createdAtParsed != default ? createdAtParsed.ToString("MMM d, h:mm tt") : Model.CreatedAt)
+                    </span>
+                </div>
+
+                @if (new[] { "accepted", "picked_up", "in_transit" }.Contains(Model.Status))
                 {
-                    <div class="mt-4 pt-4 border-top border-success border-opacity-25">
-                        <h6 class="text-success fw-bold mb-3"><i class="bi bi-lightning-charge me-1"></i> RUNNER CONTROLS</h6>
-                        <div class="d-flex gap-2 flex-wrap">
+                    <div style="text-align: center; padding-top: 0.5rem;">
+                        <button type="button" onclick="showCancelModal()" style="background: none; border: none; font-size: 0.75rem; color: rgba(248,113,113,0.7); text-decoration: underline; cursor: pointer;">
+                            Cancel this order (Runner Inactive / Abandoned)
+                        </button>
+                    </div>
+                }
+
+                <!-- Runner Controls (For demonstration and evaluation) -->
+                @if (Model.Status != "delivered" && Model.Status != "cancelled")
+                {
+                    <div class="runner-sim-panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <span style="font-size: 11px; font-weight: 800; color: #00E676; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.35rem;">
+                                <i class="bi bi-lightning-charge-fill"></i> Runner / Viva Simulation Bar
+                            </span>
+                            <span style="font-size: 10px; color: var(--text-muted);">Demo Control</span>
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            @if (Model.Status == "pending")
+                            {
+                                <form asp-action="AcceptDelivery" method="post" style="display: inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <button type="submit" class="boost-btn-turbo" style="padding: 0.4rem 0.75rem;">
+                                        ⚡ Accept as Campus Runner
+                                    </button>
+                                </form>
+                            }
                             @if (Model.Status == "accepted")
                             {
-                                <form asp-action="UpdateStatus" method="post">
+                                <form asp-action="UpdateStatus" method="post" style="display: inline;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <input type="hidden" name="status" value="picked_up" />
-                                    <button type="submit" class="btn btn-emerald btn-sm">Mark as Picked Up</button>
+                                    <button type="submit" class="boost-btn-turbo" style="padding: 0.4rem 0.75rem;">
+                                        📦 Mark as Picked Up
+                                    </button>
                                 </form>
                             }
                             @if (Model.Status == "picked_up")
                             {
-                                <form asp-action="UpdateStatus" method="post">
+                                <form asp-action="UpdateStatus" method="post" style="display: inline;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
                                     <input type="hidden" name="status" value="in_transit" />
-                                    <button type="submit" class="btn btn-emerald btn-sm">Mark In Transit to Hostel</button>
+                                    <button type="submit" class="boost-btn-turbo" style="padding: 0.4rem 0.75rem;">
+                                        🚚 Mark In Transit
+                                    </button>
                                 </form>
                             }
                             @if (Model.Status == "in_transit")
                             {
-                                <form asp-action="CompleteDelivery" method="post" class="d-flex gap-2 align-items-center">
+                                <form asp-action="CompleteDelivery" method="post" style="display: flex; gap: 0.5rem; align-items: center;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@Model.Id" />
-                                    <input type="text" name="otp" class="form-control form-control-sm" placeholder="Enter 6-digit OTP" required style="width: 160px;" />
-                                    <button type="submit" class="btn btn-emerald btn-sm">Confirm Delivery</button>
+                                    <input type="text" name="otp" value="@displayPin" class="boost-btn-sub" style="width: 110px; text-align: center; letter-spacing: 2px;" placeholder="OTP" required />
+                                    <button type="submit" class="boost-btn-turbo" style="padding: 0.4rem 0.75rem;">
+                                        ✅ Confirm Delivery
+                                    </button>
                                 </form>
                             }
                         </div>
@@ -185,5 +1849,240 @@
                 }
             </div>
         </div>
+
     </div>
-</div>
+
+    <!-- ── Cancel Confirmation Modal ── -->
+    <div id="cancelModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-box">
+            <div style="width: 3rem; height: 3rem; border-radius: 1rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                ⚠️
+            </div>
+
+            <h3 style="font-size: 1.125rem; font-weight: 900; color: #ffffff; margin-bottom: 0.5rem;">Cancel This Request?</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem;">
+                Runners are actively scanning the network. If you cancel, this order will be permanently closed.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.625rem;">
+                <button type="button" onclick="hideCancelModal()" class="toolbar-btn" style="width: 100%; justify-content: center; padding: 0.625rem;">
+                    Keep Waiting
+                </button>
+                <button type="button" onclick="executeCancel()" style="width: 100%; padding: 0.625rem; border-radius: 0.75rem; background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-weight: 900; font-size: 0.75rem; cursor: pointer;">
+                    Yes, Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Audio Synthesizer & Dynamic Scripts ── -->
+    <script>
+        const requestId = '@Model.Id';
+        let currentStatus = '@Model.Status';
+        let soundEnabled = true;
+        let elapsedSeconds = 0;
+
+        // Web Audio Synthesizer for cheerful campus chime
+        function playNotificationChime() {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 cheerful progression
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
+                    gain.gain.setValueAtTime(0.001, ctx.currentTime + idx * 0.12);
+                    gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + idx * 0.12 + 0.03);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.35);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + idx * 0.12);
+                    osc.stop(ctx.currentTime + idx * 0.12 + 0.36);
+                });
+            } catch (e) {
+                console.log("Audio autoplay restricted:", e);
+            }
+        }
+
+        // Live timer for pending state
+        if (currentStatus === 'pending') {
+            const timerElem = document.getElementById('hudTimer');
+            if (timerElem) {
+                setInterval(() => {
+                    elapsedSeconds++;
+                    const mins = Math.floor(elapsedSeconds / 60);
+                    const secs = elapsedSeconds % 60;
+                    timerElem.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                }, 1000);
+            }
+        }
+
+        // Sound Toggle
+        const btnToggleSound = document.getElementById('btnToggleSound');
+        const iconAudio = document.getElementById('iconAudio');
+        const textAudio = document.getElementById('textAudio');
+        const barsAudio = document.getElementById('barsAudio');
+
+        if (btnToggleSound) {
+            btnToggleSound.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                if (soundEnabled) {
+                    btnToggleSound.classList.add('active-chime');
+                    iconAudio.className = 'bi bi-volume-up-fill';
+                    iconAudio.style.color = '#00E676';
+                    textAudio.textContent = 'Chime Active';
+                    barsAudio.style.display = 'flex';
+                    playNotificationChime();
+                } else {
+                    btnToggleSound.classList.remove('active-chime');
+                    iconAudio.className = 'bi bi-volume-mute-fill';
+                    iconAudio.style.color = 'rgba(255,255,255,0.4)';
+                    textAudio.textContent = 'Muted';
+                    barsAudio.style.display = 'none';
+                }
+            });
+        }
+
+        // Share Link Copy
+        const btnShareLink = document.getElementById('btnShareLink');
+        const iconShare = document.getElementById('iconShare');
+        const textShare = document.getElementById('textShare');
+
+        if (btnShareLink) {
+            btnShareLink.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    iconShare.className = 'bi bi-check-lg';
+                    iconShare.style.color = '#00E676';
+                    textShare.textContent = 'Link Copied!';
+                    textShare.style.color = '#00E676';
+                    setTimeout(() => {
+                        iconShare.className = 'bi bi-link-45deg';
+                        iconShare.style.color = '';
+                        textShare.textContent = 'Share Link';
+                        textShare.style.color = '';
+                    }, 2000);
+                });
+            });
+        }
+
+        // Copy PIN
+        const btnCopyOtp = document.getElementById('btnCopyOtp');
+        if (btnCopyOtp) {
+            btnCopyOtp.addEventListener('click', () => {
+                const pin = '@displayPin';
+                navigator.clipboard.writeText(pin).then(() => {
+                    const icon = document.getElementById('iconCopyOtp');
+                    if (icon) {
+                        icon.className = 'bi bi-check-lg text-success';
+                        setTimeout(() => {
+                            icon.className = 'bi bi-clipboard';
+                        }, 2000);
+                    }
+                });
+            });
+        }
+
+        // Toggle Items Drawer
+        const btnToggleItems = document.getElementById('btnToggleItems');
+        const itemsDrawerContent = document.getElementById('itemsDrawerContent');
+        const drawerArrow = document.getElementById('drawerArrow');
+
+        if (btnToggleItems && itemsDrawerContent) {
+            btnToggleItems.addEventListener('click', () => {
+                const isHidden = itemsDrawerContent.style.display === 'none';
+                itemsDrawerContent.style.display = isHidden ? 'block' : 'none';
+                if (drawerArrow) {
+                    drawerArrow.textContent = isHidden ? 'Hide ▲' : '~₹@Model.TotalEstimatedAmount.ToString("F0") ▼';
+                }
+            });
+        }
+
+        // Tip Booster (+₹5 or +₹10)
+        async function handleBoost(amount) {
+            try {
+                const formData = new FormData();
+                formData.append('id', requestId);
+                formData.append('amount', amount);
+
+                const res = await fetch('/Delivery/BoostReward', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const hudReward = document.getElementById('hudReward');
+                    if (hudReward) hudReward.textContent = `₹${Math.round(data.newFee)}`;
+
+                    const boostFeedback = document.getElementById('boostFeedback');
+                    if (boostFeedback) {
+                        boostFeedback.textContent = `Reward boosted by +₹${amount}! Now ₹${Math.round(data.newFee)}`;
+                        boostFeedback.style.display = 'inline-block';
+                        setTimeout(() => { boostFeedback.style.display = 'none'; }, 3500);
+                    }
+                    playNotificationChime();
+                }
+            } catch (err) {
+                console.error("Failed to boost reward:", err);
+            }
+        }
+
+        // Cancel modal
+        function showCancelModal() {
+            document.getElementById('cancelModal').style.display = 'flex';
+        }
+
+        function hideCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+
+        async function executeCancel() {
+            try {
+                const formData = new FormData();
+                formData.append('id', requestId);
+                const res = await fetch('/Delivery/Cancel', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error("Failed to cancel order:", err);
+            }
+        }
+
+        // Real-time status sync via Polling every 3.5 seconds
+        setInterval(async () => {
+            try {
+                const res = await fetch(`/api/requests/status/${requestId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status && data.status !== currentStatus) {
+                        playNotificationChime();
+                        if (currentStatus === 'pending' && data.status !== 'pending') {
+                            const celebration = document.getElementById('matchCelebration');
+                            if (celebration) {
+                                celebration.style.display = 'flex';
+                                const text = document.getElementById('matchRunnerText');
+                                if (text && data.runnerName) {
+                                    text.innerHTML = `<strong>${data.runnerName}</strong> accepted your request and is heading to the pickup spot!`;
+                                }
+                            }
+                        }
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1200);
+                    }
+                }
+            } catch (err) {
+                // Silently ignore polling network errors
+            }
+        }, 3500);
+    </script>
+</body>
+</html>

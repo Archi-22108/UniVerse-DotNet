@@ -183,6 +183,24 @@ WHERE id = @requestId AND status = 'pending';";
             return rows > 0;
         }
 
+        public async Task<bool> BoostRewardAsync(string requestId, double boostAmount)
+        {
+            const string sql = @"
+UPDATE delivery_requests
+SET delivery_fee = delivery_fee + @boostAmount, updated_at = @updated_at
+WHERE id = @id;";
+
+            var parameters = new[]
+            {
+                AdoNetDbHelper.CreateParameter("@id", requestId),
+                AdoNetDbHelper.CreateParameter("@boostAmount", boostAmount),
+                AdoNetDbHelper.CreateParameter("@updated_at", DateTime.UtcNow.ToString("o"))
+            };
+
+            int rows = await _db.ExecuteNonQueryAsync(sql, parameters);
+            return rows > 0;
+        }
+
         public async Task<bool> UpdateStatusAsync(string requestId, string status)
         {
             const string sql = @"

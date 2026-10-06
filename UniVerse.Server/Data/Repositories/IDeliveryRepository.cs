@@ -13,6 +13,7 @@ namespace UniVerse.Server.Data.Repositories
         Task<string> CreateRequestAsync(DeliveryRequest request, List<RequestItem> items);
         Task<bool> AssignRunnerAsync(string requestId, string runnerId);
         Task<bool> UpdateStatusAsync(string requestId, string status);
+        Task<bool> BoostRewardAsync(string requestId, double boostAmount);
         Task<(bool Success, string Message, double Reward)> CompleteDeliveryWithOtpAsync(string requestId, string runnerId, string otp);
     }
 }
