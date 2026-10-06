@@ -95,6 +95,22 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
+// Route Aliases for seamless campus navigation
+app.MapControllerRoute(
+    name: "dashboard",
+    pattern: "Dashboard/{action=Index}/{id?}",
+    defaults: new { controller = "Dashboard", action = "Index" });
+
+app.MapControllerRoute(
+    name: "deliveries",
+    pattern: "Deliveries/{action=Index}/{id?}",
+    defaults: new { controller = "Delivery", action = "Index" });
+
+app.MapControllerRoute(
+    name: "new_request",
+    pattern: "request/new",
+    defaults: new { controller = "Delivery", action = "Create" });
+
 // MVC Default Routing: / -> HomeController.Index()
 app.MapControllerRoute(
     name: "default",

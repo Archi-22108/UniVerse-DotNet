@@ -150,4 +150,19 @@ namespace UniVerse.Server.Models.ViewModels
         [Display(Name = "Your Offer Price (₹)")]
         public double OfferPrice { get; set; }
     }
+
+    // ─── Dashboard ViewModels ────────────────────────────────────────────────
+    public class DashboardViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public List<DeliveryRequestDetailDto> AllRequests { get; set; } = new();
+        public List<DeliveryRequestDetailDto> ActiveRequests { get; set; } = new();
+        public List<DeliveryRequestDetailDto> CompletedRequests { get; set; } = new();
+        public List<DeliveryRequestDetailDto> CancelledRequests { get; set; } = new();
+        public List<MarketplaceListingDetailDto> RecentListings { get; set; } = new();
+        public int TotalRequestsCount => AllRequests.Count;
+        public int ActiveRequestsCount => ActiveRequests.Count;
+        public int CompletedRequestsCount => CompletedRequests.Count;
+        public int CancelledRequestsCount => CancelledRequests.Count;
+    }
 }
