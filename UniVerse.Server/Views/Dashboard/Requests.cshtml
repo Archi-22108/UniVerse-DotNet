@@ -1,0 +1,418 @@
+@model UniVerse.Server.Models.ViewModels.RequestsPageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "My Requests";
+    ViewBag.ActivePage = "requests";
+}
+
+@section Styles {
+<style>
+    .uv-req-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .uv-hud-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    @@media (max-width: 860px) {
+        .uv-hud-grid { grid-template-columns: 1fr; }
+    }
+
+    .uv-hud-card {
+        background: rgba(11, 19, 14, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        backdrop-filter: blur(16px);
+        transition: all 0.25s ease;
+    }
+
+    .uv-hud-card.active-hud {
+        border-color: rgba(16, 185, 129, 0.35);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
+    }
+
+    .uv-hud-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: var(--accent-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    /* Filter Controls */
+    .uv-filter-bar {
+        background: rgba(10, 15, 12, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .uv-tabs-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .uv-tab-btn {
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--text-muted);
+        background: transparent;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .uv-tab-btn:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .uv-tab-btn.active {
+        background: rgba(0, 230, 118, 0.12);
+        color: var(--accent-green);
+        border-color: rgba(0, 230, 118, 0.25);
+    }
+
+    .uv-search-box {
+        position: relative;
+        min-width: 260px;
+        flex: 1;
+        max-width: 360px;
+    }
+
+    .uv-search-box input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 9px 14px 9px 38px;
+        color: #fff;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .uv-search-box input:focus {
+        border-color: var(--accent-green);
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .uv-search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+    }
+
+    /* Request Cards */
+    .uv-req-card {
+        background: rgba(11, 18, 14, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 4px solid var(--accent-green);
+        border-radius: 20px;
+        padding: 22px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(16px);
+        transition: all 0.25s ease;
+    }
+
+    .uv-req-card:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .uv-req-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .uv-req-route {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+    }
+
+    @@media (max-width: 600px) {
+        .uv-req-route { grid-template-columns: 1fr; gap: 10px; }
+    }
+
+    .uv-route-col {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .uv-req-items {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.12);
+        border-radius: 12px;
+        font-size: 13px;
+        color: #d1fae5;
+        margin-bottom: 16px;
+    }
+
+    .uv-req-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+</style>
+}
+
+<div style="max-w: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="uv-req-header">
+        <div>
+            <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>My Requests</span>
+                <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+                View, track, and manage your campus delivery orders in real time.
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="/Dashboard/Requests" class="uv-bell-btn" title="Refresh Feed" style="text-decoration: none;">
+                <i class="bi bi-arrow-clockwise" style="color: var(--accent-green); font-size: 16px;"></i>
+            </a>
+            <a href="/Delivery/Create" class="btn-new-request">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Request</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Metrics HUD Banner -->
+    <div class="uv-hud-grid">
+        <!-- 1. Active In Flight -->
+        <div class="uv-hud-card active-hud">
+            <div>
+                <div style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 4px;">
+                    <span class="uv-live-dot"></span>
+                    <span>Active In-Flight</span>
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #fff;">
+                    @Model.ActiveCount @(Model.ActiveCount == 1 ? "Order" : "Orders")
+                </div>
+            </div>
+            <div class="uv-hud-icon">
+                <i class="bi bi-truck"></i>
+            </div>
+        </div>
+
+        <!-- 2. Delivered Safely -->
+        <div class="uv-hud-card">
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; margin-bottom: 4px;">
+                    Delivered Safely
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #fff;">
+                    @Model.CompletedCount @(Model.CompletedCount == 1 ? "Order" : "Orders")
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #fff;">
+                <i class="bi bi-check2-circle"></i>
+            </div>
+        </div>
+
+        <!-- 3. Campus Peer Network -->
+        <div class="uv-hud-card">
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #38BDF8; text-transform: uppercase; margin-bottom: 4px;">
+                    Avg. Delivery
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 20px; font-weight: 800; color: #fff;">
+                    ~15 mins
+                </div>
+                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
+                    Verified Student Peers
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.25); color: #38BDF8;">
+                <i class="bi bi-shield-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar & Search -->
+    <div class="uv-filter-bar">
+        <div class="uv-tabs-wrap">
+            <a href="/Dashboard/Requests?tab=all" class="uv-tab-btn @(Model.SelectedTab == "all" ? "active" : "")">
+                All Orders (@Model.Requests.Count)
+            </a>
+            <a href="/Dashboard/Requests?tab=active" class="uv-tab-btn @(Model.SelectedTab == "active" ? "active" : "")">
+                ● Active (@Model.ActiveCount)
+            </a>
+            <a href="/Dashboard/Requests?tab=completed" class="uv-tab-btn @(Model.SelectedTab == "completed" ? "active" : "")">
+                Completed (@Model.CompletedCount)
+            </a>
+            <a href="/Dashboard/Requests?tab=cancelled" class="uv-tab-btn @(Model.SelectedTab == "cancelled" ? "active" : "")">
+                Cancelled (@Model.CancelledCount)
+            </a>
+        </div>
+
+        <form method="get" action="/Dashboard/Requests" class="uv-search-box">
+            <input type="hidden" name="tab" value="@Model.SelectedTab" />
+            <i class="bi bi-search"></i>
+            <input type="text" name="q" value="@Model.SearchQuery" placeholder="Search orders or items..." />
+        </form>
+    </div>
+
+    <!-- Requests List -->
+    @if (Model.Requests.Count == 0)
+    {
+        <div style="text-align: center; padding: 64px 20px; background: rgba(10, 15, 12, 0.5); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 24px;">
+            <i class="bi bi-inbox" style="font-size: 42px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 14px;"></i>
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">No delivery requests found</h3>
+            <p style="color: var(--text-muted); font-size: 13px; max-width: 400px; margin: 0 auto 20px auto;">
+                There are no orders matching this filter. Place your first campus delivery order!
+            </p>
+            <a href="/Delivery/Create" class="btn-new-request" style="display: inline-flex;">
+                <i class="bi bi-plus-lg"></i>
+                <span>Order Now</span>
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var req in Model.Requests)
+        {
+            var isPending = req.Status == "pending";
+            var isDelivered = req.Status == "delivered";
+            var isCancelled = req.Status == "cancelled";
+
+            <div class="uv-req-card" style="border-left-color: @(isPending ? "#F59E0B" : isDelivered ? "#00E676" : isCancelled ? "#ef4444" : "#38BDF8")">
+                <div class="uv-req-top">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="uv-status-pill @(isPending ? "uv-status-pending" : isDelivered ? "uv-status-active" : "")" style="background: @(isCancelled ? "rgba(239, 68, 68, 0.15)" : ""); color: @(isCancelled ? "#ef4444" : ""); border: 1px solid @(isCancelled ? "rgba(239, 68, 68, 0.3)" : "transparent")">
+                            @(req.Status.Replace("_", " "))
+                        </span>
+                        @if (!string.IsNullOrEmpty(req.DeliveryOtp))
+                        {
+                            <span class="uv-pin-pill" title="Give this OTP to runner upon delivery">
+                                🔐 PIN: @req.DeliveryOtp
+                            </span>
+                        }
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="font-family: var(--font-mono); font-size: 13px; font-weight: 800; color: var(--accent-green);">
+                            +₹@req.DeliveryFee.ToString("F0") Tip
+                        </span>
+                        <span style="font-size: 11.5px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
+                            @req.CreatedAt
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Pickup & Dropoff Route -->
+                <div class="uv-req-route">
+                    <div class="uv-route-col">
+                        <i class="bi bi-geo-alt-fill" style="color: #F59E0B; font-size: 16px; margin-top: 2px;"></i>
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4); text-transform: uppercase; display: block;">Pickup Point</span>
+                            <span style="font-weight: 700; color: #fff; font-size: 13.5px;">@req.PickupLocation</span>
+                        </div>
+                    </div>
+                    <div class="uv-route-col">
+                        <i class="bi bi-door-closed-fill" style="color: #00E676; font-size: 16px; margin-top: 2px;"></i>
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4); text-transform: uppercase; display: block;">Drop-off Hostel</span>
+                            <span style="font-weight: 700; color: #fff; font-size: 13.5px;">@req.DropoffLocation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Ordered -->
+                @if (req.Items.Count > 0)
+                {
+                    <div class="uv-req-items">
+                        <i class="bi bi-bag-check-fill" style="color: var(--accent-green);"></i>
+                        <span style="font-weight: 600;">@string.Join(", ", req.Items.Select(i => $"{i.Name} (x{i.Quantity})"))</span>
+                        <span style="margin-left: auto; font-family: var(--font-mono); font-weight: 700; color: #6EE7B7;">
+                            Est: ₹@req.TotalEstimatedAmount.ToString("F0")
+                        </span>
+                    </div>
+                }
+
+                <!-- Footer with Runner & Actions -->
+                <div class="uv-req-foot">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="uv-runner-circle">
+                            @(string.IsNullOrEmpty(req.RunnerName) ? "R" : req.RunnerName.Substring(0, 1))
+                        </div>
+                        <span style="font-size: 12.5px; color: var(--text-muted);">
+                            Runner: <b style="color: #fff;">@(string.IsNullOrEmpty(req.RunnerName) ? "Searching for Peer..." : req.RunnerName)</b>
+                        </span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        @if (isPending)
+                        {
+                            <form method="post" action="/Dashboard/CancelRequest" onsubmit="return confirm('Are you sure you want to cancel this delivery request?');">
+                                <input type="hidden" name="id" value="@req.Id" />
+                                <button type="submit" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px; cursor: pointer;">
+                                    Cancel Order
+                                </button>
+                            </form>
+                        }
+
+                        <a href="/Delivery/Details/@req.Id" class="btn-track-live" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 10px;">
+                            <span>Track Order</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

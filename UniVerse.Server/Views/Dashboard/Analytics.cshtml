@@ -1,0 +1,202 @@
+@model UniVerse.Server.Models.ViewModels.AnalyticsPageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Analytics & Performance";
+    ViewBag.ActivePage = "analytics";
+}
+
+@section Styles {
+<style>
+    .uv-analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    @@media (max-width: 900px) {
+        .uv-analytics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 500px) {
+        .uv-analytics-grid { grid-template-columns: 1fr; }
+    }
+
+    .uv-analytics-chart-box {
+        background: rgba(10, 16, 13, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 28px;
+        backdrop-filter: blur(16px);
+    }
+
+    .uv-volume-bars {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 180px;
+        padding-top: 16px;
+        gap: 16px;
+    }
+
+    .uv-vol-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .uv-vol-bar {
+        width: 100%;
+        max-width: 48px;
+        background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.2) 100%);
+        border-radius: 10px 10px 3px 3px;
+        position: relative;
+        transition: height 0.4s ease;
+    }
+
+    .uv-vol-bar:hover {
+        background: linear-gradient(180deg, #34D399 0%, rgba(52, 211, 153, 0.35) 100%);
+    }
+
+    .uv-vol-bar:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #050A07;
+        border: 1px solid var(--accent-green);
+        color: var(--accent-green);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    .uv-progress-line {
+        height: 8px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        display: flex;
+    }
+</style>
+}
+
+<div style="max-w: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>Campus Analytics</span>
+                <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+                Comprehensive activity metrics, delivery frequency, and peer network efficiency.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 4px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <a href="/Dashboard/Analytics?range=7" class="uv-tab-btn @(Model.TimeRangeDays == 7 ? "active" : "")" style="padding: 6px 14px; font-size: 12px;">7 Days</a>
+            <a href="/Dashboard/Analytics?range=30" class="uv-tab-btn @(Model.TimeRangeDays == 30 ? "active" : "")" style="padding: 6px 14px; font-size: 12px;">30 Days</a>
+            <a href="/Dashboard/Analytics?range=90" class="uv-tab-btn @(Model.TimeRangeDays == 90 ? "active" : "")" style="padding: 6px 14px; font-size: 12px;">90 Days</a>
+        </div>
+    </div>
+
+    <!-- 4 Bento Cards -->
+    <div class="uv-analytics-grid">
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.4); text-transform: uppercase;">Total Spent</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #fff; margin-top: 4px;">
+                    ₹@Model.TotalSpent.ToString("F0")
+                </div>
+            </div>
+            <div class="uv-hud-icon"><i class="bi bi-currency-rupee"></i></div>
+        </div>
+
+        <div class="uv-hud-card active-hud">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase;">Deliveries</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: var(--accent-green); margin-top: 4px;">
+                    @Model.TotalOrders Orders
+                </div>
+            </div>
+            <div class="uv-hud-icon"><i class="bi bi-box-seam"></i></div>
+        </div>
+
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #38BDF8; text-transform: uppercase;">Avg Duration</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #38BDF8; margin-top: 4px;">
+                    @Model.AvgDeliveryTime
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.25); color: #38BDF8;"><i class="bi bi-clock"></i></div>
+        </div>
+
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #34D399; text-transform: uppercase;">CO₂ Avoided</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #34D399; margin-top: 4px;">
+                    @Model.CarbonSavedKg kg
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.25); color: #34D399;"><i class="bi bi-tree"></i></div>
+        </div>
+    </div>
+
+    <!-- Volume Bar Chart -->
+    <div class="uv-analytics-chart-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0;">Weekly Delivery Volume</h3>
+                <span style="font-size: 12px; color: var(--text-muted);">Orders placed and completed across Marwadi campus</span>
+            </div>
+            <span class="uv-status-pill uv-status-active">Past 7 Days</span>
+        </div>
+
+        <div class="uv-volume-bars">
+            @foreach (var d in Model.DailyVolumes)
+            {
+                <div class="uv-vol-col">
+                    <div class="uv-vol-bar" style="height: @(d.Percentage)%;" data-tooltip="₹@d.Amount (@d.OrderCount orders)"></div>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: rgba(255, 255, 255, 0.5);">@d.DayName</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Request Status Distribution -->
+    <div class="uv-analytics-chart-box">
+        <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 16px 0;">Order Status Distribution</h3>
+
+        <div class="uv-progress-line" style="margin-bottom: 16px;">
+            <div style="width: 75%; background: var(--accent-green);" title="Completed (75%)"></div>
+            <div style="width: 15%; background: #F59E0B;" title="In Progress (15%)"></div>
+            <div style="width: 10%; background: #EF4444;" title="Cancelled (10%)"></div>
+        </div>
+
+        <div style="display: flex; gap: 24px; font-size: 12.5px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></span>
+                <span style="color: #fff; font-weight: 600;">Completed: @Model.CompletedCount</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #F59E0B;"></span>
+                <span style="color: #fff; font-weight: 600;">Active / In Transit: @Model.PendingCount</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #EF4444;"></span>
+                <span style="color: #fff; font-weight: 600;">Cancelled: @Model.CancelledCount</span>
+            </div>
+        </div>
+    </div>
+</div>

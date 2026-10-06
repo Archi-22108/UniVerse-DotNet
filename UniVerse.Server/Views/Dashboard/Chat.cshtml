@@ -1,0 +1,301 @@
+@model UniVerse.Server.Models.ViewModels.ChatPageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Chat Support & Messages";
+    ViewBag.ActivePage = "chat";
+
+    var activeContact = Model.Contacts.FirstOrDefault(c => c.Id == Model.ActiveContactId) ?? Model.Contacts.First();
+}
+
+@section Styles {
+<style>
+    .uv-chat-container {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 20px;
+        height: calc(100vh - 140px);
+        min-height: 580px;
+    }
+
+    @@media (max-width: 900px) {
+        .uv-chat-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+    }
+
+    .uv-contacts-panel {
+        background: rgba(10, 16, 13, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        backdrop-filter: blur(16px);
+    }
+
+    .uv-contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+        margin-bottom: 6px;
+        border: 1px solid transparent;
+    }
+
+    .uv-contact-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .uv-contact-item.active {
+        background: rgba(0, 230, 118, 0.1);
+        border-color: rgba(0, 230, 118, 0.25);
+    }
+
+    .uv-contact-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: var(--accent-green);
+        font-weight: 800;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    /* Active Chat Area */
+    .uv-chat-window {
+        background: rgba(10, 16, 13, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+    }
+
+    .uv-chat-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .uv-chat-messages {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .uv-msg-bubble {
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 18px;
+        font-size: 13.5px;
+        line-height: 1.45;
+        position: relative;
+    }
+
+    .uv-msg-inbound {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.9);
+        border-bottom-left-radius: 4px;
+    }
+
+    .uv-msg-outbound {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+        color: #022c22;
+        font-weight: 600;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .uv-msg-time {
+        font-size: 10px;
+        font-family: var(--font-mono);
+        opacity: 0.6;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .uv-chat-input-bar {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(5, 10, 7, 0.8);
+    }
+</style>
+}
+
+<div style="max-w: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>Messages & Support</span>
+            <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+            Chat securely with delivery runners, marketplace sellers, and campus support.
+        </p>
+    </div>
+
+    <!-- Chat 2-Column Interface -->
+    <div class="uv-chat-container">
+        <!-- 1. Contacts Column -->
+        <div class="uv-contacts-panel">
+            <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.4); text-transform: uppercase; margin-bottom: 12px; padding-left: 6px;">
+                Active Conversations (@Model.Contacts.Count)
+            </div>
+
+            @foreach (var contact in Model.Contacts)
+            {
+                var isSelected = contact.Id == activeContact.Id;
+                <a href="/Dashboard/Chat?id=@contact.Id" class="uv-contact-item @(isSelected ? "active" : "")">
+                    <div class="uv-contact-avatar">
+                        @contact.AvatarLetter
+                        @if (contact.IsOnline)
+                        {
+                            <span class="uv-live-dot" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border: 2px solid #0a100d;"></span>
+                        }
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <span style="font-weight: 700; color: #fff; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                @contact.Name
+                            </span>
+                            <span style="font-size: 10.5px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
+                                @contact.LastMessageTime
+                            </span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">
+                                @contact.LastMessage
+                            </span>
+                            @if (contact.UnreadCount > 0)
+                            {
+                                <span style="background: var(--accent-green); color: #022c22; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 9999px;">
+                                    @contact.UnreadCount
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+
+        <!-- 2. Chat Window -->
+        <div class="uv-chat-window">
+            <!-- Chat Header -->
+            <div class="uv-chat-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="uv-contact-avatar">
+                        @activeContact.AvatarLetter
+                    </div>
+                    <div>
+                        <h3 style="font-size: 15px; font-weight: 800; color: #fff; margin: 0;">
+                            @activeContact.Name
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted);">
+                            <span class="uv-live-dot"></span>
+                            <span>@(activeContact.IsOnline ? "Active Now" : "Offline")</span>
+                            <span>&bull;</span>
+                            <span style="color: var(--accent-green); font-weight: 600;">@activeContact.Role</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="uv-bell-btn" title="Call Contact" onclick="showToast('Calling functionality available via UniVerse Mobile App.')">
+                        <i class="bi bi-telephone"></i>
+                    </button>
+                    <button class="uv-bell-btn" title="Campus Safety">
+                        <i class="bi bi-shield-check text-success"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="chatMessageStream" class="uv-chat-messages">
+                @foreach (var msg in activeContact.Messages)
+                {
+                    <div class="uv-msg-bubble @(msg.IsFromCurrentUser ? "uv-msg-outbound" : "uv-msg-inbound")">
+                        <div>@msg.Content</div>
+                        <span class="uv-msg-time" style="color: @(msg.IsFromCurrentUser ? "#022c22" : "rgba(255,255,255,0.4)")">
+                            @msg.Timestamp.ToString("h:mm tt")
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <!-- Quick Reply Chips -->
+            <div style="display: flex; gap: 8px; padding: 10px 20px; overflow-x: auto; background: rgba(5, 10, 7, 0.5);">
+                <button type="button" class="uv-chip uv-chip-glass" onclick="insertQuickReply('I am at Hostel D ground floor.')">
+                    "I am at Hostel D"
+                </button>
+                <button type="button" class="uv-chip uv-chip-glass" onclick="insertQuickReply('Coming down to pick up in 2 mins!')">
+                    "Coming down in 2 mins"
+                </button>
+                <button type="button" class="uv-chip uv-chip-glass" onclick="insertQuickReply('What is the delivery PIN?')">
+                    "What is the delivery PIN?"
+                </button>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <div class="uv-chat-input-bar">
+                <form id="chatForm" onsubmit="handleSendMessage(event)" style="display: flex; align-items: center; gap: 10px;">
+                    <input id="chatInputText" type="text" placeholder="Type a campus message..." required autocomplete="off" style="flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 12px 18px; color: #fff; font-size: 13.5px; outline: none; transition: border-color 0.2s;" />
+                    <button type="submit" style="background: var(--accent-green); color: #022c22; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 16px rgba(0, 230, 118, 0.3);">
+                        <i class="bi bi-send-fill" style="font-size: 15px;"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function insertQuickReply(text) {
+        document.getElementById('chatInputText').value = text;
+        document.getElementById('chatInputText').focus();
+    }
+
+    function handleSendMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInputText');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const stream = document.getElementById('chatMessageStream');
+        const bubble = document.createElement('div');
+        bubble.className = 'uv-msg-bubble uv-msg-outbound';
+        bubble.innerHTML = `<div>${text}</div><span class="uv-msg-time" style="color: #022c22;">Just now</span>`;
+        stream.appendChild(bubble);
+        stream.scrollTop = stream.scrollHeight;
+        input.value = '';
+
+        // Auto simulated peer response after 1.5s
+        setTimeout(() => {
+            const reply = document.createElement('div');
+            reply.className = 'uv-msg-bubble uv-msg-inbound';
+            reply.innerHTML = `<div>Got it! Thanks for keeping in touch on UniVerse.</div><span class="uv-msg-time">Just now</span>`;
+            stream.appendChild(reply);
+            stream.scrollTop = stream.scrollHeight;
+        }, 1500);
+    }
+</script>

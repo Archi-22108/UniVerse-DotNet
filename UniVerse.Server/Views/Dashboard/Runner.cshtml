@@ -1,0 +1,310 @@
+@model UniVerse.Server.Models.ViewModels.RunnerPageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Runner Mode";
+    ViewBag.ActivePage = "runner";
+}
+
+@section Styles {
+<style>
+    .uv-runner-playbook {
+        background: linear-gradient(135deg, rgba(12, 20, 16, 0.9) 0%, rgba(9, 16, 12, 0.95) 100%);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 28px;
+        backdrop-filter: blur(16px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .uv-steps-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    @@media (max-width: 860px) {
+        .uv-steps-grid { grid-template-columns: 1fr; }
+    }
+
+    .uv-step-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px;
+        transition: all 0.2s;
+    }
+
+    .uv-step-card:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+        background: rgba(16, 185, 129, 0.04);
+    }
+
+    .uv-step-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 9999px;
+        color: var(--accent-green);
+        font-size: 10px;
+        font-family: var(--font-mono);
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    /* Radar / Order Card */
+    .uv-order-card {
+        background: rgba(10, 16, 13, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 16px;
+        backdrop-filter: blur(16px);
+        transition: all 0.25s ease;
+    }
+
+    .uv-order-card:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-accept-order {
+        background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+        color: #022c22;
+        font-weight: 800;
+        font-size: 13px;
+        padding: 9px 18px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        transition: all 0.2s;
+    }
+
+    .btn-accept-order:hover {
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+        transform: scale(1.02);
+    }
+</style>
+}
+
+<div style="max-w: 1200px; margin: 0 auto;">
+    <!-- Top Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="uv-live-dot"></span>
+                <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase;">
+                    Marwadi Campus Runner Hub
+                </span>
+            </div>
+            <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 4px 0 0 0; display: flex; align-items: center; gap: 8px;">
+                <span>Runner Mode</span>
+                <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+                Earn instant pocket cash during your daily hostel and canteen walks.
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <form method="post" action="/Dashboard/ToggleDuty">
+                <input type="hidden" name="active" value="@(!Model.IsOnDuty ? "true" : "false")" />
+                <button type="submit" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 14px; font-weight: 800; font-size: 13px; cursor: pointer; transition: all 0.2s; border: 1px solid @(Model.IsOnDuty ? "rgba(0, 230, 118, 0.35)" : "rgba(255, 255, 255, 0.15)"); background: @(Model.IsOnDuty ? "rgba(0, 230, 118, 0.15)" : "rgba(255, 255, 255, 0.05)"); color: @(Model.IsOnDuty ? "var(--accent-green)" : "rgba(255, 255, 255, 0.6)");">
+                    <span class="uv-live-dot" style="background: @(Model.IsOnDuty ? "var(--accent-green)" : "#94a3b8");"></span>
+                    <span>@(Model.IsOnDuty ? "ON DUTY (Accepting Orders)" : "OFF DUTY (Paused)")</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Playbook Guide Banner -->
+    <div class="uv-runner-playbook">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-compass text-success" style="font-size: 18px;"></i>
+                <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0;">How UniVerse Runner Works</h3>
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted);">3 Quick steps to pocket earnings</span>
+        </div>
+
+        <div class="uv-steps-grid">
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 1</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Accept Available Run</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Check the radar feed below for orders matching your current campus route.
+                </p>
+            </div>
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 2</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Collect from Pickup Spot</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Head to Central Canteen or Stationery, pick items up, and notify the student.
+                </p>
+            </div>
+            <div class="uv-step-card">
+                <span class="uv-step-badge">Step 3</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin: 0 0 4px 0;">Deliver & Get OTP</h4>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                    Drop at the hostel room, enter student's 4-digit PIN, and get instant wallet cash!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Stats HUD -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Available Orders</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #fff; margin-top: 4px;">@Model.PendingDeliveries.Count</div>
+            </div>
+            <div class="uv-hud-icon"><i class="bi bi-radar"></i></div>
+        </div>
+        <div class="uv-hud-card active-hud">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; color: var(--accent-green); text-transform: uppercase;">In-Transit</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: var(--accent-green); margin-top: 4px;">@Model.MyActiveDeliveries.Count</div>
+            </div>
+            <div class="uv-hud-icon"><i class="bi bi-bicycle"></i></div>
+        </div>
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Completed Runs</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #fff; margin-top: 4px;">@Model.MyCompletedDeliveries.Count</div>
+            </div>
+            <div class="uv-hud-icon"><i class="bi bi-check2-all"></i></div>
+        </div>
+        <div class="uv-hud-card">
+            <div>
+                <span style="font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; color: #F59E0B; text-transform: uppercase;">Earnings</span>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #F59E0B; margin-top: 4px;">₹@Model.TodayEarnings.ToString("F0")</div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); color: #F59E0B;"><i class="bi bi-wallet2"></i></div>
+        </div>
+    </div>
+
+    <!-- Active Deliveries (Need OTP) -->
+    @if (Model.MyActiveDeliveries.Count > 0)
+    {
+        <div style="margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <h2 style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <span class="uv-live-dot"></span>
+                    <span>My In-Transit Runs</span>
+                </h2>
+                <span style="font-size: 12px; color: var(--accent-green); font-weight: 700;">Ask student for 4-digit PIN</span>
+            </div>
+
+            @foreach (var active in Model.MyActiveDeliveries)
+            {
+                <div class="uv-order-card" style="border-left: 4px solid var(--accent-green);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span class="uv-status-pill uv-status-active">● RUN IN PROGRESS</span>
+                        <span style="font-family: var(--font-mono); font-size: 14px; font-weight: 900; color: #6EE7B7;">
+                            Earn ₹@active.DeliveryFee.ToString("F0")
+                        </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: rgba(255, 255, 255, 0.03); padding: 14px; border-radius: 14px; margin-bottom: 14px;">
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">PICKUP</span>
+                            <div style="font-weight: 700; color: #fff;">@active.PickupLocation</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">DROPOFF HOSTEL</span>
+                            <div style="font-weight: 700; color: #00E676;">@active.DropoffLocation</div>
+                        </div>
+                    </div>
+
+                    <!-- OTP Completion Form -->
+                    <form method="post" action="/Dashboard/CompleteDelivery" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <input type="hidden" name="id" value="@active.Id" />
+                        <div style="flex: 1; min-width: 200px;">
+                            <input type="text" name="otp" placeholder="Enter Student's 4-Digit OTP" required maxlength="6" style="width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px 14px; color: #fff; font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.1em;" />
+                        </div>
+                        <button type="submit" class="btn-accept-order" style="padding: 11px 20px;">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Verify & Complete</span>
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Available Campus Orders Radar -->
+    <div style="margin-bottom: 32px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h2 style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-radar text-success"></i>
+                <span>Available Campus Radar</span>
+            </h2>
+            <span style="font-size: 12px; color: var(--text-muted);">Real-time peer deliveries</span>
+        </div>
+
+        @if (Model.PendingDeliveries.Count == 0)
+        {
+            <div style="text-align: center; padding: 48px; background: rgba(10, 16, 13, 0.6); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 20px;">
+                <i class="bi bi-clock-history" style="font-size: 32px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 10px;"></i>
+                <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">No pending orders in your zone</h4>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Stay on duty. New student requests from Canteen will appear immediately!</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var order in Model.PendingDeliveries)
+            {
+                <div class="uv-order-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="uv-status-pill uv-status-pending">● AVAILABLE RUN</span>
+                        <div style="font-family: var(--font-mono); font-weight: 900; font-size: 15px; color: var(--accent-green);">
+                            +₹@order.DeliveryFee.ToString("F0") Tip
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">PICKUP POINT</span>
+                            <div style="font-weight: 700; color: #fff; font-size: 13.5px;">@order.PickupLocation</div>
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">DESTINATION</span>
+                            <div style="font-weight: 700; color: #fff; font-size: 13.5px;">@order.DropoffLocation</div>
+                        </div>
+                    </div>
+
+                    @if (order.Items.Count > 0)
+                    {
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 8px 12px; border-radius: 10px; font-size: 12.5px; color: rgba(255, 255, 255, 0.8); margin-bottom: 14px;">
+                            <i class="bi bi-box-seam me-1 text-success"></i>
+                            <span>@string.Join(", ", order.Items.Select(i => $"{i.Name} (x{i.Quantity})"))</span>
+                        </div>
+                    }
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11.5px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
+                            Placed: @order.CreatedAt
+                        </span>
+                        <form method="post" action="/Dashboard/AcceptDelivery">
+                            <input type="hidden" name="id" value="@order.Id" />
+                            <button type="submit" class="btn-accept-order">
+                                <i class="bi bi-bicycle"></i>
+                                <span>Accept Delivery</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

@@ -1,0 +1,236 @@
+@model UniVerse.Server.Models.ViewModels.MarketplacePageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Marketplace";
+    ViewBag.ActivePage = "marketplace";
+}
+
+@section Styles {
+<style>
+    .uv-market-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .uv-cat-chips {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        margin-bottom: 24px;
+    }
+
+    .uv-cat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.2s;
+    }
+
+    .uv-cat-pill:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+
+    .uv-cat-pill.active {
+        background: rgba(0, 230, 118, 0.15);
+        border-color: rgba(0, 230, 118, 0.35);
+        color: var(--accent-green);
+        font-weight: 700;
+    }
+
+    .uv-items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .uv-item-card {
+        background: rgba(10, 16, 13, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .uv-item-card:hover {
+        border-color: rgba(16, 185, 129, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .uv-item-thumb {
+        height: 160px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .uv-item-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        font-size: 10.5px;
+        font-family: var(--font-mono);
+        font-weight: 700;
+    }
+</style>
+}
+
+<div style="max-w: 1200px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="uv-market-header">
+        <div>
+            <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span>Marketplace</span>
+                <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+            </h1>
+            <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+                Buy and sell second-hand academic books, drafters, electronics & hostel essentials.
+            </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <form method="get" action="/Dashboard/Marketplace" class="uv-search-box" style="min-width: 240px;">
+                <input type="hidden" name="category" value="@Model.SelectedCategory" />
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" value="@Model.SearchQuery" placeholder="Search campus resale..." />
+            </form>
+
+            <a href="/Marketplace/Create" class="btn-new-request">
+                <i class="bi bi-plus-lg"></i>
+                <span>Sell Item</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Category Pills -->
+    <div class="uv-cat-chips">
+        <a href="/Dashboard/Marketplace?category=all" class="uv-cat-pill @(Model.SelectedCategory == "all" ? "active" : "")">
+            <span>✨ All Categories</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=books" class="uv-cat-pill @(Model.SelectedCategory == "books" ? "active" : "")">
+            <span>📚 Books</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=electronics" class="uv-cat-pill @(Model.SelectedCategory == "electronics" ? "active" : "")">
+            <span>💻 Electronics</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=study_materials" class="uv-cat-pill @(Model.SelectedCategory == "study_materials" ? "active" : "")">
+            <span>📝 Study Notes</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=hostel" class="uv-cat-pill @(Model.SelectedCategory == "hostel" ? "active" : "")">
+            <span>🛏️ Hostel Life</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=sports" class="uv-cat-pill @(Model.SelectedCategory == "sports" ? "active" : "")">
+            <span>⚽ Sports</span>
+        </a>
+        <a href="/Dashboard/Marketplace?category=gaming" class="uv-cat-pill @(Model.SelectedCategory == "gaming" ? "active" : "")">
+            <span>🎮 Gaming</span>
+        </a>
+    </div>
+
+    <!-- Listings Grid -->
+    @if (Model.Listings.Count == 0)
+    {
+        <div style="text-align: center; padding: 64px 20px; background: rgba(10, 16, 13, 0.5); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 24px;">
+            <i class="bi bi-bag-x" style="font-size: 40px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 12px;"></i>
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">No listings in this category</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
+                Be the first to list an item for fellow Marwadi University students!
+            </p>
+            <a href="/Marketplace/Create" class="btn-new-request" style="display: inline-flex;">
+                <i class="bi bi-plus-lg"></i>
+                <span>Post Free Listing</span>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="uv-items-grid">
+            @foreach (var item in Model.Listings)
+            {
+                <div class="uv-item-card">
+                    <div class="uv-item-thumb">
+                        <span class="uv-item-badge">@item.Condition</span>
+                        <div style="font-size: 42px; opacity: 0.85;">
+                            @(item.Category.ToLower() switch {
+                                "books" => "📚",
+                                "electronics" => "💻",
+                                "study_materials" => "📝",
+                                "sports" => "🏸",
+                                "hostel" => "🛏️",
+                                _ => "📦"
+                            })
+                        </div>
+                    </div>
+
+                    <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: baseline; gap: 6px;">
+                                <span style="font-family: var(--font-heading); font-size: 22px; font-weight: 900; color: var(--accent-green);">
+                                    ₹@item.Price.ToString("F0")
+                                </span>
+                                @if (item.OriginalPrice.HasValue && item.OriginalPrice > item.Price)
+                                {
+                                    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.4); text-decoration: line-through;">
+                                        ₹@item.OriginalPrice.Value.ToString("F0")
+                                    </span>
+                                }
+                            </div>
+                            <span style="font-size: 10.5px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">
+                                @item.Category
+                            </span>
+                        </div>
+
+                        <h3 style="font-size: 15px; font-weight: 800; color: #fff; margin: 0 0 6px 0; line-height: 1.3;">
+                            @item.Title
+                        </h3>
+
+                        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            @(string.IsNullOrEmpty(item.Description) ? "Quality verified student listing on campus." : item.Description)
+                        </p>
+
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: rgba(255, 255, 255, 0.5); margin-bottom: 14px;">
+                            <i class="bi bi-geo-alt text-warning"></i>
+                            <span>@item.PickupLocation</span>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; margin-top: auto;">
+                            <a href="/Marketplace/Details/@item.Id" style="flex: 1; text-align: center; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-weight: 700; font-size: 12.5px; padding: 9px; border-radius: 12px; text-decoration: none; transition: all 0.2s;">
+                                View Details
+                            </a>
+                            <a href="/Dashboard/Chat" style="background: rgba(0, 230, 118, 0.12); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--accent-green); padding: 9px 14px; border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;" title="Message Seller">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

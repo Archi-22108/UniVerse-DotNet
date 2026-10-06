@@ -165,4 +165,127 @@ namespace UniVerse.Server.Models.ViewModels
         public int CompletedRequestsCount => CompletedRequests.Count;
         public int CancelledRequestsCount => CancelledRequests.Count;
     }
+
+    // ─── Requests Page ViewModel ──────────────────────────────────────────────
+    public class RequestsPageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public List<DeliveryRequestDetailDto> Requests { get; set; } = new();
+        public string SelectedTab { get; set; } = "all";
+        public string SearchQuery { get; set; } = string.Empty;
+        public int ActiveCount => Requests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+        public int CompletedCount => Requests.Count(r => r.Status == "delivered");
+        public int CancelledCount => Requests.Count(r => r.Status == "cancelled");
+    }
+
+    // ─── Runner Page ViewModel ────────────────────────────────────────────────
+    public class RunnerPageViewModel
+    {
+        public User CurrentRunner { get; set; } = new();
+        public List<DeliveryRequestDetailDto> PendingDeliveries { get; set; } = new();
+        public List<DeliveryRequestDetailDto> MyActiveDeliveries { get; set; } = new();
+        public List<DeliveryRequestDetailDto> MyCompletedDeliveries { get; set; } = new();
+        public bool IsOnDuty { get; set; } = true;
+        public double TodayEarnings => MyCompletedDeliveries.Sum(d => d.DeliveryFee);
+    }
+
+    // ─── Wallet ViewModels ────────────────────────────────────────────────────
+    public class WalletTransactionItem
+    {
+        public string Id { get; set; } = System.Guid.NewGuid().ToString();
+        public string Type { get; set; } = "deposit"; // "deposit", "earning", "payment", "refund"
+        public double Amount { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Status { get; set; } = "completed"; // "completed", "pending", "failed"
+        public System.DateTime CreatedAt { get; set; } = System.DateTime.Now;
+    }
+
+    public class WalletPageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public double Balance { get; set; }
+        public List<WalletTransactionItem> Transactions { get; set; } = new();
+    }
+
+    // ─── Marketplace Page ViewModel ───────────────────────────────────────────
+    public class MarketplacePageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public List<MarketplaceListingDetailDto> Listings { get; set; } = new();
+        public string SelectedCategory { get; set; } = "all";
+        public string SearchQuery { get; set; } = string.Empty;
+    }
+
+    // ─── Chat ViewModels ──────────────────────────────────────────────────────
+    public class ChatMessageItem
+    {
+        public string Id { get; set; } = System.Guid.NewGuid().ToString();
+        public string SenderId { get; set; } = string.Empty;
+        public string SenderName { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public System.DateTime Timestamp { get; set; } = System.DateTime.Now;
+        public bool IsFromCurrentUser { get; set; }
+    }
+
+    public class ChatContactItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Role { get; set; } = "Student";
+        public string AvatarLetter { get; set; } = "S";
+        public string LastMessage { get; set; } = string.Empty;
+        public string LastMessageTime { get; set; } = string.Empty;
+        public int UnreadCount { get; set; }
+        public bool IsOnline { get; set; } = true;
+        public List<ChatMessageItem> Messages { get; set; } = new();
+    }
+
+    public class ChatPageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public List<ChatContactItem> Contacts { get; set; } = new();
+        public string ActiveContactId { get; set; } = string.Empty;
+    }
+
+    // ─── Analytics Page ViewModel ─────────────────────────────────────────────
+    public class DailyVolumeItem
+    {
+        public string DayName { get; set; } = string.Empty;
+        public int Percentage { get; set; }
+        public int OrderCount { get; set; }
+        public double Amount { get; set; }
+    }
+
+    public class AnalyticsPageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public int TimeRangeDays { get; set; } = 7;
+        public double TotalSpent { get; set; }
+        public double TotalEarned { get; set; }
+        public int TotalOrders { get; set; }
+        public string AvgDeliveryTime { get; set; } = "~14 mins";
+        public double CarbonSavedKg { get; set; } = 1.2;
+        public List<DailyVolumeItem> DailyVolumes { get; set; } = new();
+        public int CompletedCount { get; set; }
+        public int PendingCount { get; set; }
+        public int CancelledCount { get; set; }
+    }
+
+    // ─── Profile & Settings ViewModels ─────────────────────────────────────────
+    public class ProfilePageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public string? SuccessMessage { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
+
+    public class SettingsPageViewModel
+    {
+        public User CurrentUser { get; set; } = new();
+        public string? SuccessMessage { get; set; }
+        public bool PushNotifications { get; set; } = true;
+        public bool OrderAlerts { get; set; } = true;
+        public bool SoundEffects { get; set; } = true;
+        public bool AutoAcceptOrders { get; set; } = false;
+    }
 }

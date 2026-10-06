@@ -125,6 +125,32 @@ WHERE id = @id;";
             return await _db.ExecuteNonQueryAsync(sql, parameters);
         }
 
+        public async Task<int> UpdateUserAsync(User user)
+        {
+            const string sql = @"
+UPDATE users
+SET full_name = @full_name,
+    hostel_name = @hostel_name,
+    room_number = @room_number,
+    phone_number = @phone_number,
+    role = @role,
+    updated_at = @updated_at
+WHERE id = @id;";
+
+            var parameters = new[]
+            {
+                AdoNetDbHelper.CreateParameter("@id", user.Id),
+                AdoNetDbHelper.CreateParameter("@full_name", user.FullName.Trim()),
+                AdoNetDbHelper.CreateParameter("@hostel_name", user.HostelName?.Trim()),
+                AdoNetDbHelper.CreateParameter("@room_number", user.RoomNumber?.Trim()),
+                AdoNetDbHelper.CreateParameter("@phone_number", user.PhoneNumber?.Trim()),
+                AdoNetDbHelper.CreateParameter("@role", user.Role.ToLowerInvariant()),
+                AdoNetDbHelper.CreateParameter("@updated_at", DateTime.UtcNow.ToString("o"))
+            };
+
+            return await _db.ExecuteNonQueryAsync(sql, parameters);
+        }
+
         private static User MapUserFromReader(SqliteDataReader reader)
         {
             return new User

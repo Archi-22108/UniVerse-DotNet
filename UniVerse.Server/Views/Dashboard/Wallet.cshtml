@@ -1,0 +1,257 @@
+@model UniVerse.Server.Models.ViewModels.WalletPageViewModel
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Wallet";
+    ViewBag.ActivePage = "wallet";
+}
+
+@section Styles {
+<style>
+    .uv-wallet-card {
+        background: rgba(13, 20, 17, 0.85);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 24px;
+        padding: 32px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 0 40px rgba(0, 230, 118, 0.06);
+        margin-bottom: 32px;
+    }
+
+    .uv-tx-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px;
+        background: rgba(13, 20, 17, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        margin-bottom: 12px;
+        backdrop-filter: blur(12px);
+        transition: all 0.2s ease;
+    }
+
+    .uv-tx-card:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .uv-tx-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    /* Top-Up Modal */
+    .uv-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .uv-modal-box {
+        background: #09120d;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 440px;
+        padding: 28px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        animation: scaleUp 0.25s ease;
+    }
+
+    @@keyframes scaleUp {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .uv-chip-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .uv-chip-btn:hover {
+        background: rgba(0, 230, 118, 0.15);
+        border-color: var(--accent-green);
+        color: var(--accent-green);
+    }
+</style>
+}
+
+<div style="max-w: 920px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 28px;">
+        <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>Wallet</span>
+            <span style="color: var(--accent-green); font-size: 22px;">✦</span>
+        </h1>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
+            Manage your funds, track runner earnings, and recharge balance for fast deliveries.
+        </p>
+    </div>
+
+    <!-- Balance Banner Card -->
+    <div class="uv-wallet-card">
+        <div style="position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: rgba(0, 230, 118, 0.06); border-radius: 50%; filter: blur(70px); pointer-events: none;"></div>
+
+        <div style="display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 16px;">
+            <i class="bi bi-wallet2" style="font-size: 15px;"></i>
+            <span>Wallet Balance</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px;">
+            <div>
+                <div style="display: flex; align-items: baseline; gap: 4px; font-family: var(--font-heading);">
+                    <span style="font-size: 38px; font-weight: 800; color: var(--accent-green);">₹</span>
+                    <span style="font-size: 56px; font-weight: 900; color: #fff; letter-spacing: -0.02em; line-height: 1;">@Model.Balance.ToString("F2")</span>
+                </div>
+                <p style="font-size: 13.5px; color: var(--text-muted); margin: 10px 0 0 0;">
+                    Available to spend on campus food deliveries or withdraw anytime.
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="button" onclick="openTopUpModal()" style="display: inline-flex; align-items: center; gap: 8px; background: var(--accent-green); color: #050A07; font-weight: 800; font-size: 14px; padding: 12px 24px; border-radius: 14px; border: none; cursor: pointer; box-shadow: 0 0 20px rgba(0, 230, 118, 0.25); transition: all 0.2s;">
+                    <i class="bi bi-plus-lg" style="font-size: 16px; font-weight: 900;"></i>
+                    <span>Add Funds</span>
+                </button>
+
+                <button type="button" onclick="showToast('Withdrawals are processed every Friday via UPI.')" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-weight: 700; font-size: 14px; padding: 12px 20px; border-radius: 14px; cursor: pointer; transition: all 0.2s;">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Withdraw</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+            <h2 style="font-size: 20px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <span>Transaction History</span>
+            </h2>
+            <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                @Model.Transactions.Count Records
+            </span>
+        </div>
+
+        @if (Model.Transactions.Count == 0)
+        {
+            <div style="text-align: center; padding: 48px; background: rgba(13, 20, 17, 0.6); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 20px;">
+                <i class="bi bi-clock-history" style="font-size: 32px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 10px;"></i>
+                <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">No transactions yet. Your top-ups and delivery payments will appear here.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var tx in Model.Transactions)
+            {
+                var isPos = tx.Type == "deposit" || tx.Type == "earning" || tx.Type == "refund";
+
+                <div class="uv-tx-card">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div class="uv-tx-icon" style="background: @(isPos ? "rgba(0, 230, 118, 0.12)" : "rgba(244, 63, 94, 0.12)"); border: 1px solid @(isPos ? "rgba(0, 230, 118, 0.25)" : "rgba(244, 63, 94, 0.25)"); color: @(isPos ? "var(--accent-green)" : "#fb7185");">
+                            <i class="bi @(isPos ? "bi-arrow-down-left" : "bi-arrow-up-right")"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: #fff; font-size: 14px; text-transform: capitalize;">
+                                @tx.Type
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--text-muted); margin-top: 3px; flex-wrap: wrap;">
+                                <span><i class="bi bi-clock me-1"></i> @tx.CreatedAt.ToString("MMM dd, h:mm tt")</span>
+                                <span style="background: rgba(0, 230, 118, 0.1); color: var(--accent-green); padding: 1px 7px; border-radius: 9999px; font-weight: 700;">
+                                    <i class="bi bi-check-circle me-1"></i> Completed
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <div style="font-family: var(--font-heading); font-size: 18px; font-weight: 900; color: @(isPos ? "var(--accent-green)" : "#fff");">
+                            @(isPos ? "+" : "-") ₹@tx.Amount.ToString("F0")
+                        </div>
+                        <div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.5); margin-top: 2px;">
+                            @tx.Description
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Add Funds Modal -->
+<div id="topUpModal" class="uv-modal-backdrop">
+    <div class="uv-modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-wallet2 text-success"></i>
+                <span>Add Funds to Wallet</span>
+            </h3>
+            <button type="button" onclick="closeTopUpModal()" style="background: none; border: none; color: #A7B8B0; font-size: 20px; cursor: pointer;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+            Select a preset amount or enter a custom balance to simulate instant UPI campus recharge.
+        </p>
+
+        <!-- Preset Chips -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px;">
+            <button type="button" class="uv-chip-btn" onclick="setTopUpAmount(50)">+₹50</button>
+            <button type="button" class="uv-chip-btn" onclick="setTopUpAmount(100)">+₹100</button>
+            <button type="button" class="uv-chip-btn" onclick="setTopUpAmount(200)">+₹200</button>
+            <button type="button" class="uv-chip-btn" onclick="setTopUpAmount(500)">+₹500</button>
+        </div>
+
+        <form method="post" action="/Dashboard/TopUpWallet">
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 11.5px; font-family: var(--font-mono); font-weight: 700; color: rgba(255,255,255,0.6); display: block; margin-bottom: 8px;">
+                    ENTER AMOUNT (₹)
+                </label>
+                <input id="topUpAmountInput" type="number" name="amount" value="100" min="10" max="10000" required style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 14px; padding: 12px 16px; color: #fff; font-size: 18px; font-weight: 800; font-family: var(--font-heading); outline: none;" />
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 10px 14px; font-size: 12px; color: #a7f3d0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-shield-check" style="font-size: 16px; color: var(--accent-green);"></i>
+                <span>Supported: Google Pay, PhonePe, Paytm, Campus Card</span>
+            </div>
+
+            <button type="submit" style="width: 100%; background: linear-gradient(90deg, #10B981, #34D399); color: #022c22; font-weight: 800; font-size: 14px; padding: 14px; border-radius: 14px; border: none; cursor: pointer; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);">
+                Pay & Top Up Now
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openTopUpModal() {
+        document.getElementById('topUpModal').style.display = 'flex';
+    }
+    function closeTopUpModal() {
+        document.getElementById('topUpModal').style.display = 'none';
+    }
+    function setTopUpAmount(val) {
+        document.getElementById('topUpAmountInput').value = val;
+    }
+</script>

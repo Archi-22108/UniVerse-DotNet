@@ -13,6 +13,9 @@ namespace UniVerse.Server.Models
         public string? HostelName { get; set; }
         public string? RoomNumber { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Department { get; set; } = "Computer Science & Engineering";
+        public string? Semester { get; set; } = "Semester 6";
+        public string? AvatarUrl { get; set; }
         public bool IsActiveRunner { get; set; }
         public double RewardBalance { get; set; }
         public string CreatedAt { get; set; } = DateTime.UtcNow.ToString("o");
@@ -29,6 +32,9 @@ namespace UniVerse.Server.Models
         public string? HostelName { get; set; }
         public string? RoomNumber { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Department { get; set; }
+        public string? Semester { get; set; }
+        public string? AvatarUrl { get; set; }
         public bool IsActiveRunner { get; set; }
         public double RewardBalance { get; set; }
         public string CreatedAt { get; set; } = string.Empty;
@@ -43,6 +49,9 @@ namespace UniVerse.Server.Models
             HostelName = user.HostelName,
             RoomNumber = user.RoomNumber,
             PhoneNumber = user.PhoneNumber,
+            Department = user.Department,
+            Semester = user.Semester,
+            AvatarUrl = user.AvatarUrl,
             IsActiveRunner = user.IsActiveRunner,
             RewardBalance = user.RewardBalance,
             CreatedAt = user.CreatedAt

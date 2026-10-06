@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UniVerse.Server.Data.Repositories;
+using UniVerse.Server.Models;
 using UniVerse.Server.Models.ViewModels;
 
 namespace UniVerse.Server.Controllers
@@ -23,56 +26,456 @@ namespace UniVerse.Server.Controllers
             _marketRepo = marketRepo;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        private async Task<User> GetCurrentUserAsync()
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Models.User? currentUser = null;
+            User? currentUser = null;
 
             if (!string.IsNullOrEmpty(userId))
             {
                 currentUser = await _userRepo.GetByIdAsync(userId);
             }
 
-            // Fallback for campus demo student if guest / not logged in
             if (currentUser == null)
             {
                 var allUsers = await _userRepo.GetAllUsersAsync();
-                currentUser = allUsers.FirstOrDefault() ?? new Models.User
+                currentUser = allUsers.FirstOrDefault() ?? new User
                 {
+                    Id = "usr_aarav_001",
                     FullName = "Aarav Patel",
                     Email = "aarav.patel@marwadiuniversity.ac.in",
                     Role = "student",
                     HostelName = "Hostel D",
                     RoomNumber = "304",
-                    RewardBalance = 240.0
+                    PhoneNumber = "+91 98765 43210",
+                    EnrollmentNumber = "92100103001",
+                    RewardBalance = 240.0,
+                    Department = "Computer Science & Engineering",
+                    Semester = "Semester 6"
                 };
             }
 
+            return currentUser;
+        }
+
+        // ─── 1. Main Dashboard Index ──────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var user = await GetCurrentUserAsync();
             var requests = await _deliveryRepo.GetRequestsAsync();
-            var myRequests = string.IsNullOrEmpty(userId)
-                ? requests
-                : requests.Where(r => r.RequesterId == userId || r.RunnerId == userId).ToList();
-
-            if (!myRequests.Any() && requests.Any())
-            {
-                // Show campus feed so dashboard displays authentic orders
-                myRequests = requests;
-            }
-
             var listings = await _marketRepo.GetListingsAsync();
+
+            var active = requests.Where(r => r.Status != "delivered" && r.Status != "cancelled").ToList();
+            var completed = requests.Where(r => r.Status == "delivered").ToList();
+            var cancelled = requests.Where(r => r.Status == "cancelled").ToList();
+
+            ViewBag.ActivePage = "dashboard";
+            ViewBag.ActiveRequestsCount = active.Count;
 
             var vm = new DashboardViewModel
             {
-                CurrentUser = currentUser,
-                AllRequests = myRequests,
-                ActiveRequests = myRequests.Where(r => r.Status != "delivered" && r.Status != "cancelled").ToList(),
-                CompletedRequests = myRequests.Where(r => r.Status == "delivered").ToList(),
-                CancelledRequests = myRequests.Where(r => r.Status == "cancelled").ToList(),
+                CurrentUser = user,
+                AllRequests = requests,
+                ActiveRequests = active,
+                CompletedRequests = completed,
+                CancelledRequests = cancelled,
                 RecentListings = listings.Take(6).ToList()
             };
 
             return View(vm);
+        }
+
+        // ─── 2. My Requests ───────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Requests(string? tab = "all", string? q = null)
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            var filtered = allRequests.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var query = q.Trim().ToLowerInvariant();
+                filtered = filtered.Where(r =>
+                    r.PickupLocation.ToLowerInvariant().Contains(query) ||
+                    r.DropoffLocation.ToLowerInvariant().Contains(query) ||
+                    r.Items.Any(i => i.Name.ToLowerInvariant().Contains(query)));
+            }
+
+            tab = (tab ?? "all").ToLowerInvariant();
+            if (tab == "active")
+            {
+                filtered = filtered.Where(r => r.Status != "delivered" && r.Status != "cancelled");
+            }
+            else if (tab == "completed")
+            {
+                filtered = filtered.Where(r => r.Status == "delivered");
+            }
+            else if (tab == "cancelled")
+            {
+                filtered = filtered.Where(r => r.Status == "cancelled");
+            }
+
+            var requestList = filtered.ToList();
+            var activeCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            ViewBag.ActivePage = "requests";
+            ViewBag.ActiveRequestsCount = activeCount;
+
+            var vm = new RequestsPageViewModel
+            {
+                CurrentUser = user,
+                Requests = requestList,
+                SelectedTab = tab,
+                SearchQuery = q ?? string.Empty
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelRequest(string id)
+        {
+            await _deliveryRepo.UpdateStatusAsync(id, "cancelled");
+            TempData["SuccessMessage"] = "Delivery request cancelled successfully.";
+            return RedirectToAction(nameof(Requests));
+        }
+
+        // ─── 3. Runner Mode ───────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Runner()
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            var pending = allRequests.Where(r => r.Status == "pending" && r.RequesterId != user.Id).ToList();
+            var activeDeliveries = allRequests.Where(r => (r.Status == "accepted" || r.Status == "in_transit") && r.RunnerId == user.Id).ToList();
+            var completedDeliveries = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).ToList();
+
+            if (!activeDeliveries.Any() && !completedDeliveries.Any())
+            {
+                // Campus demo runner preview
+                activeDeliveries = allRequests.Where(r => r.Status == "in_transit" || r.Status == "accepted").Take(2).ToList();
+                completedDeliveries = allRequests.Where(r => r.Status == "delivered").Take(3).ToList();
+            }
+
+            ViewBag.ActivePage = "runner";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new RunnerPageViewModel
+            {
+                CurrentRunner = user,
+                PendingDeliveries = pending,
+                MyActiveDeliveries = activeDeliveries,
+                MyCompletedDeliveries = completedDeliveries,
+                IsOnDuty = user.IsActiveRunner
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptDelivery(string id)
+        {
+            var user = await GetCurrentUserAsync();
+            await _deliveryRepo.AssignRunnerAsync(id, user.Id);
+            await _deliveryRepo.UpdateStatusAsync(id, "in_transit");
+            TempData["SuccessMessage"] = "Delivery accepted! Head to pickup point.";
+            return RedirectToAction(nameof(Runner));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CompleteDelivery(string id, string otp)
+        {
+            var user = await GetCurrentUserAsync();
+            var result = await _deliveryRepo.CompleteDeliveryWithOtpAsync(id, user.Id, otp);
+            if (result.Success)
+            {
+                await _userRepo.AddRewardBalanceAsync(user.Id, result.Reward);
+                TempData["SuccessMessage"] = $"Delivery verified! +₹{result.Reward:F0} credited to your wallet.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+            return RedirectToAction(nameof(Runner));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleDuty(bool active)
+        {
+            var user = await GetCurrentUserAsync();
+            await _userRepo.ToggleRunnerDutyAsync(user.Id, active);
+            return RedirectToAction(nameof(Runner));
+        }
+
+        // ─── 4. Wallet ────────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Wallet()
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            var transactions = new List<WalletTransactionItem>
+            {
+                new() { Type = "deposit", Amount = 150.0, Description = "UPI Instant Top-Up (GPay)", CreatedAt = DateTime.Now.AddHours(-2), Status = "completed" },
+                new() { Type = "earning", Amount = 40.0, Description = "Runner Tip: Crispy Samosa & Chai", CreatedAt = DateTime.Now.AddHours(-6), Status = "completed" },
+                new() { Type = "payment", Amount = 30.0, Description = "Delivery Fee for Hostel D Dropoff", CreatedAt = DateTime.Now.AddDays(-1), Status = "completed" },
+                new() { Type = "earning", Amount = 50.0, Description = "Runner Tip: Engineering Drawing Sheets", CreatedAt = DateTime.Now.AddDays(-2), Status = "completed" },
+                new() { Type = "deposit", Amount = 100.0, Description = "Campus Wallet Welcome Bonus", CreatedAt = DateTime.Now.AddDays(-5), Status = "completed" }
+            };
+
+            ViewBag.ActivePage = "wallet";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new WalletPageViewModel
+            {
+                CurrentUser = user,
+                Balance = user.RewardBalance,
+                Transactions = transactions
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TopUpWallet(double amount)
+        {
+            if (amount <= 0) amount = 100;
+            var user = await GetCurrentUserAsync();
+            await _userRepo.AddRewardBalanceAsync(user.Id, amount);
+            TempData["SuccessMessage"] = $"₹{amount:F0} added to your UniVerse Wallet!";
+            return RedirectToAction(nameof(Wallet));
+        }
+
+        // ─── 5. Marketplace ───────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Marketplace(string? category = "all", string? q = null)
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+            var listings = await _marketRepo.GetListingsAsync(category == "all" ? null : category);
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var query = q.Trim().ToLowerInvariant();
+                listings = listings.Where(l =>
+                    l.Title.ToLowerInvariant().Contains(query) ||
+                    l.PickupLocation.ToLowerInvariant().Contains(query) ||
+                    (l.Description != null && l.Description.ToLowerInvariant().Contains(query))
+                ).ToList();
+            }
+
+            ViewBag.ActivePage = "marketplace";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new MarketplacePageViewModel
+            {
+                CurrentUser = user,
+                Listings = listings,
+                SelectedCategory = category ?? "all",
+                SearchQuery = q ?? string.Empty
+            };
+
+            return View(vm);
+        }
+
+        // ─── 6. Chat Support & Messages ───────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Chat(string? id = null)
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            var contacts = new List<ChatContactItem>
+            {
+                new()
+                {
+                    Id = "conv_support",
+                    Name = "UniVerse Campus Support",
+                    Role = "Official Bot",
+                    AvatarLetter = "⚡",
+                    LastMessage = "How can we help with your campus deliveries today?",
+                    LastMessageTime = "10:45 AM",
+                    UnreadCount = 0,
+                    IsOnline = true,
+                    Messages = new List<ChatMessageItem>
+                    {
+                        new() { SenderName = "UniVerse Support", Content = "Welcome to UniVerse Peer Network! How can we assist you?", Timestamp = DateTime.Now.AddMinutes(-30), IsFromCurrentUser = false },
+                        new() { SenderName = user.FullName, Content = "Hi, how do I become an active campus runner?", Timestamp = DateTime.Now.AddMinutes(-20), IsFromCurrentUser = true },
+                        new() { SenderName = "UniVerse Support", Content = "Switch to 'Runner Mode' from the left sidebar and toggle 'On Duty'. You will immediately see student requests nearby!", Timestamp = DateTime.Now.AddMinutes(-18), IsFromCurrentUser = false }
+                    }
+                },
+                new()
+                {
+                    Id = "conv_rahul",
+                    Name = "Rahul Sharma",
+                    Role = "Runner (Hostel C)",
+                    AvatarLetter = "R",
+                    LastMessage = "I have reached Hostel D ground floor with your order.",
+                    LastMessageTime = "12:15 PM",
+                    UnreadCount = 1,
+                    IsOnline = true,
+                    Messages = new List<ChatMessageItem>
+                    {
+                        new() { SenderName = "Rahul Sharma", Content = "Picked up your Samosa and Cold Coffee from Central Canteen!", Timestamp = DateTime.Now.AddMinutes(-15), IsFromCurrentUser = false },
+                        new() { SenderName = user.FullName, Content = "Great, please bring it to Room 304, 3rd floor.", Timestamp = DateTime.Now.AddMinutes(-10), IsFromCurrentUser = true },
+                        new() { SenderName = "Rahul Sharma", Content = "I have reached Hostel D ground floor with your order.", Timestamp = DateTime.Now.AddMinutes(-2), IsFromCurrentUser = false }
+                    }
+                },
+                new()
+                {
+                    Id = "conv_priya",
+                    Name = "Priya Mehta",
+                    Role = "Buyer (Library)",
+                    AvatarLetter = "P",
+                    LastMessage = "Is the Engineering Graphics drafter still available?",
+                    LastMessageTime = "Yesterday",
+                    UnreadCount = 0,
+                    IsOnline = false,
+                    Messages = new List<ChatMessageItem>
+                    {
+                        new() { SenderName = "Priya Mehta", Content = "Hello, is your drafter listed on Marketplace available?", Timestamp = DateTime.Now.AddDays(-1), IsFromCurrentUser = false },
+                        new() { SenderName = user.FullName, Content = "Yes! It's in mint condition, can give at Central Library tomorrow.", Timestamp = DateTime.Now.AddDays(-1), IsFromCurrentUser = true }
+                    }
+                }
+            };
+
+            var activeContact = string.IsNullOrEmpty(id) ? contacts.First().Id : id;
+
+            ViewBag.ActivePage = "chat";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new ChatPageViewModel
+            {
+                CurrentUser = user,
+                Contacts = contacts,
+                ActiveContactId = activeContact
+            };
+
+            return View(vm);
+        }
+
+        // ─── 7. Analytics ─────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Analytics(int range = 7)
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            var completed = allRequests.Count(r => r.Status == "delivered");
+            var pending = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+            var cancelled = allRequests.Count(r => r.Status == "cancelled");
+
+            var totalSpent = allRequests.Where(r => r.Status == "delivered").Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
+            var totalEarned = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).Sum(r => r.DeliveryFee);
+
+            var dailyVolumes = new List<DailyVolumeItem>
+            {
+                new() { DayName = "Mon", Percentage = 45, OrderCount = 3, Amount = 120 },
+                new() { DayName = "Tue", Percentage = 70, OrderCount = 5, Amount = 180 },
+                new() { DayName = "Wed", Percentage = 55, OrderCount = 4, Amount = 140 },
+                new() { DayName = "Thu", Percentage = 85, OrderCount = 6, Amount = 220 },
+                new() { DayName = "Fri", Percentage = 100, OrderCount = 8, Amount = 310 },
+                new() { DayName = "Sat", Percentage = 65, OrderCount = 5, Amount = 190 },
+                new() { DayName = "Sun", Percentage = 40, OrderCount = 3, Amount = 110 }
+            };
+
+            ViewBag.ActivePage = "analytics";
+            ViewBag.ActiveRequestsCount = pending;
+
+            var vm = new AnalyticsPageViewModel
+            {
+                CurrentUser = user,
+                TimeRangeDays = range,
+                TotalSpent = totalSpent > 0 ? totalSpent : 320.0,
+                TotalEarned = totalEarned > 0 ? totalEarned : 180.0,
+                TotalOrders = allRequests.Count,
+                AvgDeliveryTime = "~14 mins",
+                CarbonSavedKg = 1.4,
+                DailyVolumes = dailyVolumes,
+                CompletedCount = completed,
+                PendingCount = pending,
+                CancelledCount = cancelled
+            };
+
+            return View(vm);
+        }
+
+        // ─── 8. Profile ───────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            ViewBag.ActivePage = "profile";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new ProfilePageViewModel
+            {
+                CurrentUser = user,
+                SuccessMessage = TempData["SuccessMessage"] as string,
+                ErrorMessage = TempData["ErrorMessage"] as string
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(string fullName, string hostelName, string roomNumber, string phoneNumber, string? department, string? semester)
+        {
+            var user = await GetCurrentUserAsync();
+            user.FullName = fullName ?? user.FullName;
+            user.HostelName = hostelName ?? user.HostelName;
+            user.RoomNumber = roomNumber ?? user.RoomNumber;
+            user.PhoneNumber = phoneNumber ?? user.PhoneNumber;
+            user.Department = department ?? user.Department;
+            user.Semester = semester ?? user.Semester;
+
+            await _userRepo.UpdateUserAsync(user);
+
+            TempData["SuccessMessage"] = "Profile details updated successfully!";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        // ─── 9. Settings ──────────────────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Settings()
+        {
+            var user = await GetCurrentUserAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
+
+            ViewBag.ActivePage = "settings";
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+
+            var vm = new SettingsPageViewModel
+            {
+                CurrentUser = user,
+                SuccessMessage = TempData["SuccessMessage"] as string,
+                PushNotifications = true,
+                OrderAlerts = true,
+                SoundEffects = true,
+                AutoAcceptOrders = false
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveSettings(string? hostelName, string? roomNumber, string? phoneNumber, bool pushNotifications = true, bool orderAlerts = true, bool soundEffects = true)
+        {
+            var user = await GetCurrentUserAsync();
+            if (!string.IsNullOrEmpty(hostelName)) user.HostelName = hostelName;
+            if (!string.IsNullOrEmpty(roomNumber)) user.RoomNumber = roomNumber;
+            if (!string.IsNullOrEmpty(phoneNumber)) user.PhoneNumber = phoneNumber;
+
+            await _userRepo.UpdateUserAsync(user);
+
+            TempData["SuccessMessage"] = "Your preferences and campus settings have been saved!";
+            return RedirectToAction(nameof(Settings));
         }
     }
 }
