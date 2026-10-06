@@ -169,8 +169,9 @@ namespace UniVerse.Server.Controllers
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
-            // All pending campus delivery requests must be visible on the runner radar feed
-            var pending = allRequests.Where(r => r.Status == "pending").ToList();
+            // Anti-Fraud Guard: User must NEVER see their own requests on their runner radar feed!
+            // Only orders created by other peers on campus can be fulfilled.
+            var pending = allRequests.Where(r => r.Status == "pending" && r.RequesterId != user.Id).ToList();
             var activeDeliveries = allRequests.Where(r => (r.Status == "accepted" || r.Status == "picked_up" || r.Status == "in_transit") && r.RunnerId == user.Id).ToList();
             var completedDeliveries = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).ToList();
 
@@ -193,17 +194,40 @@ namespace UniVerse.Server.Controllers
         [Route("api/runner/radar-sync")]
         public async Task<IActionResult> RadarSync()
         {
+            var user = await GetCurrentUserAsync();
             var pending = await _deliveryRepo.GetRequestsAsync("pending");
-            return Json(new { pendingCount = pending.Count });
+            var othersPending = pending.Where(r => r.RequesterId != user.Id).ToList();
+            return Json(new { pendingCount = othersPending.Count });
         }
 
         [HttpPost]
         public async Task<IActionResult> AcceptDelivery(string id)
         {
             var user = await GetCurrentUserAsync();
-            await _deliveryRepo.AssignRunnerAsync(id, user.Id);
-            await _deliveryRepo.UpdateStatusAsync(id, "in_transit");
-            TempData["SuccessMessage"] = "Delivery accepted! Head to pickup point.";
+            var target = await _deliveryRepo.GetRequestByIdAsync(id);
+            if (target == null)
+            {
+                TempData["ErrorMessage"] = "Order not found or no longer available.";
+                return RedirectToAction(nameof(Runner));
+            }
+
+            // Anti-Fraud Guard: User cannot accept their own delivery request!
+            if (target.RequesterId == user.Id)
+            {
+                TempData["ErrorMessage"] = "⚠️ Anti-Fraud Guard: You cannot accept your own delivery request. Another campus runner will fulfill it.";
+                return RedirectToAction(nameof(Runner));
+            }
+
+            bool assigned = await _deliveryRepo.AssignRunnerAsync(id, user.Id);
+            if (assigned)
+            {
+                await _deliveryRepo.UpdateStatusAsync(id, "in_transit");
+                TempData["SuccessMessage"] = "Delivery accepted! Head to pickup point.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Order is no longer available or already taken by another runner.";
+            }
             return RedirectToAction(nameof(Runner));
         }
 

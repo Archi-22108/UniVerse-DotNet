@@ -170,7 +170,7 @@ VALUES (@id, @request_id, @name, @quantity, @notes, @estimated_price);";
             const string sql = @"
 UPDATE delivery_requests
 SET runner_id = @runnerId, status = 'accepted', updated_at = @updated_at
-WHERE id = @requestId AND status = 'pending';";
+WHERE id = @requestId AND status = 'pending' AND requester_id != @runnerId;";
 
             var parameters = new[]
             {

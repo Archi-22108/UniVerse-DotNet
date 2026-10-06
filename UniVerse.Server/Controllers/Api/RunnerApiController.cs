@@ -46,10 +46,21 @@ namespace UniVerse.Server.Controllers.Api
         [HttpPost("accept/{requestId}")]
         public async Task<IActionResult> AcceptDelivery(string requestId, [FromBody] AcceptDeliveryDto dto)
         {
+            var req = await _deliveryRepo.GetRequestByIdAsync(requestId);
+            if (req == null)
+            {
+                return NotFound(new { message = "Delivery request not found." });
+            }
+
+            if (req.RequesterId == dto.RunnerId)
+            {
+                return BadRequest(new { message = "⚠️ Anti-Fraud Guard: You cannot accept your own delivery request. Another campus runner must fulfill it." });
+            }
+
             var success = await _deliveryRepo.AssignRunnerAsync(requestId, dto.RunnerId);
             if (!success)
             {
-                return Conflict(new { message = "Delivery request is no longer pending or does not exist." });
+                return Conflict(new { message = "Delivery request is no longer pending or already taken." });
             }
             return Ok(new { message = "Delivery request successfully accepted by runner." });
         }

@@ -565,6 +565,42 @@
          3. MAIN CONTENT CONTAINER
     ═══════════════════════════════════════════════════════════════════════ -->
     <main class="uv-main-content">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 14px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; display: flex; align-items: center; justify-content: space-between; font-size: 14px; box-shadow: 0 0 25px rgba(239, 68, 68, 0.15);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-shield-slash-fill" style="color: #ef4444; font-size: 18px;"></i>
+                    <span style="font-weight: 600;">@TempData["ErrorMessage"]</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 16px;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 14px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); color: #6ee7b7; display: flex; align-items: center; justify-content: space-between; font-size: 14px; box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 18px;"></i>
+                    <span style="font-weight: 600;">@TempData["SuccessMessage"]</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #6ee7b7; cursor: pointer; font-size: 16px;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        }
+        @if (TempData["StatusMessage"] != null)
+        {
+            <div style="margin-bottom: 20px; padding: 14px 18px; border-radius: 14px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); color: #93c5fd; display: flex; align-items: center; justify-content: space-between; font-size: 14px; box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="bi bi-info-circle-fill" style="color: #3b82f6; font-size: 18px;"></i>
+                    <span style="font-weight: 600;">@TempData["StatusMessage"]</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #93c5fd; cursor: pointer; font-size: 16px;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        }
         @RenderBody()
     </main>
 

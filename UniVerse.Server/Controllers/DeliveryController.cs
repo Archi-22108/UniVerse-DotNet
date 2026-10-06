@@ -265,7 +265,9 @@ namespace UniVerse.Server.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var pending = await _deliveryRepo.GetRequestsAsync("pending");
+            var pending = (await _deliveryRepo.GetRequestsAsync("pending"))
+                .Where(r => r.RequesterId != userId)
+                .ToList();
             var myActive = await _deliveryRepo.GetRequestsByRunnerAsync(userId);
 
             var vm = new RunnerHubViewModel
@@ -295,21 +297,30 @@ namespace UniVerse.Server.Controllers
         public async Task<IActionResult> AcceptDelivery(string id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var req = await _deliveryRepo.GetRequestByIdAsync(id);
+            if (req == null)
+            {
+                TempData["ErrorMessage"] = "Order not found or no longer available.";
+                return RedirectToAction("RunnerHub");
+            }
+
+            if (req.RequesterId == userId)
+            {
+                TempData["ErrorMessage"] = "⚠️ Anti-Fraud Guard: You cannot accept your own delivery request. Another campus runner will fulfill it.";
+                return RedirectToAction("RunnerHub");
+            }
+
             var success = await _deliveryRepo.AssignRunnerAsync(id, userId);
             if (success)
             {
-                var req = await _deliveryRepo.GetRequestByIdAsync(id);
-                if (req != null)
+                await _notifRepo.CreateAsync(new Notification
                 {
-                    await _notifRepo.CreateAsync(new Notification
-                    {
-                        UserId = req.RequesterId,
-                        Title = "Runner Accepted Your Order",
-                        Message = "A campus peer runner accepted your request and is heading to the pickup point.",
-                        Type = "status_accepted",
-                        ReferenceId = id
-                    });
-                }
+                    UserId = req.RequesterId,
+                    Title = "Runner Accepted Your Order",
+                    Message = "A campus peer runner accepted your request and is heading to the pickup point.",
+                    Type = "status_accepted",
+                    ReferenceId = id
+                });
                 TempData["SuccessMessage"] = "Order accepted! Navigate to the pickup spot.";
             }
             else
