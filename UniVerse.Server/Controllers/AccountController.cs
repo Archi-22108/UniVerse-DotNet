@@ -86,19 +86,31 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpPost]
+        [HttpGet]
         [Route("Account/GoogleLogin")]
-        public async Task<IActionResult> GoogleLogin([FromForm] string? googleEmail, [FromForm] string? fullName)
+        public async Task<IActionResult> GoogleLogin([FromForm] string? googleEmail, [FromForm] string? fullName, [FromQuery] string? email)
         {
-            var cleanEmail = (googleEmail ?? string.Empty).Trim().ToLowerInvariant();
+            var rawEmail = !string.IsNullOrWhiteSpace(googleEmail) ? googleEmail : email;
+            var cleanEmail = (rawEmail ?? string.Empty).Trim().ToLowerInvariant();
+
+            // Auto-append domain if student entered just username/enrollment
+            if (!string.IsNullOrWhiteSpace(cleanEmail) && !cleanEmail.Contains('@'))
+            {
+                cleanEmail += "@" + UniversityDomain;
+            }
 
             // Strict Marwadi University Domain Enforcement for Google SSO
             if (string.IsNullOrWhiteSpace(cleanEmail) || !cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
             {
-                return Json(new
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || HttpMethods.IsPost(Request.Method))
                 {
-                    success = false,
-                    message = "Access Denied: Only official @marwadiuniversity.ac.in Google Workspace accounts are permitted by university policy."
-                });
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Access Denied: Only official @marwadiuniversity.ac.in Google Workspace accounts are permitted by university policy."
+                    });
+                }
+                return RedirectToAction("Login", new { error = "Only @marwadiuniversity.ac.in emails are allowed." });
             }
 
             var user = await _userRepo.GetByEmailAsync(cleanEmail);
@@ -127,7 +139,13 @@ namespace UniVerse.Server.Controllers
             }
 
             await SignInUserAsync(user, true);
-            return Json(new { success = true, redirectUrl = "/Dashboard" });
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || HttpMethods.IsPost(Request.Method))
+            {
+                return Json(new { success = true, redirectUrl = "/Dashboard" });
+            }
+
+            return RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]
