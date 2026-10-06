@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="UniVerse.Server/UniVerse.Server.csproj" />
   <Project Path="UniVerse.Web/UniVerse.Web.csproj" />
 </Solution>
