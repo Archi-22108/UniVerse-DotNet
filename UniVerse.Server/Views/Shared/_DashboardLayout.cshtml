@@ -382,15 +382,17 @@
          COSMIC SPACE BACKGROUND & ATMOSPHERIC NEBULAE
     ═══════════════════════════════════════════════════════════════════════ -->
     <div class="cosmic-bg-container">
-        <!-- Deep Ambient Cosmic Glow Nebulae -->
+        <!-- Deep Ambient Cosmic Glow Nebulae matching universe/src/app/dashboard/page.tsx -->
         <div class="glow-nebula-spot"></div>
         <div class="glow-nebula-1"></div>
         <div class="glow-nebula-2"></div>
         <div class="glow-nebula-3"></div>
         <div class="glow-nebula-4"></div>
 
-        <!-- Live 3D Three.js Starfield, Rotating Planets & Celestial Scene -->
-        <canvas id="cosmicSpaceCanvas"></canvas>
+        <!-- Floating cosmic particles background with opacity-50 matching page.tsx line 113 -->
+        <div style="position: absolute; inset: 0; opacity: 0.5; pointer-events: none;">
+            <canvas id="cosmicSpaceCanvas"></canvas>
+        </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════
@@ -591,26 +593,26 @@
                     const spaceGroup = new THREE.Group();
                     scene.add(spaceGroup);
 
-                    // Ambient & Directional Lights matching SpaceBackground.tsx
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+                    // Ambient & Directional Lights matching SpaceBackground.tsx lines 79-81
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
                     spaceGroup.add(ambientLight);
 
                     const dirLight = new THREE.DirectionalLight(0x66FFB2, 1.0);
                     dirLight.position.set(5, 5, 5);
                     spaceGroup.add(dirLight);
 
-                    const ptLight = new THREE.PointLight(0x00C853, 0.6);
+                    const ptLight = new THREE.PointLight(0x00C853, 0.5);
                     ptLight.position.set(-5, -5, -5);
                     spaceGroup.add(ptLight);
 
-                    // 1. Main Celestial Planet (lower left in space)
+                    // 1. Main Celestial Planet matching SpaceBackground.tsx lines 84, 50-60
                     const p1Geo = new THREE.SphereGeometry(0.42, 64, 64);
                     const p1Mat = new THREE.MeshStandardMaterial({
                         color: 0x00E676,
                         roughness: 0.85,
                         metalness: 0.15,
                         emissive: 0x00E676,
-                        emissiveIntensity: 0.15,
+                        emissiveIntensity: 0.12,
                         transparent: true,
                         opacity: 0.65
                     });
@@ -618,7 +620,7 @@
                     planet1.position.set(-2.4, -1.6, -1.8);
                     spaceGroup.add(planet1);
 
-                    // 2. Small Wireframe Planet (top right)
+                    // 2. Small Wireframe Planet matching SpaceBackground.tsx lines 87, 50-60
                     const p2Geo = new THREE.SphereGeometry(0.18, 24, 24);
                     const p2Mat = new THREE.MeshStandardMaterial({
                         color: 0x66FFB2,
@@ -626,7 +628,7 @@
                         roughness: 0.85,
                         metalness: 0.15,
                         emissive: 0x66FFB2,
-                        emissiveIntensity: 0.18,
+                        emissiveIntensity: 0.12,
                         transparent: true,
                         opacity: 0.65
                     });
@@ -652,33 +654,19 @@
                     const starGeo = new THREE.BufferGeometry();
                     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
 
-                    // Soft star circular particle texture
-                    const c2d = document.createElement('canvas');
-                    c2d.width = 16;
-                    c2d.height = 16;
-                    const ctx2d = c2d.getContext('2d');
-                    const grad = ctx2d.createRadialGradient(8, 8, 0, 8, 8, 8);
-                    grad.addColorStop(0, 'rgba(0, 230, 118, 1)');
-                    grad.addColorStop(0.4, 'rgba(102, 255, 178, 0.6)');
-                    grad.addColorStop(1, 'rgba(0, 230, 118, 0)');
-                    ctx2d.fillStyle = grad;
-                    ctx2d.fillRect(0, 0, 16, 16);
-                    const starTex = new THREE.CanvasTexture(c2d);
-
+                    // Starfield material exact to SpaceBackground.tsx (size 0.015, color #00E676)
                     const starMat = new THREE.PointsMaterial({
                         color: 0x00E676,
-                        size: 0.045,
-                        map: starTex,
+                        size: 0.015,
+                        sizeAttenuation: true,
                         transparent: true,
-                        depthWrite: false,
-                        blending: THREE.AdditiveBlending
+                        depthWrite: false
                     });
 
                     const starGroup = new THREE.Group();
                     starGroup.rotation.set(0, 0, Math.PI / 4);
                     const starField = new THREE.Points(starGeo, starMat);
-                    starGroup.add(starField);
-                    spaceGroup.add(starGroup);
+                    spaceGroup.add(starField);
 
                     // Parallax interaction with mouse
                     let targetRotX = 0, targetRotY = 0;
