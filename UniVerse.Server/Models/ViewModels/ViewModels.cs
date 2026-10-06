@@ -283,9 +283,23 @@ namespace UniVerse.Server.Models.ViewModels
     {
         public User CurrentUser { get; set; } = new();
         public string? SuccessMessage { get; set; }
+        public string? ErrorMessage { get; set; }
+        public string? DeliverySuccess { get; set; }
+        public string? PasswordSuccess { get; set; }
+        public string? PasswordError { get; set; }
+        public string? AlertsSuccess { get; set; }
+        public string? SecuritySuccess { get; set; }
+        public string? DangerError { get; set; }
         public bool PushNotifications { get; set; } = true;
         public bool OrderAlerts { get; set; } = true;
         public bool SoundEffects { get; set; } = true;
         public bool AutoAcceptOrders { get; set; } = false;
+        public bool NotifyRequests { get; set; } = true;
+        public bool NotifyDeliveries { get; set; } = true;
+        public bool NotifyChats { get; set; } = true;
+        public bool NotifyMarketplace { get; set; } = true;
+        public string ProfileVisibility { get; set; } = "public";
+        public string ActivityVisibility { get; set; } = "public";
+        public string DefaultInstructions { get; set; } = "";
     }
 }

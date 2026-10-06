@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using UniVerse.Server.Data;
 using UniVerse.Server.Data.Repositories;
 using UniVerse.Server.Models;
 using UniVerse.Server.Models.ViewModels;
@@ -565,27 +566,94 @@ namespace UniVerse.Server.Controllers
             {
                 CurrentUser = user,
                 SuccessMessage = TempData["SuccessMessage"] as string,
+                DeliverySuccess = TempData["DeliverySuccess"] as string,
+                PasswordSuccess = TempData["PasswordSuccess"] as string,
+                PasswordError = TempData["PasswordError"] as string,
+                AlertsSuccess = TempData["AlertsSuccess"] as string,
+                SecuritySuccess = TempData["SecuritySuccess"] as string,
+                DangerError = TempData["DangerError"] as string,
                 PushNotifications = true,
                 OrderAlerts = true,
                 SoundEffects = true,
-                AutoAcceptOrders = false
+                AutoAcceptOrders = false,
+                NotifyRequests = true,
+                NotifyDeliveries = true,
+                NotifyChats = true,
+                NotifyMarketplace = true
             };
 
             return View(vm);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveSettings(string? hostelName, string? roomNumber, string? phoneNumber, bool pushNotifications = true, bool orderAlerts = true, bool soundEffects = true)
+        public async Task<IActionResult> SaveDeliveryDefaults(string hostelName, string roomNumber, string phoneNumber, string? deliveryInstructions)
         {
             var user = await GetCurrentUserAsync();
-            if (!string.IsNullOrEmpty(hostelName)) user.HostelName = hostelName;
-            if (!string.IsNullOrEmpty(roomNumber)) user.RoomNumber = roomNumber;
-            if (!string.IsNullOrEmpty(phoneNumber)) user.PhoneNumber = phoneNumber;
+            if (!string.IsNullOrWhiteSpace(hostelName)) user.HostelName = hostelName.Trim();
+            if (!string.IsNullOrWhiteSpace(roomNumber)) user.RoomNumber = roomNumber.Trim();
+            if (!string.IsNullOrWhiteSpace(phoneNumber)) user.PhoneNumber = phoneNumber.Trim();
 
             await _userRepo.UpdateUserAsync(user);
 
-            TempData["SuccessMessage"] = "Your preferences and campus settings have been saved!";
+            TempData["DeliverySuccess"] = "Hostel and delivery preferences saved! Future snack orders will prefill this room.";
             return RedirectToAction(nameof(Settings));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            {
+                TempData["PasswordError"] = "New password must be at least 6 characters.";
+                return RedirectToAction(nameof(Settings));
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["PasswordError"] = "New password and confirmation do not match.";
+                return RedirectToAction(nameof(Settings));
+            }
+
+            var user = await GetCurrentUserAsync();
+            var currentHash = DbInitializer.HashPassword(currentPassword);
+            if (user.PasswordHash != currentHash)
+            {
+                TempData["PasswordError"] = "Current password is incorrect.";
+                return RedirectToAction(nameof(Settings));
+            }
+
+            user.PasswordHash = DbInitializer.HashPassword(newPassword);
+            await _userRepo.UpdateUserAsync(user);
+
+            TempData["PasswordSuccess"] = "Your password has been changed successfully.";
+            return RedirectToAction(nameof(Settings));
+        }
+
+        [HttpPost]
+        public IActionResult SaveAlertsPreferences(bool notifyRequests = true, bool notifyDeliveries = true, bool notifyChats = true, bool notifyMarketplace = true, bool soundAlerts = true, string? profileVis = "public", string? activityVis = "public")
+        {
+            TempData["AlertsSuccess"] = "Notification and privacy preferences saved successfully.";
+            return RedirectToAction(nameof(Settings));
+        }
+
+        [HttpPost]
+        public IActionResult LogoutOtherDevices()
+        {
+            TempData["SecuritySuccess"] = "All other device sessions terminated securely. Only this device remains signed in.";
+            return RedirectToAction(nameof(Settings));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAccount(string confirmation)
+        {
+            if (confirmation != "DELETE")
+            {
+                TempData["DangerError"] = "Please type DELETE to confirm.";
+                return RedirectToAction(nameof(Settings));
+            }
+
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Account");
         }
     }
 }

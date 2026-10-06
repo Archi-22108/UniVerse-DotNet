@@ -57,6 +57,19 @@ namespace UniVerse.Server.Data
         {
             try
             {
+                var existingCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                await using (var conn = _dbHelper.CreateConnection())
+                {
+                    await conn.OpenAsync();
+                    await using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "PRAGMA table_info(users);";
+                    await using var reader = await cmd.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        existingCols.Add(reader.GetString(1));
+                    }
+                }
+
                 var columns = new[]
                 {
                     ("avatar_url", "TEXT"),
@@ -66,13 +79,9 @@ namespace UniVerse.Server.Data
 
                 foreach (var (col, def) in columns)
                 {
-                    try
+                    if (!existingCols.Contains(col))
                     {
                         await _dbHelper.ExecuteNonQueryAsync($"ALTER TABLE users ADD COLUMN {col} {def};");
-                    }
-                    catch
-                    {
-                        // Column already exists, safe to continue
                     }
                 }
             }
