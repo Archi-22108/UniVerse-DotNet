@@ -1,0 +1,621 @@
+@{
+    Layout = null;
+    var prefillEmail = ViewData["PrefillEmail"] as string ?? "";
+    var returnUrl = ViewData["ReturnUrl"] as string ?? "/Dashboard";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in - Google Accounts</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%234285F4' d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'/><path fill='%2334A853' d='M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z'/><path fill='%23FBBC05' d='M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z'/><path fill='%23EA4335' d='M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f4f9;
+            color: #1f1f1f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .google-card-wrapper {
+            width: 100%;
+            max-width: 448px;
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 40px 36px 36px 36px;
+            box-shadow: 0 1px 3px rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Progress Bar */
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: transparent;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar-container.active {
+            display: block;
+        }
+
+        .progress-bar-indeterminate {
+            width: 100%;
+            height: 100%;
+            background: #0b57d0;
+            position: relative;
+            animation: googleProgress 1.4s infinite ease-in-out;
+            transform-origin: 0% 50%;
+        }
+
+        @@keyframes googleProgress {
+            0% { transform: translateX(-100%) scaleX(0.2); }
+            50% { transform: translateX(0%) scaleX(0.7); }
+            100% { transform: translateX(100%) scaleX(0.3); }
+        }
+
+        .google-logo {
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 24px;
+            font-weight: 400;
+            color: #1f1f1f;
+            line-height: 1.3333;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #444746;
+            margin-bottom: 24px;
+            line-height: 1.4285;
+        }
+
+        .header-subtitle strong {
+            color: #1f1f1f;
+            font-weight: 500;
+        }
+
+        .org-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f0fe;
+            color: #0b57d0;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .org-badge svg {
+            width: 14px;
+            height: 14px;
+            fill: #0b57d0;
+        }
+
+        /* Account Chooser Card */
+        .account-chooser-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid #747775;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 16px;
+            background: #ffffff;
+        }
+
+        .account-chooser-card:hover {
+            background-color: #f8fafd;
+            border-color: #0b57d0;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0b57d0;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            font-weight: 500;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .account-details {
+            flex-grow: 1;
+            text-align: left;
+            overflow: hidden;
+        }
+
+        .account-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f1f1f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-email {
+            font-size: 12px;
+            color: #444746;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e2e0;
+        }
+
+        .divider span {
+            position: relative;
+            background: #ffffff;
+            padding: 0 12px;
+            font-size: 12px;
+            color: #747775;
+        }
+
+        /* Material Input */
+        .input-group {
+            position: relative;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .m-input {
+            width: 100%;
+            height: 52px;
+            padding: 14px 16px;
+            border: 1px solid #747775;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #1f1f1f;
+            outline: none;
+            transition: border 0.15s ease, box-shadow 0.15s ease;
+            background: #ffffff;
+            font-family: inherit;
+        }
+
+        .m-input:focus {
+            border-color: #0b57d0;
+            box-shadow: 0 0 0 1px #0b57d0;
+        }
+
+        .m-input.error {
+            border-color: #b3261e;
+            box-shadow: 0 0 0 1px #b3261e;
+        }
+
+        .input-subtext {
+            font-size: 12px;
+            color: #444746;
+            margin-top: 6px;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .error-message {
+            display: none;
+            color: #b3261e;
+            font-size: 12px;
+            margin-top: 6px;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .error-message.visible {
+            display: flex;
+        }
+
+        .error-message svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            fill: #b3261e;
+        }
+
+        /* Bottom Action Bar */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 28px;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: #0b57d0;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 4px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .link-btn:hover {
+            background-color: #f0f4f9;
+        }
+
+        .primary-btn {
+            background: #0b57d0;
+            color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            height: 40px;
+            padding: 0 24px;
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .primary-btn:hover {
+            background: #0842a0;
+            box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+
+        .primary-btn:disabled {
+            background: #e0e2e0;
+            color: #8e918f;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Success Card */
+        .success-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 10px;
+            text-align: center;
+        }
+
+        .success-overlay.visible {
+            display: flex;
+        }
+
+        .check-anim {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .check-anim svg {
+            width: 32px;
+            height: 32px;
+            fill: #2e7d32;
+        }
+
+        /* Bottom Footer */
+        .footer-bar {
+            width: 100%;
+            max-width: 448px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 8px;
+            font-size: 12px;
+            color: #444746;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer-links a {
+            color: #444746;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #1f1f1f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="google-card-wrapper">
+        <div id="progressBar" class="progress-bar-container">
+            <div class="progress-bar-indeterminate"></div>
+        </div>
+
+        <div class="google-logo">
+            <svg width="48" height="48" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+        </div>
+
+        <!-- Normal Sign-In Screen -->
+        <div id="signInScreen">
+            <h1 class="header-title">Sign in with Google</h1>
+            <p class="header-subtitle">
+                to continue to <strong>UniVerse</strong>
+            </p>
+
+            <div class="org-badge">
+                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                Marwadi University Organization
+            </div>
+
+            <div id="accountTile" class="account-chooser-card" style="display: none;">
+                <div class="avatar-circle" id="tileAvatar">M</div>
+                <div class="account-details">
+                    <div class="account-name" id="tileName">Marwadi Student</div>
+                    <div class="account-email" id="tileEmail">student@marwadiuniversity.ac.in</div>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#0b57d0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+
+            <div id="orDivider" class="divider" style="display: none;">
+                <span>or use another account</span>
+            </div>
+
+            <div class="input-group">
+                <input type="email"
+                       id="googleEmailInput"
+                       class="m-input"
+                       placeholder="Email or phone (@@marwadiuniversity.ac.in)"
+                       value="@prefillEmail"
+                       autocomplete="email"
+                       autofocus />
+
+                <div class="input-subtext">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#0b57d0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>
+                    <span>Use your @@marwadiuniversity.ac.in Google Workspace account</span>
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <span id="errorText">Access restricted: Only @@marwadiuniversity.ac.in accounts are permitted.</span>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <a href="https://marwadiuniversity.ac.in" target="_blank" class="link-btn">Learn more</a>
+                <button type="button" id="nextBtn" class="primary-btn">Next</button>
+            </div>
+        </div>
+
+        <!-- Success Transition Screen -->
+        <div id="successScreen" class="success-overlay">
+            <div class="check-anim">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+            <h2 style="font-family: 'Google Sans', sans-serif; font-size: 20px; font-weight: 500; color: #1f1f1f; margin-bottom: 8px;">
+                Verified with Google
+            </h2>
+            <p style="font-size: 14px; color: #444746;">
+                Redirecting to UniVerse Dashboard...
+            </p>
+        </div>
+    </div>
+
+    <div class="footer-bar">
+        <span>English (United States)</span>
+        <div class="footer-links">
+            <a href="#" onclick="alert('Marwadi University Campus Single Sign-On Portal'); return false;">Help</a>
+            <a href="#" onclick="alert('Google Workspace Security & Privacy Policy for Marwadi University'); return false;">Privacy</a>
+            <a href="#" onclick="alert('UniVerse Terms of Service'); return false;">Terms</a>
+        </div>
+    </div>
+
+    <script>
+        const progressBar = document.getElementById("progressBar");
+        const signInScreen = document.getElementById("signInScreen");
+        const successScreen = document.getElementById("successScreen");
+        const emailInput = document.getElementById("googleEmailInput");
+        const nextBtn = document.getElementById("nextBtn");
+        const errorMessage = document.getElementById("errorMessage");
+        const errorText = document.getElementById("errorText");
+        const accountTile = document.getElementById("accountTile");
+        const orDivider = document.getElementById("orDivider");
+        const tileAvatar = document.getElementById("tileAvatar");
+        const tileName = document.getElementById("tileName");
+        const tileEmail = document.getElementById("tileEmail");
+
+        const universityDomain = "@@marwadiuniversity.ac.in";
+        const returnUrl = "@returnUrl";
+
+        // Check if prefill was provided or if student was previously remembered
+        const rememberedEmail = localStorage.getItem("universe_last_google_user");
+        const candidateEmail = (emailInput.value || rememberedEmail || "").trim();
+
+        if (candidateEmail && candidateEmail.endsWith(universityDomain)) {
+            const prefix = candidateEmail.split("@@")[0];
+            const cleanName = prefix.replace(/[0-9._]/g, " ").trim();
+            const displayName = cleanName ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) : "Student";
+            
+            tileAvatar.innerText = displayName.charAt(0).toUpperCase() || "M";
+            tileName.innerText = displayName;
+            tileEmail.innerText = candidateEmail;
+            accountTile.style.display = "flex";
+            orDivider.style.display = "block";
+
+            accountTile.addEventListener("click", () => {
+                executeSignIn(candidateEmail, displayName);
+            });
+        }
+
+        emailInput.addEventListener("input", () => {
+            hideError();
+        });
+
+        emailInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                processInput();
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            processInput();
+        });
+
+        function processInput() {
+            let email = emailInput.value.trim().toLowerCase();
+            if (!email) {
+                showError("Enter your Google Account email address.");
+                emailInput.focus();
+                return;
+            }
+
+            // Auto-complete domain if student entered just their username or enrollment ID
+            if (!email.includes("@@")) {
+                email += universityDomain;
+                emailInput.value = email;
+            }
+
+            // Strict Marwadi University Domain Enforcement
+            if (!email.endsWith(universityDomain)) {
+                showError("Couldn't sign you in: Only official " + universityDomain + " Google Workspace accounts are permitted by your organization administrator. Personal Google accounts are blocked.");
+                return;
+            }
+
+            const prefix = email.split("@@")[0];
+            const cleanName = prefix.replace(/[0-9._]/g, " ").trim();
+            const fullName = cleanName ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) : "";
+
+            executeSignIn(email, fullName);
+        }
+
+        function executeSignIn(email, name) {
+            progressBar.classList.add("active");
+            nextBtn.disabled = true;
+            nextBtn.innerText = "Signing in...";
+            hideError();
+
+            fetch('/Account/GoogleLogin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams({
+                    googleEmail: email,
+                    fullName: name || ''
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem("universe_last_google_user", email);
+                    signInScreen.style.display = "none";
+                    successScreen.classList.add("visible");
+                    
+                    const targetUrl = data.redirectUrl || returnUrl || '/Dashboard';
+
+                    // Communicate back to parent window
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: 'GOOGLE_SIGNIN_SUCCESS',
+                                email: email,
+                                redirectUrl: targetUrl
+                            }, '*');
+                        } catch (err) {
+                            console.error(err);
+                        }
+                        setTimeout(() => {
+                            window.close();
+                        }, 500);
+                    } else {
+                        setTimeout(() => {
+                            window.location.href = targetUrl;
+                        }, 500);
+                    }
+                } else {
+                    progressBar.classList.remove("active");
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = "Next";
+                    showError(data.message || "Sign in failed. Please verify your credentials.");
+                }
+            })
+            .catch(err => {
+                progressBar.classList.remove("active");
+                nextBtn.disabled = false;
+                nextBtn.innerText = "Next";
+                showError("Unable to reach Google SSO authentication services. Please check your network connection.");
+            });
+        }
+
+        function showError(msg) {
+            emailInput.classList.add("error");
+            errorText.innerText = msg;
+            errorMessage.classList.add("visible");
+        }
+
+        function hideError() {
+            emailInput.classList.remove("error");
+            errorMessage.classList.remove("visible");
+        }
+    </script>
+</body>
+</html>

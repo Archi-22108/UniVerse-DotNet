@@ -85,6 +85,26 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
 
+        [HttpGet]
+        [Route("Account/GoogleSignIn")]
+        public IActionResult GoogleSignIn(string? email, string? returnUrl)
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+            ViewData["PrefillEmail"] = email;
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        [HttpGet]
+        [Route("Account/CheckAuth")]
+        public IActionResult CheckAuth()
+        {
+            return Json(new { isAuthenticated = User.Identity?.IsAuthenticated == true });
+        }
+
         [HttpPost]
         [HttpGet]
         [Route("Account/GoogleLogin")]
