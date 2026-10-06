@@ -97,6 +97,10 @@
             0%, 100% { opacity: 0.12; }
             50%      { opacity: 0.22; }
         }
+        @@keyframes flag-wave {
+            0%, 100% { transform: scaleX(1); }
+            50%      { transform: scaleX(1.12) skewY(-2.5deg); }
+        }
 
         .cloud-a { animation: cloud-drift-a 55s linear infinite; }
         .cloud-b { animation: cloud-drift-b 72s linear infinite 18s; }
@@ -111,6 +115,7 @@
         .s3-leg-r { animation: leg-stride-r 0.9s ease-in-out infinite; transform-origin: 710px 582px; }
         .phone-screen { animation: phone-pulse 1.8s ease-in-out infinite; }
         .sun-halo { animation: sun-glow 4s ease-in-out infinite; }
+        .tower-flag { animation: flag-wave 2.2s ease-in-out infinite; transform-origin: 779px 116px; }
 
         /* ─── Floating Product Objects Keyframes ─── */
         @@keyframes float-snack   { 0%, 100% { transform: translateY(0px) rotate(-15deg); } 50% { transform: translateY(-20px) rotate(-12deg); } }
@@ -992,6 +997,17 @@
                         <stop offset="0%" stop-color="#BFC5CF" />
                         <stop offset="100%" stop-color="#AEB6C2" />
                     </linearGradient>
+                    <!-- Soft drop shadow filters -->
+                    <filter id="uvShadow" x="-8%" y="-4%" width="120%" height="130%">
+                        <feDropShadow dx="3" dy="8" stdDeviation="10" floodColor="#0a1a0a" floodOpacity="0.18" />
+                    </filter>
+                    <filter id="uvTreeShadow">
+                        <feDropShadow dx="2" dy="5" stdDeviation="5" floodColor="#000000" floodOpacity="0.15" />
+                    </filter>
+                    <filter id="uvVendGlow">
+                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
                 </defs>
 
                 <!-- LAYER 1: SKY & SUN -->
@@ -1006,140 +1022,359 @@
                     <ellipse cx="160" cy="95" rx="90" ry="32" fill="white" opacity="0.88" />
                     <ellipse cx="230" cy="82" rx="65" ry="26" fill="white" opacity="0.88" />
                     <ellipse cx="90" cy="102" rx="60" ry="24" fill="white" opacity="0.88" />
+                    <ellipse cx="190" cy="75" rx="45" ry="20" fill="white" opacity="0.78" />
                 </g>
                 <g class="cloud-b">
                     <ellipse cx="560" cy="68" rx="110" ry="38" fill="white" opacity="0.72" />
                     <ellipse cx="648" cy="55" rx="78" ry="30" fill="white" opacity="0.72" />
                     <ellipse cx="472" cy="74" rx="72" ry="29" fill="white" opacity="0.72" />
+                    <ellipse cx="600" cy="48" rx="52" ry="22" fill="white" opacity="0.65" />
                 </g>
                 <g class="cloud-c">
                     <ellipse cx="900" cy="115" rx="80" ry="30" fill="white" opacity="0.65" />
                     <ellipse cx="970" cy="103" rx="58" ry="23" fill="white" opacity="0.65" />
+                    <ellipse cx="828" cy="120" rx="55" ry="22" fill="white" opacity="0.65" />
                 </g>
 
-                <!-- LAYER 2: DISTANT HILLS -->
+                <!-- LAYER 2: DISTANT TREE LINE / HILLS -->
                 <ellipse cx="200" cy="400" rx="280" ry="90" fill="#6BAF7C" opacity="0.22" />
                 <ellipse cx="750" cy="418" rx="360" ry="80" fill="#5A9E6A" opacity="0.18" />
                 <ellipse cx="1280" cy="405" rx="260" ry="85" fill="#6BAF7C" opacity="0.20" />
 
                 <!-- LAYER 3: MAIN ACADEMIC BLOCK -->
-                <rect x="520" y="240" width="400" height="360" fill="url(#uvBuildGrad)" rx="2" />
+                <rect x="528" y="265" width="408" height="365" fill="#1a2a1a" opacity="0.10" rx="2" />
+                <rect x="520" y="240" width="400" height="360" fill="url(#uvBuildGrad)" filter="url(#uvShadow)" rx="2" />
                 <rect x="520" y="240" width="400" height="14" fill="#10B981" opacity="0.92" rx="2" />
                 <rect x="520" y="254" width="400" height="4" fill="#059669" opacity="0.5" />
 
-                <!-- Academic Windows -->
-                <rect x="538" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="590" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="642" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="764" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="816" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="868" y="272" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
+                <!-- Academic Columns -->
+                <rect x="538" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="580" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="622" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="664" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="760" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="802" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="844" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
+                <rect x="886" y="258" width="16" height="342" fill="#E8E4DC" opacity="0.55" rx="1" />
 
-                <rect x="538" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="590" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="642" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="764" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="816" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
-                <rect x="868" y="328" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
+                <!-- 35 Academic Windows (5 rows x 7 cols) -->
+                @for (int row = 0; row < 5; row++)
+                {
+                    for (int col = 0; col < 7; col++)
+                    {
+                        <rect x="@(538 + col * 52)" y="@(272 + row * 56)" width="34" height="38" fill="#A8C8E0" opacity="0.68" rx="2" />
+                    }
+                }
 
                 <!-- Campus Name Badge -->
                 <rect x="610" y="462" width="220" height="32" fill="#10B981" rx="6" />
                 <text x="720" y="482" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="700" letter-spacing="0.5">MARWADI UNIVERSITY</text>
 
-                <!-- Admin Tower -->
-                <rect x="742" y="140" width="76" height="460" fill="url(#uvGlassGrad)" rx="2" />
+                <!-- Main Entrance & Canopy -->
+                <rect x="690" y="556" width="80" height="44" fill="#C8A97A" rx="3" />
+                <rect x="690" y="556" width="80" height="6" fill="#B8935A" />
+                <rect x="718" y="566" width="11" height="28" fill="#A0804C" rx="1.5" />
+                <rect x="751" y="566" width="11" height="28" fill="#A0804C" rx="1.5" />
+                <rect x="672" y="544" width="116" height="14" fill="#059669" rx="2" opacity="0.9" />
+
+                <!-- LAYER 3B: ADMIN TOWER -->
+                <rect x="750" y="148" width="84" height="458" fill="#1a2a1a" opacity="0.08" rx="2" />
+                <rect x="742" y="140" width="76" height="460" fill="url(#uvGlassGrad)" filter="url(#uvShadow)" rx="2" />
+                <rect x="778" y="140" width="4" height="460" fill="white" opacity="0.25" />
+
+                <!-- Tower Windows (8 rows x 2 cols) -->
+                @for (int row = 0; row < 8; row++)
+                {
+                    <rect x="750" y="@(155 + row * 52)" width="28" height="36" fill="#87BEDB" opacity="0.55" rx="1" />
+                    <rect x="782" y="@(155 + row * 52)" width="28" height="36" fill="#87BEDB" opacity="0.55" rx="1" />
+                }
+
+                <!-- Tower Roof & Waving Flag -->
                 <rect x="748" y="130" width="64" height="12" fill="#10B981" rx="2" />
                 <rect x="776" y="108" width="3" height="24" fill="#6B7280" />
-                <path d="M 779 108 L 808 116 L 779 124 Z" fill="#F59E0B" />
+                <path class="tower-flag" d="M 779 108 L 808 116 L 779 124 Z" fill="#F59E0B" />
 
-                <!-- LAYER 4: HOSTELS (A, B, C, D) -->
-                <!-- Hostel A -->
-                <rect x="22" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
-                <rect x="22" y="282" width="196" height="12" fill="#F59E0B" />
-                <rect x="70" y="524" width="100" height="26" fill="#F59E0B" rx="13" />
-                <text x="120" y="541" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700">HOSTEL A</text>
+                <!-- LAYER 4: HOSTELS (A, B, C, D) WITH COMPLETE FLOORS, WINDOWS & DOORS -->
+                <!-- ── Hostel A (far left, amber accent) ── -->
+                <g filter="url(#uvShadow)">
+                    <rect x="22" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
+                    <rect x="22" y="282" width="196" height="12" fill="#F59E0B" />
+                    <rect x="22" y="294" width="196" height="3" fill="#D97706" opacity="0.5" />
 
-                <!-- Hostel B -->
-                <rect x="262" y="298" width="182" height="252" fill="url(#uvHostelGrad)" rx="2" />
-                <rect x="262" y="298" width="182" height="12" fill="#10B981" />
-                <rect x="306" y="525" width="100" height="26" fill="#10B981" rx="13" />
-                <text x="356" y="542" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700">HOSTEL B</text>
+                    @for (int f = 0; f < 4; f++)
+                    {
+                        <rect x="22" y="@(297 + f * 62)" width="196" height="1" fill="#E5E7EB" />
+                    }
 
-                <!-- Hostel C -->
-                <rect x="1000" y="298" width="182" height="252" fill="url(#uvHostelGrad)" rx="2" />
-                <rect x="1000" y="298" width="182" height="12" fill="#10B981" />
-                <rect x="1042" y="525" width="100" height="26" fill="#10B981" rx="13" />
-                <text x="1092" y="542" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700">HOSTEL C</text>
+                    @for (int row = 0; row < 4; row++)
+                    {
+                        for (int col = 0; col < 3; col++)
+                        {
+                            <rect x="@(38 + col * 58)" y="@(303 + row * 62)" width="38" height="42" fill="#A8C8E0" opacity="0.65" rx="2" />
+                        }
+                    }
 
-                <!-- Hostel D -->
-                <rect x="1226" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
-                <rect x="1226" y="282" width="196" height="12" fill="#F59E0B" />
-                <rect x="1274" y="524" width="100" height="26" fill="#F59E0B" rx="13" />
-                <text x="1324" y="541" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700">HOSTEL D</text>
+                    <!-- Door -->
+                    <rect x="98" y="508" width="44" height="42" fill="#C09050" rx="2" />
+                    <rect x="98" y="508" width="44" height="6" fill="#A07030" />
+                    <rect x="118" y="518" width="5" height="22" fill="#8B6040" rx="1" />
 
-                <!-- LAYER 5: ROADS & GROUND -->
+                    <!-- Label badge -->
+                    <rect x="70" y="474" width="100" height="26" fill="#F59E0B" rx="13" />
+                    <text x="120" y="491" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="0.5">HOSTEL A</text>
+                </g>
+
+                <!-- ── Hostel B (center-left, emerald accent) ── -->
+                <g filter="url(#uvShadow)">
+                    <rect x="262" y="298" width="182" height="252" fill="url(#uvHostelGrad)" rx="2" />
+                    <rect x="262" y="298" width="182" height="12" fill="#10B981" />
+                    <rect x="262" y="310" width="182" height="3" fill="#059669" opacity="0.5" />
+
+                    @for (int f = 0; f < 4; f++)
+                    {
+                        <rect x="262" y="@(313 + f * 59)" width="182" height="1" fill="#E5E7EB" />
+                    }
+
+                    @for (int row = 0; row < 4; row++)
+                    {
+                        for (int col = 0; col < 3; col++)
+                        {
+                            <rect x="@(276 + col * 54)" y="@(320 + row * 59)" width="36" height="40" fill="#A8C8E0" opacity="0.65" rx="2" />
+                        }
+                    }
+
+                    <!-- Door -->
+                    <rect x="330" y="508" width="44" height="42" fill="#C09050" rx="2" />
+                    <rect x="330" y="508" width="44" height="6" fill="#A07030" />
+                    <rect x="350" y="518" width="5" height="22" fill="#8B6040" rx="1" />
+
+                    <!-- Label badge -->
+                    <rect x="306" y="474" width="100" height="26" fill="#10B981" rx="13" />
+                    <text x="356" y="491" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="0.5">HOSTEL B</text>
+                </g>
+
+                <!-- ── Hostel C (center-right, emerald accent) ── -->
+                <g filter="url(#uvShadow)">
+                    <rect x="1000" y="298" width="182" height="252" fill="url(#uvHostelGrad)" rx="2" />
+                    <rect x="1000" y="298" width="182" height="12" fill="#10B981" />
+                    <rect x="1000" y="310" width="182" height="3" fill="#059669" opacity="0.5" />
+
+                    @for (int f = 0; f < 4; f++)
+                    {
+                        <rect x="1000" y="@(313 + f * 59)" width="182" height="1" fill="#E5E7EB" />
+                    }
+
+                    @for (int row = 0; row < 4; row++)
+                    {
+                        for (int col = 0; col < 3; col++)
+                        {
+                            <rect x="@(1014 + col * 54)" y="@(320 + row * 59)" width="36" height="40" fill="#A8C8E0" opacity="0.65" rx="2" />
+                        }
+                    }
+
+                    <!-- Door -->
+                    <rect x="1066" y="508" width="44" height="42" fill="#C09050" rx="2" />
+                    <rect x="1066" y="508" width="44" height="6" fill="#A07030" />
+                    <rect x="1086" y="518" width="5" height="22" fill="#8B6040" rx="1" />
+
+                    <!-- Label badge -->
+                    <rect x="1042" y="474" width="100" height="26" fill="#10B981" rx="13" />
+                    <text x="1092" y="491" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="0.5">HOSTEL C</text>
+                </g>
+
+                <!-- ── Hostel D (far right, amber accent) ── -->
+                <g filter="url(#uvShadow)">
+                    <rect x="1226" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
+                    <rect x="1226" y="282" width="196" height="12" fill="#F59E0B" />
+                    <rect x="1226" y="294" width="196" height="3" fill="#D97706" opacity="0.5" />
+
+                    @for (int f = 0; f < 4; f++)
+                    {
+                        <rect x="1226" y="@(297 + f * 62)" width="196" height="1" fill="#E5E7EB" />
+                    }
+
+                    @for (int row = 0; row < 4; row++)
+                    {
+                        for (int col = 0; col < 3; col++)
+                        {
+                            <rect x="@(1242 + col * 58)" y="@(303 + row * 62)" width="38" height="42" fill="#A8C8E0" opacity="0.65" rx="2" />
+                        }
+                    }
+
+                    <!-- Door -->
+                    <rect x="1302" y="508" width="44" height="42" fill="#C09050" rx="2" />
+                    <rect x="1302" y="508" width="44" height="6" fill="#A07030" />
+                    <rect x="1322" y="518" width="5" height="22" fill="#8B6040" rx="1" />
+
+                    <!-- Label badge -->
+                    <rect x="1274" y="474" width="100" height="26" fill="#F59E0B" rx="13" />
+                    <text x="1324" y="491" text-anchor="middle" fill="white" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="0.5">HOSTEL D</text>
+                </g>
+
+                <!-- LAYER 5: ROADS & PATHS -->
                 <rect x="0" y="592" width="1440" height="44" fill="url(#uvRoadGrad)" />
-                <rect x="0" y="636" width="1440" height="164" fill="url(#uvGrassGrad)" />
+                <rect x="0" y="592" width="1440" height="2" fill="#CDD2DC" opacity="0.6" />
+
+                <!-- Road Lane Dashes -->
+                @for (int i = 0; i < 14; i++)
+                {
+                    <rect x="@(40 + i * 106)" y="611" width="56" height="5" fill="white" opacity="0.45" rx="2" />
+                }
+
+                <!-- Vertical Paths from Hostels -->
+                <rect x="107" y="553" width="28" height="44" fill="#C4CAD6" opacity="0.7" />
+                <rect x="341" y="553" width="28" height="44" fill="#C4CAD6" opacity="0.7" />
+                <rect x="1075" y="553" width="28" height="44" fill="#C4CAD6" opacity="0.7" />
+                <rect x="1309" y="553" width="28" height="44" fill="#C4CAD6" opacity="0.7" />
+
+                <!-- Curved Paths -->
+                <path d="M 520 590 Q 420 575 360 592" stroke="#C4CAD6" stroke-width="18" fill="none" opacity="0.65" stroke-linecap="round" />
+                <path d="M 920 590 Q 1020 575 1082 592" stroke="#C4CAD6" stroke-width="18" fill="none" opacity="0.65" stroke-linecap="round" />
 
                 <!-- LAYER 6: VENDING MACHINES -->
-                <!-- Vending A -->
-                <rect x="224" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
-                <rect x="227" y="510" width="30" height="18" fill="#10B981" opacity="0.85" rx="2" />
-                <text x="242" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                <!-- Vending A (near Hostel A) -->
+                <g filter="url(#uvVendGlow)">
+                    <rect x="224" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
+                    <rect x="227" y="510" width="30" height="18" fill="#10B981" opacity="0.85" rx="2" />
+                    <text x="242" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="228" y="532" width="12" height="11" fill="#10B981" opacity="0.55" rx="1" />
+                    <rect x="244" y="532" width="12" height="11" fill="#F59E0B" opacity="0.55" rx="1" />
+                    <rect x="228" y="546" width="12" height="11" fill="#F59E0B" opacity="0.45" rx="1" />
+                    <rect x="244" y="546" width="12" height="11" fill="#10B981" opacity="0.45" rx="1" />
+                    <rect x="234" y="560" width="16" height="3" fill="#AAAAAA" rx="1.5" />
+                    <rect x="228" y="558" width="28" height="4" fill="#D0D0D0" rx="1" />
+                </g>
 
-                <!-- Vending B -->
-                <rect x="450" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
-                <rect x="453" y="510" width="30" height="18" fill="#F59E0B" opacity="0.85" rx="2" />
-                <text x="468" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                <!-- Vending B (near Hostel B) -->
+                <g filter="url(#uvVendGlow)">
+                    <rect x="450" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
+                    <rect x="453" y="510" width="30" height="18" fill="#F59E0B" opacity="0.85" rx="2" />
+                    <text x="468" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="454" y="532" width="12" height="11" fill="#F59E0B" opacity="0.55" rx="1" />
+                    <rect x="470" y="532" width="12" height="11" fill="#10B981" opacity="0.55" rx="1" />
+                    <rect x="454" y="546" width="12" height="11" fill="#10B981" opacity="0.45" rx="1" />
+                    <rect x="470" y="546" width="12" height="11" fill="#F59E0B" opacity="0.45" rx="1" />
+                    <rect x="460" y="560" width="16" height="3" fill="#AAAAAA" rx="1.5" />
+                    <rect x="454" y="558" width="28" height="4" fill="#D0D0D0" rx="1" />
+                </g>
 
-                <!-- Vending C -->
-                <rect x="994" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
-                <rect x="997" y="510" width="30" height="18" fill="#10B981" opacity="0.85" rx="2" />
-                <text x="1012" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                <!-- Vending C (near Hostel C) -->
+                <g filter="url(#uvVendGlow)">
+                    <rect x="994" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
+                    <rect x="997" y="510" width="30" height="18" fill="#10B981" opacity="0.85" rx="2" />
+                    <text x="1012" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="998" y="532" width="12" height="11" fill="#10B981" opacity="0.55" rx="1" />
+                    <rect x="1014" y="532" width="12" height="11" fill="#F59E0B" opacity="0.55" rx="1" />
+                    <rect x="998" y="546" width="12" height="11" fill="#F59E0B" opacity="0.45" rx="1" />
+                    <rect x="1014" y="546" width="12" height="11" fill="#10B981" opacity="0.45" rx="1" />
+                    <rect x="1004" y="560" width="16" height="3" fill="#AAAAAA" rx="1.5" />
+                    <rect x="998" y="558" width="28" height="4" fill="#D0D0D0" rx="1" />
+                </g>
 
-                <!-- Vending D -->
-                <rect x="1216" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
-                <rect x="1219" y="510" width="30" height="18" fill="#F59E0B" opacity="0.85" rx="2" />
-                <text x="1234" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                <!-- Vending D (near Hostel D) -->
+                <g filter="url(#uvVendGlow)">
+                    <rect x="1216" y="507" width="36" height="56" fill="#EBEBEB" rx="4" stroke="#CECECE" stroke-width="1" />
+                    <rect x="1219" y="510" width="30" height="18" fill="#F59E0B" opacity="0.85" rx="2" />
+                    <text x="1234" y="523" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="1220" y="532" width="12" height="11" fill="#F59E0B" opacity="0.55" rx="1" />
+                    <rect x="1236" y="532" width="12" height="11" fill="#10B981" opacity="0.55" rx="1" />
+                    <rect x="1220" y="546" width="12" height="11" fill="#10B981" opacity="0.45" rx="1" />
+                    <rect x="1236" y="546" width="12" height="11" fill="#F59E0B" opacity="0.45" rx="1" />
+                    <rect x="1226" y="560" width="16" height="3" fill="#AAAAAA" rx="1.5" />
+                    <rect x="1220" y="558" width="28" height="4" fill="#D0D0D0" rx="1" />
+                </g>
 
-                <!-- LAYER 7: TREES -->
-                <circle cx="218" cy="540" r="32" fill="#2E7D52" />
-                <circle cx="490" cy="530" r="36" fill="#2E7D52" />
-                <circle cx="950" cy="530" r="36" fill="#2E7D52" />
-                <circle cx="1228" cy="540" r="32" fill="#3D8B5A" />
+                <!-- LAYER 7: 12 REALISTIC TREES WITH TRUNKS & MULTI-LAYER CROWNS -->
+                @{
+                    var campusTrees = new[]
+                    {
+                        new { X = 490, Base = 548, TH = 48, CR = 44.0, C1 = "#2E7D52", C2 = "#388E5A" },
+                        new { X = 510, Base = 548, TH = 48, CR = 30.0, C1 = "#3D8B5A", C2 = "#4CAF72" },
+                        new { X = 930, Base = 548, TH = 44, CR = 40.0, C1 = "#2E7D52", C2 = "#3D8B5A" },
+                        new { X = 950, Base = 548, TH = 44, CR = 28.0, C1 = "#4CAF72", C2 = "#388E5A" },
+                        new { X = 218, Base = 556, TH = 36, CR = 32.0, C1 = "#2E7D52", C2 = "#388E5A" },
+                        new { X = 1228, Base = 556, TH = 36, CR = 32.0, C1 = "#388E5A", C2 = "#2E7D52" },
+                        new { X = 660, Base = 558, TH = 28, CR = 24.0, C1 = "#3D8B5A", C2 = "#4CAF72" },
+                        new { X = 782, Base = 558, TH = 28, CR = 24.0, C1 = "#2E7D52", C2 = "#3D8B5A" },
+                        new { X = 145, Base = 560, TH = 22, CR = 20.0, C1 = "#388E5A", C2 = "#4CAF72" },
+                        new { X = 1296, Base = 560, TH = 22, CR = 20.0, C1 = "#2E7D52", C2 = "#388E5A" },
+                        new { X = 455, Base = 562, TH = 20, CR = 18.0, C1 = "#4CAF72", C2 = "#3D8B5A" },
+                        new { X = 988, Base = 562, TH = 20, CR = 18.0, C1 = "#388E5A", C2 = "#4CAF72" }
+                    };
+                }
+                @foreach (var t in campusTrees)
+                {
+                    var trunkX = t.X - 4;
+                    var trunkY = t.Base - t.TH;
+                    var sideCy = (int)(t.Base - t.TH - t.CR * 0.5);
+                    var sideR = (int)(t.CR * 0.65);
+                    var topCy = (int)(t.Base - t.TH - t.CR * 0.8);
+                    <g filter="url(#uvTreeShadow)">
+                        <rect x="@trunkX" y="@trunkY" width="8" height="@t.TH" fill="#7B5A3A" rx="2" />
+                        <circle cx="@(t.X - 12)" cy="@sideCy" r="@sideR" fill="@t.C2" />
+                        <circle cx="@(t.X + 12)" cy="@sideCy" r="@sideR" fill="@t.C2" />
+                        <circle cx="@t.X" cy="@topCy" r="@((int)t.CR)" fill="@t.C1" />
+                    </g>
+                }
+
+                <!-- LAYER 8: GROUND & LAWN -->
+                <rect x="0" y="636" width="1440" height="164" fill="url(#uvGrassGrad)" />
+                <rect x="0" y="635" width="1440" height="3" fill="#5DB86E" opacity="0.5" />
+                <rect x="0" y="636" width="1440" height="8" fill="#D4D8DF" opacity="0.35" />
 
                 <!-- LAYER 9: ANIMATED STUDENTS -->
                 <!-- Student 1: Requester (phone) -->
                 <g class="s1-body">
+                    <ellipse cx="130" cy="601" rx="16" ry="5" fill="#000" opacity="0.12" />
                     <rect x="122" y="578" width="8" height="22" fill="#1E3A5F" rx="3" />
                     <rect x="133" y="578" width="8" height="22" fill="#1E3A5F" rx="3" />
                     <rect x="118" y="553" width="26" height="28" fill="#10B981" rx="5" />
+                    <rect x="106" y="550" width="14" height="6" fill="#D4A070" rx="3" transform="rotate(-45, 113, 553)" />
                     <rect x="98" y="540" width="13" height="20" fill="#1A1A2E" rx="3" />
                     <rect x="100" y="542" width="9" height="14" rx="1.5" fill="#4FC3F7" class="phone-screen" />
+                    <rect x="144" y="558" width="13" height="6" fill="#D4A070" rx="3" transform="rotate(20, 150, 561)" />
                     <circle cx="131" cy="545" r="11" fill="#D4A070" />
+                    <ellipse cx="131" cy="537" rx="11" ry="5" fill="#2C1810" />
+                    <rect x="120" y="598" width="10" height="5" fill="#1A1A2E" rx="2" />
+                    <rect x="133" y="598" width="10" height="5" fill="#1A1A2E" rx="2" />
                 </g>
 
                 <!-- Student 2: Collector -->
                 <g class="s2-body">
+                    <ellipse cx="435" cy="603" rx="16" ry="5" fill="#000" opacity="0.12" />
                     <rect x="427" y="578" width="8" height="22" fill="#374151" rx="3" />
                     <rect x="438" y="578" width="8" height="22" fill="#374151" rx="3" />
                     <rect x="423" y="553" width="26" height="28" fill="#F59E0B" rx="5" />
-                    <rect x="467" y="547" width="14" height="18" fill="#10B981" rx="3" />
+                    <rect x="449" y="555" width="20" height="6" fill="#C8956C" rx="3" transform="rotate(-8, 459, 558)" />
+                    <rect x="467" y="547" width="14" height="18" fill="#10B981" rx="3" opacity="0.95" />
                     <text x="474" y="559" text-anchor="middle" fill="white" font-size="7" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="404" y="558" width="20" height="6" fill="#C8956C" rx="3" transform="rotate(10, 414, 561)" />
                     <circle cx="436" cy="545" r="11" fill="#C8956C" />
+                    <ellipse cx="436" cy="537" rx="11" ry="5" fill="#1A0A04" />
+                    <rect x="425" y="598" width="10" height="5" fill="#374151" rx="2" />
+                    <rect x="438" y="598" width="10" height="5" fill="#374151" rx="2" />
                 </g>
 
-                <!-- Student 3: Runner with UV Delivery Bag -->
+                <!-- Student 3: Runner with UniVerse Bag -->
                 <g class="s3-body">
+                    <ellipse cx="705" cy="604" rx="16" ry="5" fill="#000" opacity="0.12" />
                     <rect class="s3-leg-l" x="697" y="580" width="8" height="22" fill="#1E3A5F" rx="3" />
                     <rect class="s3-leg-r" x="709" y="580" width="8" height="22" fill="#1E3A5F" rx="3" />
                     <rect x="693" y="554" width="26" height="28" fill="#6366F1" rx="5" />
+                    <rect class="s3-arm-l" x="680" y="559" width="14" height="6" fill="#C8956C" rx="3" />
                     <rect class="s3-arm-r" x="718" y="556" width="14" height="6" fill="#C8956C" rx="3" />
-                    <!-- Bag -->
                     <rect x="728" y="544" width="22" height="26" fill="#10B981" rx="4" />
                     <text x="739" y="556" text-anchor="middle" fill="white" font-size="8" font-family="sans-serif" font-weight="800">UV</text>
+                    <rect x="731" y="565" width="16" height="2" fill="white" opacity="0.4" rx="1" />
+                    <path d="M 733 544 Q 735 538 739 538 Q 743 538 745 544" fill="none" stroke="white" stroke-width="1.5" opacity="0.6" />
                     <circle cx="706" cy="546" r="11" fill="#D4A070" />
+                    <ellipse cx="706" cy="538" rx="11" ry="5" fill="#3D2B1F" />
+                    <rect x="695" y="600" width="10" height="5" fill="#1E3A5F" rx="2" />
+                    <rect x="709" y="600" width="10" height="5" fill="#1E3A5F" rx="2" />
                 </g>
+
+                <!-- LAYER 10: ATMOSPHERIC DEPTH -->
+                <rect x="0" y="720" width="1440" height="80" fill="#1A3A22" opacity="0.35" />
             </svg>
         </div>
 
