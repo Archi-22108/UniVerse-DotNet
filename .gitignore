@@ -12,3 +12,5 @@
 *.db-shm
 *.db-wal
 appsettings.Development.json
+cloudflared.exe
+scratch/
