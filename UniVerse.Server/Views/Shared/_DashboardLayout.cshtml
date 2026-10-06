@@ -378,22 +378,25 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         COSMIC SPACE BACKGROUND & ATMOSPHERIC NEBULAE
-    ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="cosmic-bg-container">
-        <!-- Deep Ambient Cosmic Glow Nebulae matching universe/src/app/dashboard/page.tsx -->
-        <div class="glow-nebula-spot"></div>
-        <div class="glow-nebula-1"></div>
-        <div class="glow-nebula-2"></div>
-        <div class="glow-nebula-3"></div>
-        <div class="glow-nebula-4"></div>
+    @if (activePage == "dashboard")
+    {
+        <!-- ═══════════════════════════════════════════════════════════════════════
+             COSMIC SPACE BACKGROUND & ATMOSPHERIC NEBULAE (Dashboard only)
+        ═══════════════════════════════════════════════════════════════════════ -->
+        <div class="cosmic-bg-container">
+            <!-- Deep Ambient Cosmic Glow Nebulae matching universe/src/app/dashboard/page.tsx -->
+            <div class="glow-nebula-spot"></div>
+            <div class="glow-nebula-1"></div>
+            <div class="glow-nebula-2"></div>
+            <div class="glow-nebula-3"></div>
+            <div class="glow-nebula-4"></div>
 
-        <!-- Floating cosmic particles background with opacity-50 matching page.tsx line 113 -->
-        <div style="position: absolute; inset: 0; opacity: 0.5; pointer-events: none;">
-            <canvas id="cosmicSpaceCanvas"></canvas>
+            <!-- Floating cosmic particles background with opacity-50 matching page.tsx line 113 -->
+            <div style="position: absolute; inset: 0; opacity: 0.5; pointer-events: none;">
+                <canvas id="cosmicSpaceCanvas"></canvas>
+            </div>
         </div>
-    </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════════
          1. DESKTOP SIDEBAR (240px Fixed)

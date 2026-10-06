@@ -5,175 +5,486 @@
     ViewBag.ActivePage = "profile";
 
     var user = Model.CurrentUser;
-    var rawName = string.IsNullOrEmpty(user.FullName) ? "Student" : user.FullName;
-    var initial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "S";
+    var rawName = string.IsNullOrEmpty(user.FullName) ? "Aarav Patel" : user.FullName;
+    var initial = rawName.Length > 0 ? rawName.Substring(0, 1).ToUpper() : "A";
+    var currentSemester = string.IsNullOrEmpty(user.Semester) ? "Semester 6" : user.Semester;
+    var currentDept = string.IsNullOrEmpty(user.Department) ? "Computer Science & Engineering" : user.Department;
 }
 
 @section Styles {
 <style>
-    .uv-profile-box {
-        background: rgba(10, 16, 13, 0.85);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+    /* Global override ONLY for Profile page to make sidebar transparent so video shows behind it (matching Next.js page.tsx line 28-30) */
+    aside, .uv-sidebar {
+        background: transparent !important;
+        border-right-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    body {
+        background: #000 !important;
+    }
+
+    /* Video Background Container matching universe/src/app/dashboard/profile/page.tsx */
+    .uv-video-bg-container {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .uv-video-bg {
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .uv-video-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.50);
+    }
+
+    /* Profile Content Container matching max-w-[700px] / max-w-[640px] */
+    .uv-profile-wrap {
+        max-width: 680px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+        padding-top: 8px;
+    }
+
+    .uv-profile-card {
+        background: rgba(10, 15, 12, 0.6);
+        border: 1px solid rgba(102, 255, 178, 0.12);
         border-radius: 24px;
         padding: 32px;
         backdrop-filter: blur(20px);
-        max-width: 680px;
-        margin: 0 auto;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        margin-bottom: 24px;
     }
 
-    .uv-avatar-large {
-        width: 90px;
-        height: 90px;
+    .uv-avatar-box-lg {
+        width: 96px;
+        height: 96px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #10B981, #059669);
-        border: 2px solid var(--accent-green);
-        color: #022c22;
-        font-size: 36px;
-        font-weight: 900;
+        background: #00E676;
+        color: #050A07;
+        font-size: 2.5rem;
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 25px rgba(0, 230, 118, 0.3);
+        box-shadow: 0 0 25px rgba(0, 230, 118, 0.35);
+        border: 2px solid #00E676;
         position: relative;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .uv-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: none;
+    }
+
+    .uv-cam-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #050A07;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 2;
+    }
+
+    .uv-cam-btn:hover {
+        border-color: #00E676;
+        color: #00E676;
     }
 
     .uv-input-field {
         width: 100%;
-        background: rgba(255, 255, 255, 0.04);
+        background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 14px;
-        padding: 12px 16px;
-        color: #fff;
+        border-radius: 12px;
+        padding: 10px 14px 10px 38px;
+        color: #ffffff;
         font-size: 13.5px;
         outline: none;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
     }
 
     .uv-input-field:focus {
         border-color: var(--accent-green);
-        background: rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .uv-input-field:read-only {
+        background: rgba(255, 255, 255, 0.02);
+        color: rgba(255, 255, 255, 0.5);
+        border-color: rgba(255, 255, 255, 0.05);
+        cursor: not-allowed;
+    }
+
+    .uv-input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 15px;
+        pointer-events: none;
+    }
+
+    .uv-input-select-arrow {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 12px;
+        pointer-events: none;
     }
 
     .uv-label {
         display: block;
-        font-size: 11.5px;
-        font-family: var(--font-mono);
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.6);
-        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 600;
+        color: #ffffff;
         margin-bottom: 6px;
+    }
+
+    .uv-hint {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 4px;
+    }
+
+    .btn-upload-photo {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        color: #00E676;
+        border: 1px solid rgba(0, 230, 118, 0.3);
+        border-radius: 10px;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-upload-photo:hover {
+        background: rgba(0, 230, 118, 0.1);
+    }
+
+    .btn-remove-photo {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        border-radius: 10px;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-remove-photo:hover {
+        background: rgba(248, 113, 113, 0.1);
+    }
+
+    .btn-save-profile {
+        background: #00E676;
+        color: #050A07;
+        font-weight: 800;
+        font-size: 13.5px;
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 0 16px rgba(0, 230, 118, 0.25);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-save-profile:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 24px rgba(0, 230, 118, 0.4);
+    }
+
+    .btn-cancel-profile {
+        background: transparent;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+
+    .btn-cancel-profile:hover {
+        opacity: 0.7;
     }
 </style>
 }
 
-<div style="max-w: 740px; margin: 0 auto;">
-    <!-- Top Header -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     AUTHENTIC VIDEO BACKGROUND (Exact match to universe/public/profile-background-responsive-small.mp4)
+═══════════════════════════════════════════════════════════════════════ -->
+<div class="uv-video-bg-container">
+    <video class="uv-video-bg" autoplay muted loop playsinline preload="auto">
+        <source src="/profile-background-responsive-small.mp4" type="video/mp4" />
+    </video>
+    <div class="uv-video-overlay"></div>
+</div>
+
+<div class="uv-profile-wrap">
+    <!-- Header with Back Button and Rating Badge matching universe/src/app/dashboard/profile/page.tsx -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="/Dashboard" class="uv-bell-btn" title="Back to Dashboard" style="text-decoration: none;">
-                <i class="bi bi-arrow-left"></i>
+            <a href="/Dashboard" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #A7B8B0; text-decoration: none; transition: all 0.2s;" title="Back to Dashboard">
+                <i class="bi bi-arrow-left" style="font-size: 16px;"></i>
             </a>
             <div>
-                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: #fff; margin: 0;">
+                <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.01em;">
                     Edit Profile
                 </h1>
-                <p style="color: var(--text-muted); font-size: 12.5px; margin: 2px 0 0 0;">
+                <p style="color: rgba(255, 255, 255, 0.6); font-size: 12.5px; margin: 2px 0 0 0;">
                     Update your university identity and contact details.
                 </p>
             </div>
         </div>
 
-        <div style="background: rgba(0, 230, 118, 0.1); border: 1px solid rgba(0, 230, 118, 0.25); padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 800; color: var(--accent-green); display: flex; align-items: center; gap: 6px;">
-            <i class="bi bi-star-fill text-warning"></i>
+        <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 800; color: var(--accent-green); display: flex; align-items: center; gap: 6px;">
+            <i class="bi bi-star-fill" style="color: #F59E0B; font-size: 11px;"></i>
             <span>4.9 Verified Student</span>
         </div>
     </div>
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
     {
-        <div style="background: rgba(0, 230, 118, 0.15); border: 1px solid rgba(0, 230, 118, 0.4); border-radius: 14px; padding: 12px 18px; color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <div style="background: rgba(0, 230, 118, 0.12); border: 1px solid rgba(0, 230, 118, 0.35); border-radius: 14px; padding: 12px 18px; color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
             <i class="bi bi-check-circle-fill"></i>
             <span>@Model.SuccessMessage</span>
         </div>
     }
 
-    <!-- Form Box -->
-    <div class="uv-profile-box">
-        <!-- Avatar Header -->
-        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-wrap: wrap;">
-            <div class="uv-avatar-large">
-                @initial
-                <button type="button" onclick="showToast('Profile photo updated successfully!')" style="position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; border-radius: 50%; background: #050A07; border: 1px solid var(--accent-green); color: var(--accent-green); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <i class="bi bi-camera-fill" style="font-size: 13px;"></i>
+    <!-- Profile Form Card matching ProfileForm.tsx -->
+    <div class="uv-profile-card">
+        <!-- Photo Upload Section -->
+        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-wrap: wrap;">
+            <div class="uv-avatar-box-lg" id="profileAvatarBox">
+                <span id="profileAvatarText">@initial</span>
+                <img id="profileAvatarImg" class="uv-avatar-img" alt="Profile" />
+                <button type="button" class="uv-cam-btn" onclick="document.getElementById('profilePhotoInput').click()" title="Change photo">
+                    <i class="bi bi-camera-fill" style="font-size: 14px;"></i>
                 </button>
             </div>
-            <div>
-                <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">Profile Photo</h3>
-                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">
-                    Clear student photo helps runners recognize you at the hostel gate.
+
+            <div style="flex: 1; min-width: 200px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">
+                    Profile Photo
+                </h3>
+                <p style="font-size: 12px; color: rgba(255, 255, 255, 0.5); margin: 0 0 12px 0;">
+                    Upload a clear photo so others can recognize you at the hostel gate.
                 </p>
-                <button type="button" onclick="showToast('Choose file feature simulated.')" style="background: rgba(0, 230, 118, 0.1); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--accent-green); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; cursor: pointer;">
-                    <i class="bi bi-upload me-1"></i> Upload Photo
-                </button>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(this)" />
+                    <button type="button" class="btn-upload-photo" onclick="document.getElementById('profilePhotoInput').click()">
+                        <i class="bi bi-upload"></i>
+                        <span>Upload Photo</span>
+                    </button>
+                    <button type="button" class="btn-remove-photo" onclick="handleRemovePhoto()">
+                        <i class="bi bi-trash3"></i>
+                        <span>Remove Photo</span>
+                    </button>
+                </div>
+                <div class="uv-hint">JPG, PNG or WebP. Max size 2MB.</div>
             </div>
         </div>
 
-        <!-- Form -->
-        <form method="post" action="/Dashboard/UpdateProfile">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                <div>
-                    <label class="uv-label">Full Name</label>
-                    <input type="text" name="fullName" value="@user.FullName" class="uv-input-field" required />
+        <!-- Form Elements -->
+        <form method="post" action="/Dashboard/UpdateProfile" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- University Email (Locked) -->
+            <div>
+                <label class="uv-label">University Email</label>
+                <div style="position: relative;">
+                    <i class="bi bi-envelope uv-input-icon"></i>
+                    <input type="email" value="@user.Email" class="uv-input-field" readonly />
                 </div>
-                <div>
-                    <label class="uv-label">Campus Email (University Locked)</label>
-                    <input type="email" value="@user.Email" class="uv-input-field" readonly style="opacity: 0.6; cursor: not-allowed;" />
-                </div>
+                <div class="uv-hint">Your email cannot be changed as it is tied to your university identity.</div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <!-- Full Name -->
+            <div>
+                <label class="uv-label">Full Name</label>
+                <div style="position: relative;">
+                    <i class="bi bi-person uv-input-icon"></i>
+                    <input type="text" name="fullName" value="@user.FullName" class="uv-input-field" placeholder="Enter your full name" required />
+                </div>
+                <div class="uv-hint">Enter your full name as it appears on your university records.</div>
+            </div>
+
+            <!-- Department & Semester Row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Department / Branch -->
                 <div>
                     <label class="uv-label">Department / Branch</label>
-                    <select name="department" class="uv-input-field" style="background: #09120d;">
-                        <option value="Computer Science & Engineering" selected>Computer Science & Engineering</option>
-                        <option value="Information Technology">Information Technology</option>
-                        <option value="AI & Machine Learning">AI & Machine Learning</option>
-                        <option value="Mechanical Engineering">Mechanical Engineering</option>
-                        <option value="Civil Engineering">Civil Engineering</option>
-                        <option value="Management Studies">Management Studies</option>
-                    </select>
+                    <div style="position: relative;">
+                        <i class="bi bi-book uv-input-icon"></i>
+                        <select name="department" id="deptSelect" class="uv-input-field" style="background: #060d09; cursor: pointer; appearance: none;" onchange="handleDeptChange(this.value)">
+                            <option value="" disabled selected="@(string.IsNullOrEmpty(currentDept))">Select your branch</option>
+                            <option value="Computer Engineering" selected="@(currentDept == "Computer Engineering")">Computer Engineering</option>
+                            <option value="Computer Science & Engineering" selected="@(currentDept == "Computer Science & Engineering")">Computer Science & Engineering</option>
+                            <option value="Information Technology" selected="@(currentDept == "Information Technology")">Information Technology</option>
+                            <option value="Electronics & Communication Engineering" selected="@(currentDept == "Electronics & Communication Engineering")">Electronics & Communication Engineering</option>
+                            <option value="Electrical Engineering" selected="@(currentDept == "Electrical Engineering")">Electrical Engineering</option>
+                            <option value="Mechanical Engineering" selected="@(currentDept == "Mechanical Engineering")">Mechanical Engineering</option>
+                            <option value="Civil Engineering" selected="@(currentDept == "Civil Engineering")">Civil Engineering</option>
+                            <option value="Artificial Intelligence & Machine Learning" selected="@(currentDept == "Artificial Intelligence & Machine Learning")">Artificial Intelligence & Machine Learning</option>
+                            <option value="Data Science" selected="@(currentDept == "Data Science")">Data Science</option>
+                            <option value="Other" selected="@(currentDept == "Other")">Other</option>
+                        </select>
+                        <i class="bi bi-chevron-down uv-input-select-arrow"></i>
+                    </div>
+                    <div id="customDeptWrap" style="display: none; margin-top: 8px; position: relative;">
+                        <i class="bi bi-pencil uv-input-icon"></i>
+                        <input type="text" id="customDeptInput" placeholder="Enter your custom department" class="uv-input-field" />
+                    </div>
                 </div>
+
+                <!-- Semester (1, 2, 3, 4, 5, 6, 7, 8 All 8 Semesters Included) -->
                 <div>
                     <label class="uv-label">Semester</label>
-                    <select name="semester" class="uv-input-field" style="background: #09120d;">
-                        <option value="Semester 2">Semester 2</option>
-                        <option value="Semester 4">Semester 4</option>
-                        <option value="Semester 6" selected>Semester 6</option>
-                        <option value="Semester 8">Semester 8</option>
-                    </select>
+                    <div style="position: relative;">
+                        <i class="bi bi-mortarboard uv-input-icon"></i>
+                        <select name="semester" class="uv-input-field" style="background: #060d09; cursor: pointer; appearance: none;">
+                            <option value="" disabled selected="@(string.IsNullOrEmpty(currentSemester))">Select your semester</option>
+                            <option value="Semester 1" selected="@(currentSemester == "Semester 1")">Semester 1</option>
+                            <option value="Semester 2" selected="@(currentSemester == "Semester 2")">Semester 2</option>
+                            <option value="Semester 3" selected="@(currentSemester == "Semester 3")">Semester 3</option>
+                            <option value="Semester 4" selected="@(currentSemester == "Semester 4")">Semester 4</option>
+                            <option value="Semester 5" selected="@(currentSemester == "Semester 5")">Semester 5</option>
+                            <option value="Semester 6" selected="@(currentSemester == "Semester 6")">Semester 6</option>
+                            <option value="Semester 7" selected="@(currentSemester == "Semester 7")">Semester 7</option>
+                            <option value="Semester 8" selected="@(currentSemester == "Semester 8")">Semester 8</option>
+                        </select>
+                        <i class="bi bi-chevron-down uv-input-select-arrow"></i>
+                    </div>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <!-- Hostel Building & Room Number -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                 <div>
                     <label class="uv-label">Hostel Building</label>
-                    <input type="text" name="hostelName" value="@user.HostelName" class="uv-input-field" required />
+                    <div style="position: relative;">
+                        <i class="bi bi-building uv-input-icon"></i>
+                        <input type="text" name="hostelName" value="@user.HostelName" class="uv-input-field" placeholder="Hostel D" required />
+                    </div>
                 </div>
                 <div>
                     <label class="uv-label">Room Number</label>
-                    <input type="text" name="roomNumber" value="@user.RoomNumber" class="uv-input-field" required />
+                    <div style="position: relative;">
+                        <i class="bi bi-door-closed uv-input-icon"></i>
+                        <input type="text" name="roomNumber" value="@user.RoomNumber" class="uv-input-field" placeholder="Room 304" required />
+                    </div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 24px;">
+            <!-- Phone Number -->
+            <div>
                 <label class="uv-label">Phone Number (For Runner WhatsApp / Call)</label>
-                <input type="tel" name="phoneNumber" value="@user.PhoneNumber" class="uv-input-field" placeholder="+91 98765 43210" />
+                <div style="position: relative;">
+                    <i class="bi bi-telephone uv-input-icon"></i>
+                    <input type="tel" name="phoneNumber" value="@user.PhoneNumber" class="uv-input-field" placeholder="+91 98765 43210" />
+                </div>
             </div>
 
-            <button type="submit" class="btn-gradient-full" style="padding: 14px; font-size: 14px; margin-top: 0;">
-                <i class="bi bi-check2-circle me-1"></i> Save Profile Details
-            </button>
+            <!-- Action Buttons (Matching ProfileForm.tsx lines 400-425) -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 16px; margin-top: 8px;">
+                <a href="/Dashboard" class="btn-cancel-profile">
+                    Cancel
+                </a>
+                <button type="submit" class="btn-save-profile">
+                    <i class="bi bi-floppy"></i>
+                    <span>Save Changes</span>
+                </button>
+            </div>
         </form>
     </div>
+
+    <!-- Security Footnote (Matching ProfileForm.tsx lines 428-431) -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255, 255, 255, 0.4); font-size: 12px; margin-bottom: 32px;">
+        <i class="bi bi-shield-check" style="color: var(--accent-green); font-size: 14px;"></i>
+        <span>Your information is secure and encrypted.</span>
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    function handlePhotoSelect(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('profileAvatarImg');
+                const txt = document.getElementById('profileAvatarText');
+                img.src = e.target.result;
+                img.style.display = 'block';
+                txt.style.display = 'none';
+                if (window.showToast) {
+                    showToast('Photo selected! Click "Save Changes" to save.');
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function handleRemovePhoto() {
+        const img = document.getElementById('profileAvatarImg');
+        const txt = document.getElementById('profileAvatarText');
+        const fileInput = document.getElementById('profilePhotoInput');
+        fileInput.value = '';
+        img.src = '';
+        img.style.display = 'none';
+        txt.style.display = 'block';
+        if (window.showToast) {
+            showToast('Photo removed.');
+        }
+    }
+
+    function handleDeptChange(val) {
+        const wrap = document.getElementById('customDeptWrap');
+        if (val === 'Other') {
+            wrap.style.display = 'block';
+        } else {
+            wrap.style.display = 'none';
+        }
+    }
+</script>
+}
