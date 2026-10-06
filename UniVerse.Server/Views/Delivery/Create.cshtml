@@ -1,1140 +1,1221 @@
 @model UniVerse.Server.Models.ViewModels.DeliveryCreateViewModel
 @{
-    Layout = "_Layout";
-    ViewData["Title"] = "Create Request • Campus Delivery Network";
+    Layout = null;
     var runnerCount = (int)(ViewBag.RunnerCount ?? 0);
     var defaultHostel = Model.DropoffHostel ?? "Hostel D";
     var defaultRoom = Model.DropoffRoom ?? "304";
 }
-
-@section Styles {
-<style>
-    /* ─── Ambient 2D Glow & Cyber Dot Grid matching universe/src/app/request/new/page.tsx ─── */
-    .uv-request-page-wrapper {
-        position: relative;
-        min-height: calc(100vh - 72px);
-        background: #050805;
-        overflow-x: hidden;
-        padding: 24px 16px 64px 16px;
-    }
-
-    .uv-ambient-bg {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-        user-select: none;
-    }
-
-    .uv-glow-top {
-        position: absolute;
-        top: -120px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 850px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, rgba(0, 0, 0, 0) 70%);
-        filter: blur(80px);
-        border-radius: 50%;
-    }
-
-    .uv-glow-right {
-        position: absolute;
-        top: 35%;
-        right: -5%;
-        width: 450px;
-        height: 450px;
-        background: radial-gradient(circle, rgba(5, 150, 105, 0.10) 0%, rgba(0, 0, 0, 0) 70%);
-        filter: blur(80px);
-        border-radius: 50%;
-    }
-
-    .uv-glow-left {
-        position: absolute;
-        bottom: -10%;
-        left: -5%;
-        width: 450px;
-        height: 450px;
-        background: radial-gradient(circle, rgba(20, 184, 166, 0.10) 0%, rgba(0, 0, 0, 0) 70%);
-        filter: blur(80px);
-        border-radius: 50%;
-    }
-
-    .uv-dot-grid {
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(#10b981 1px, transparent 1px);
-        background-size: 48px 48px;
-        opacity: 0.04;
-    }
-
-    .uv-vignette {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, transparent 0%, rgba(5, 8, 5, 0.4) 60%, #050805 100%);
-    }
-
-    /* ─── Main Container ─── */
-    .uv-request-main {
-        position: relative;
-        z-index: 10;
-        width: 100%;
-        max-width: 820px;
-        margin: 0 auto;
-    }
-
-    /* ─── Top Bar ─── */
-    .uv-top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-
-    .uv-btn-dashboard {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(10, 15, 12, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #A7B8B0;
-        font-weight: 600;
-        font-size: 13px;
-        padding: 8px 14px;
-        border-radius: 12px;
-        text-decoration: none;
-        backdrop-filter: blur(12px);
-        transition: all 0.2s ease;
-    }
-
-    .uv-btn-dashboard:hover {
-        background: rgba(16, 185, 129, 0.15);
-        color: #ffffff;
-        border-color: rgba(16, 185, 129, 0.3);
-        transform: translateX(-2px);
-    }
-
-    .uv-brand-inline {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-
-    .uv-brand-zap {
-        background: #00E676;
-        border-radius: 10px;
-        padding: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 15px rgba(0, 230, 118, 0.35);
-    }
-
-    .uv-brand-text {
-        font-size: 20px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: #ffffff;
-    }
-
-    .uv-brand-text span {
-        color: #00E676;
-    }
-
-    .uv-runners-pulse-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(10, 15, 12, 0.8);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        box-shadow: 0 0 15px rgba(0, 230, 118, 0.18);
-        padding: 7px 14px;
-        border-radius: 12px;
-        backdrop-filter: blur(12px);
-    }
-
-    .uv-pulse-dot {
-        position: relative;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #00E676;
-    }
-
-    .uv-pulse-dot::before {
-        content: '';
-        position: absolute;
-        inset: -3px;
-        border-radius: 50%;
-        background: #00E676;
-        opacity: 0.6;
-        animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-    }
-
-    @@keyframes pulse-ring {
-        0% { transform: scale(0.6); opacity: 0.8; }
-        100% { transform: scale(2.2); opacity: 0; }
-    }
-
-    .uv-runners-text {
-        color: #34d399;
-        font-weight: 700;
-        font-size: 12px;
-        letter-spacing: 0.02em;
-    }
-
-    /* ─── Hero Header ─── */
-    .uv-hero-header {
-        text-align: center;
-        margin-bottom: 28px;
-        display: flex;
-        flex-col;
-        align-items: center;
-    }
-
-    .uv-hero-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        border-radius: 9999px;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #34d399;
-        font-size: 11.5px;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
-
-    .uv-hero-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: #ffffff;
-        margin-bottom: 6px;
-        letter-spacing: -0.02em;
-    }
-
-    .uv-hero-title span {
-        color: #00E676;
-        text-shadow: 0 0 24px rgba(0, 230, 118, 0.4);
-    }
-
-    .uv-hero-desc {
-        color: #A7B8B0;
-        font-size: 14px;
-        max-width: 440px;
-        margin: 0 auto;
-        line-height: 1.5;
-    }
-
-    /* ─── Dynamic Stepper Header ─── */
-    .uv-stepper-wrap {
-        width: 100%;
-        max-width: 580px;
-        margin: 0 auto 32px auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .uv-step-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        z-index: 2;
-    }
-
-    .uv-step-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .uv-step-btn.active .uv-step-circle {
-        background: #00E676;
-        color: #050805;
-        border-color: #00E676;
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.45);
-        transform: scale(1.08);
-    }
-
-    .uv-step-btn.completed .uv-step-circle {
-        background: rgba(16, 185, 129, 0.2);
-        color: #00E676;
-        border-color: #00E676;
-    }
-
-    .uv-step-label {
-        font-size: 11.5px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.4);
-        transition: color 0.2s ease;
-    }
-
-    .uv-step-btn.active .uv-step-label {
-        color: #ffffff;
-    }
-
-    .uv-step-divider {
-        flex: 1;
-        height: 2px;
-        margin: 0 12px 20px 12px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .uv-step-divider-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #00E676, #34d399);
-        width: 0%;
-        transition: width 0.4s ease;
-    }
-
-    /* ─── Main Glassmorphic Form Card ─── */
-    .uv-form-card {
-        background: rgba(10, 15, 12, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 32px;
-        box-shadow: 0 12px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 230, 118, 0.04);
-        backdrop-filter: blur(24px);
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-        transition: all 0.2s ease;
-    }
-
-    .uv-step-header {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .uv-step-icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #00E676;
-        font-size: 20px;
-        box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
-        flex-shrink: 0;
-    }
-
-    .uv-step-title {
-        font-size: 19px;
-        font-weight: 800;
-        color: #ffffff;
-        margin: 0;
-        letter-spacing: -0.01em;
-    }
-
-    .uv-step-desc {
-        color: #A7B8B0;
-        font-size: 13px;
-        margin: 2px 0 0 0;
-    }
-
-    /* ─── Categories Desktop Grid & Mobile Horizontal Pills ─── */
-    .uv-categories-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
-    }
-
-    .uv-category-tile {
-        height: 84px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        padding: 6px 4px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .uv-category-tile:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .uv-category-tile.active {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: #00E676;
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
-        transform: translateY(-2px);
-    }
-
-    .uv-category-tile.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #00E676, transparent);
-    }
-
-    .uv-category-tile i {
-        font-size: 20px;
-        color: #A7B8B0;
-        transition: color 0.2s ease;
-    }
-
-    .uv-category-tile.active i {
-        color: #00E676;
-    }
-
-    .uv-category-tile span {
-        font-size: 11px;
-        font-weight: 600;
-        color: #A7B8B0;
-        text-align: center;
-        line-height: 1.1;
-    }
-
-    .uv-category-tile.active span {
-        color: #ffffff;
-        font-weight: 700;
-    }
-
-    /* ─── Vending Machine Products Live Stock Grid ─── */
-    .uv-vending-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 4px;
-    }
-
-    .uv-subfilter-btn {
-        padding: 6px 12px;
-        border-radius: 10px;
-        font-size: 11.5px;
-        font-weight: 600;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.7);
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .uv-subfilter-btn:hover {
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.25);
-    }
-
-    .uv-subfilter-btn.active {
-        background: rgba(0, 230, 118, 0.2);
-        border-color: #00E676;
-        color: #00E676;
-        box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-        font-weight: 800;
-    }
-
-    .uv-search-box {
-        position: relative;
-        width: 230px;
-    }
-
-    .uv-search-box input {
-        width: 100%;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 7px 12px 7px 32px;
-        font-size: 12px;
-        color: #ffffff;
-        outline: none;
-        transition: border-color 0.2s ease;
-    }
-
-    .uv-search-box input:focus {
-        border-color: #00E676;
-    }
-
-    .uv-search-box i {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.4);
-    }
-
-    .uv-vending-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        max-height: 480px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-    .uv-vending-grid::-webkit-scrollbar {
-        width: 6px;
-    }
-    .uv-vending-grid::-webkit-scrollbar-thumb {
-        background: rgba(16, 185, 129, 0.3);
-        border-radius: 10px;
-    }
-
-    .uv-product-card {
-        background: rgba(14, 22, 18, 0.9);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        user-select: none;
-    }
-
-    .uv-product-card:hover {
-        background: #132219;
-        border-color: rgba(0, 230, 118, 0.6);
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
-        transform: translateY(-2px);
-    }
-
-    .uv-product-card.in-cart {
-        background: #122319;
-        border-color: #00E676;
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
-    }
-
-    .uv-card-qty-badge {
-        position: absolute;
-        top: -6px;
-        right: -6px;
-        background: #00E676;
-        color: #050805;
-        font-size: 10px;
-        font-weight: 900;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        border: 2px solid #050805;
-        z-index: 5;
-    }
-
-    .uv-prod-img-box {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        margin-bottom: 8px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .uv-prod-img-box img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-        transition: transform 0.3s ease;
-    }
-
-    .uv-product-card:hover .uv-prod-img-box img {
-        transform: scale(1.06);
-    }
-
-    .uv-slot-badge {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        font-family: var(--font-mono, monospace);
-        font-size: 9px;
-        font-weight: 800;
-        color: #00E676;
-        background: rgba(0, 0, 0, 0.8);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        border-radius: 4px;
-        padding: 1px 4px;
-    }
-
-    .uv-prod-name {
-        font-size: 12px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
-        line-height: 1.25;
-        margin-bottom: 6px;
-        min-height: 30px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .uv-prod-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 6px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .uv-prod-price {
-        color: #00E676;
-        font-weight: 800;
-        font-size: 13.5px;
-    }
-
-    .uv-stepper-mini {
-        display: flex;
-        align-items: center;
-        background: #00E676;
-        color: #050805;
-        border-radius: 8px;
-        padding: 2px;
-        box-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
-    }
-
-    .uv-stepper-mini button {
-        background: transparent;
-        border: none;
-        width: 22px;
-        height: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #050805;
-        font-weight: 900;
-        font-size: 12px;
-    }
-
-    .uv-stepper-mini span {
-        font-size: 11.5px;
-        font-weight: 900;
-        padding: 0 4px;
-        min-width: 14px;
-        text-align: center;
-    }
-
-    .uv-btn-add-mini {
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
-        background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: #00E676;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .uv-btn-add-mini:hover {
-        background: #00E676;
-        color: #050805;
-        border-color: #00E676;
-    }
-
-    /* ─── Popular Chips for Other Categories ─── */
-    .uv-popular-chips-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        max-height: 220px;
-        overflow-y: auto;
-    }
-
-    .uv-popular-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 6px 12px;
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .uv-popular-chip:hover {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.3);
-        color: #00E676;
-        transform: translateY(-1px);
-    }
-
-    .uv-chip-price {
-        color: #34d399;
-        font-weight: 800;
-        font-size: 11px;
-        background: rgba(16, 185, 129, 0.12);
-        padding: 1px 6px;
-        border-radius: 6px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    /* ─── Custom Add Row ─── */
-    .uv-custom-input-box {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 12px;
-    }
-
-    .uv-input-main {
-        flex: 1;
-        min-width: 160px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 10px 14px;
-        font-size: 13.5px;
-        color: #ffffff;
-        outline: none;
-        transition: border-color 0.2s ease;
-    }
-
-    .uv-input-main:focus {
-        border-color: #00E676;
-        background: rgba(255, 255, 255, 0.06);
-    }
-
-    .uv-price-input-wrap {
-        width: 120px;
-        display: flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 6px 10px;
-    }
-
-    .uv-price-input-wrap span {
-        color: #34d399;
-        font-weight: 800;
-        font-size: 13px;
-        margin-right: 4px;
-    }
-
-    .uv-price-input-wrap input {
-        width: 100%;
-        background: transparent;
-        border: none;
-        color: #ffffff;
-        font-size: 13px;
-        outline: none;
-    }
-
-    .uv-qty-ctrls {
-        display: flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .uv-qty-ctrls button {
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.7);
-        padding: 8px 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .uv-qty-ctrls button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-    }
-
-    .uv-qty-ctrls span {
-        font-size: 13.5px;
-        font-weight: 800;
-        color: #ffffff;
-        min-width: 24px;
-        text-align: center;
-    }
-
-    .uv-btn-add-primary {
-        background: #00E676;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 18px;
-        font-weight: 800;
-        font-size: 13.5px;
-        color: #050805;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
-        transition: all 0.2s ease;
-    }
-
-    .uv-btn-add-primary:hover {
-        background: #34d399;
-        transform: translateY(-1px);
-        box-shadow: 0 0 20px rgba(0, 230, 118, 0.45);
-    }
-
-    /* ─── Cart List ─── */
-    .uv-cart-container {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 12px;
-        max-height: 260px;
-        overflow-y: auto;
-    }
-
-    .uv-cart-item-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 10px 14px;
-    }
-
-    .uv-cart-item-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .uv-cart-qty-pill {
-        background: rgba(0, 230, 118, 0.15);
-        color: #00E676;
-        font-size: 11.5px;
-        font-weight: 900;
-        padding: 2px 8px;
-        border-radius: 6px;
-    }
-
-    .uv-cart-item-name {
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 13.5px;
-    }
-
-    .uv-cart-cat-badge {
-        font-size: 11px;
-        color: #A7B8B0;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 2px 6px;
-        border-radius: 6px;
-    }
-
-    .uv-btn-trash {
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.4);
-        cursor: pointer;
-        transition: color 0.2s ease;
-        padding: 4px;
-    }
-
-    .uv-btn-trash:hover {
-        color: #f87171;
-    }
-
-    /* ─── Step Actions ─── */
-    .uv-btn-continue {
-        width: 100%;
-        background: linear-gradient(90deg, #00C853, #00E676);
-        color: #050805;
-        font-weight: 800;
-        font-size: 15px;
-        padding: 16px;
-        border: none;
-        border-radius: 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        box-shadow: 0 0 25px rgba(0, 230, 118, 0.35);
-        transition: all 0.2s ease;
-    }
-
-    .uv-btn-continue:hover {
-        box-shadow: 0 0 35px rgba(0, 230, 118, 0.5);
-        transform: translateY(-1px);
-    }
-
-    .uv-btn-back-step {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .uv-btn-back-step:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* ─── Step 2 Option Grid & Buttons ─── */
-    .uv-option-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .uv-option-tile {
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 14px;
-        padding: 14px;
-        text-align: left;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .uv-option-tile.active {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: #00E676;
-        box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
-    }
-
-    .uv-hostel-chips {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-    }
-
-    .uv-hostel-chip {
-        padding: 10px 6px;
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.2s ease;
-    }
-
-    .uv-hostel-chip.active {
-        background: rgba(16, 185, 129, 0.2);
-        border-color: #00E676;
-        color: #00E676;
-        font-weight: 800;
-        box-shadow: 0 0 12px rgba(0, 230, 118, 0.25);
-    }
-
-    .uv-reward-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .uv-reward-chip {
-        padding: 8px 14px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #A7B8B0;
-        font-size: 12.5px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .uv-reward-chip.active {
-        background: rgba(0, 230, 118, 0.2);
-        border-color: #00E676;
-        color: #00E676;
-        box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-        font-weight: 800;
-    }
-
-    /* ─── Step 3 Order Summary Glass Card ─── */
-    .uv-summary-card {
-        background: rgba(16, 185, 129, 0.04);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        border-radius: 18px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .uv-summary-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 13.5px;
-    }
-
-    .uv-summary-label {
-        color: #A7B8B0;
-        font-weight: 500;
-    }
-
-    .uv-summary-val {
-        color: #ffffff;
-        font-weight: 700;
-    }
-
-    @@media (max-width: 768px) {
-        .uv-categories-grid {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Create Request • UniVerse Campus Delivery Network</title>
+
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans (Exact match to universe/src/lib/fonts.ts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --font-heading: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --color-bg: #050805;
+            --accent-green: #00E676;
+            --emerald-primary: #10B981;
+            --emerald-hover: #00C853;
+            --text-muted: #A7B8B0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: #ffffff;
+            font-family: var(--font-body);
+            min-height: 100vh;
+            min-height: 100dvh;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Sleek 2D Ambient Glow Background (Matching universe/src/app/request/new/page.tsx lines 49-60) ── */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .ambient-glow-top {
+            position: absolute;
+            top: -128px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 850px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 70%);
+            filter: blur(80px);
+            border-radius: 9999px;
+        }
+
+        .ambient-glow-right {
+            position: absolute;
+            top: 35%;
+            right: -5%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.10) 0%, transparent 70%);
+            filter: blur(80px);
+            border-radius: 9999px;
+        }
+
+        .ambient-glow-left {
+            position: absolute;
+            bottom: -10%;
+            left: -5%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.10) 0%, transparent 70%);
+            filter: blur(80px);
+            border-radius: 9999px;
+        }
+
+        .ambient-grid {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#10b981 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.04;
+        }
+
+        .ambient-vignette {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(5, 8, 5, 0.4) 60%, #050805 100%);
+        }
+
+        /* ── Container Layout ── */
+        .request-page-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 896px; /* max-w-4xl */
+            margin: 0 auto;
+            padding: 24px 16px 64px 16px;
+        }
+
+        @@media (min-width: 640px) {
+            .request-page-container {
+                padding: 32px 24px 80px 24px;
+            }
+        }
+
+        /* ── Top Bar (Matching page.tsx lines 64-116) ── */
+        .request-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        @@media (min-width: 640px) {
+            .request-top-bar {
+                margin-bottom: 32px;
+            }
+        }
+
+        .btn-back-dashboard {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(10, 15, 12, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back-dashboard:hover {
+            background: rgba(16, 185, 129, 0.15);
+            color: #ffffff;
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateX(-2px);
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .brand-link:hover {
+            transform: scale(1.02);
+        }
+
+        .brand-zap-icon {
+            background: var(--accent-green);
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.35);
+        }
+
+        .brand-title {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+        }
+
+        .brand-title span {
+            color: var(--accent-green);
+        }
+
+        .runners-pulse-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 15, 12, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.18);
+            padding: 7px 14px;
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            user-select: none;
+        }
+
+        .pulse-indicator {
+            position: relative;
+            display: flex;
+            width: 8px;
+            height: 8px;
+        }
+
+        .pulse-ping {
+            position: absolute;
+            display: inline-flex;
+            width: 100%;
+            height: 100%;
+            border-radius: 9999px;
+            background: var(--accent-green);
+            opacity: 0.75;
+            animation: pulse-ping-anim 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .pulse-dot-core {
+            position: relative;
+            display: inline-flex;
+            border-radius: 9999px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+        }
+
+        @@keyframes pulse-ping-anim {
+            75%, 100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+
+        .runners-text {
+            color: #34d399;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── Centered Hero Header (Matching page.tsx lines 118-130) ── */
+        .request-hero-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        @@media (min-width: 640px) {
+            .request-hero-header {
+                margin-bottom: 32px;
+            }
+        }
+
+        .hero-pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: #34d399;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+        }
+
+        @@media (min-width: 640px) {
+            .hero-title {
+                font-size: 36px;
+            }
+        }
+
+        .hero-title span {
+            color: var(--accent-green);
+            text-shadow: 0 0 20px rgba(0, 230, 118, 0.35);
+        }
+
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 13.5px;
+            max-width: 440px;
+            line-height: 1.5;
+            padding: 0 8px;
+        }
+
+        /* ── Dynamic Stepper Header (Matching CreateRequestForm.tsx lines 565-683) ── */
+        .stepper-container {
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto 32px auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+        }
+
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 14.5px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-item.active .step-circle {
+            background: var(--accent-green);
+            color: #050805;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
+            transform: scale(1.06);
+            outline: 4px solid rgba(0, 230, 118, 0.25);
+        }
+
+        .step-item.completed .step-circle {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .step-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.02em;
+            transition: color 0.2s ease;
+        }
+
+        .step-item.active .step-label {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .stepper-line {
+            flex: 1;
+            height: 2px;
+            margin: 0 12px 18px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .stepper-line-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), #34d399);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* ── Main Glassmorphic Form Card (Matching CreateRequestForm.tsx lines 697-702) ── */
+        .request-form-card {
+            background: rgba(10, 15, 12, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 12px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 230, 118, 0.04);
+            backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            transition: border-color 0.2s ease;
+        }
+
+        @@media (min-width: 640px) {
+            .request-form-card {
+                padding: 36px;
+            }
+        }
+
+        .step-heading-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .step-icon-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-green);
+            font-size: 22px;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.15);
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 2px;
+            letter-spacing: -0.01em;
+        }
+
+        .step-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        /* ── Categories 7-Grid ── */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .category-tile {
+            height: 86px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 6px 4px;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .category-tile:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-tile.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
+            transform: scale(1.02);
+        }
+
+        .category-tile.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+        }
+
+        .category-tile i {
+            font-size: 20px;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .category-tile.active i {
+            color: var(--accent-green);
+        }
+
+        .category-tile span {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .category-tile.active span {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* ── Vending Stock Live Products Grid ── */
+        .vending-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .vending-subfilter-btn {
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .vending-subfilter-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .vending-subfilter-btn.active {
+            background: rgba(0, 230, 118, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+            font-weight: 800;
+        }
+
+        .vending-search-wrap {
+            position: relative;
+            width: 220px;
+        }
+
+        .vending-search-wrap input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 7px 12px 7px 32px;
+            font-size: 12px;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .vending-search-wrap input:focus {
+            border-color: var(--accent-green);
+        }
+
+        .vending-search-wrap i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .products-grid {
+            display: grid;
             grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 6px;
         }
-        .uv-vending-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .uv-hostel-chips {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-</style>
-}
 
-<div class="uv-request-page-wrapper">
-    <!-- Ambient 2D Glow & Cyber Dot Grid -->
-    <div class="uv-ambient-bg">
-        <div class="uv-glow-top"></div>
-        <div class="uv-glow-right"></div>
-        <div class="uv-glow-left"></div>
-        <div class="uv-dot-grid"></div>
-        <div class="uv-vignette"></div>
+        .products-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .products-grid::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+        }
+
+        .product-card {
+            background: rgba(14, 22, 18, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .product-card:hover {
+            background: #132219;
+            border-color: rgba(0, 230, 118, 0.6);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .product-card.in-cart {
+            background: #122319;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.25);
+        }
+
+        .product-qty-bubble {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--accent-green);
+            color: #050805;
+            font-size: 10px;
+            font-weight: 900;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            border: 2px solid #050805;
+            z-index: 5;
+        }
+
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image-container img {
+            transform: scale(1.06);
+        }
+
+        .product-slot-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 800;
+            color: var(--accent-green);
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 4px;
+            padding: 1px 4px;
+        }
+
+        .product-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.25;
+            margin-bottom: 6px;
+            min-height: 30px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .product-price-tag {
+            color: var(--accent-green);
+            font-weight: 800;
+            font-size: 13.5px;
+        }
+
+        .product-stepper-pill {
+            display: flex;
+            align-items: center;
+            background: var(--accent-green);
+            color: #050805;
+            border-radius: 8px;
+            padding: 2px;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
+        }
+
+        .product-stepper-pill button {
+            background: transparent;
+            border: none;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #050805;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .product-stepper-pill span {
+            font-size: 11.5px;
+            font-weight: 900;
+            padding: 0 4px;
+            min-width: 14px;
+            text-align: center;
+        }
+
+        .btn-add-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add-circle:hover {
+            background: var(--accent-green);
+            color: #050805;
+            border-color: var(--accent-green);
+        }
+
+        /* ── Popular Chips for other categories ── */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .category-chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 6px 12px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-chip-btn:hover {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--accent-green);
+            transform: translateY(-1px);
+        }
+
+        .chip-badge-price {
+            color: #34d399;
+            font-weight: 800;
+            font-size: 11px;
+            background: rgba(16, 185, 129, 0.12);
+            padding: 1px 6px;
+            border-radius: 6px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* ── Custom Item Input Row ── */
+        .custom-item-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .input-text-standard {
+            flex: 1;
+            min-width: 160px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-text-standard:focus {
+            border-color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .price-badge-input {
+            width: 120px;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 6px 10px;
+        }
+
+        .price-badge-input span {
+            color: #34d399;
+            font-weight: 800;
+            font-size: 13px;
+            margin-right: 4px;
+        }
+
+        .price-badge-input input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .stepper-quantity-wrap {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stepper-quantity-wrap button {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stepper-quantity-wrap button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .stepper-quantity-wrap span {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #ffffff;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .btn-add-primary {
+            background: var(--accent-green);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-weight: 800;
+            font-size: 13.5px;
+            color: #050805;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-add-primary:hover {
+            background: var(--emerald-hover);
+            transform: translateY(-1px);
+        }
+
+        /* ── Cart List ── */
+        .cart-list-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .cart-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+
+        .cart-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-qty-pill {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+            font-size: 11.5px;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .cart-item-title {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 13.5px;
+        }
+
+        .cart-item-cat {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        /* ── Buttons & Step Actions ── */
+        .btn-continue-gradient {
+            width: 100%;
+            background: linear-gradient(90deg, #00C853, var(--accent-green));
+            color: #050805;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 15px;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 0 25px rgba(0, 230, 118, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-continue-gradient:hover {
+            box-shadow: 0 0 35px rgba(0, 230, 118, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-back-square {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-back-square:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── Step 2 Logistics Tiles ── */
+        .options-two-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .option-button-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .option-button-card.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+        }
+
+        .hostel-tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .hostel-btn-tile {
+            padding: 10px 6px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .hostel-btn-tile.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            font-weight: 800;
+            box-shadow: 0 0 12px rgba(0, 230, 118, 0.25);
+        }
+
+        .reward-pills-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .reward-pill-btn {
+            padding: 8px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reward-pill-btn.active {
+            background: rgba(0, 230, 118, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+            font-weight: 800;
+        }
+
+        /* ── Step 3 Order Summary Glass Card ── */
+        .order-summary-box {
+            background: rgba(16, 185, 129, 0.04);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .order-summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+        }
+
+        .summary-label-col {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .summary-value-col {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* ── Mobile Responsive Overrides ── */
+        @@media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hostel-tiles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .options-two-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ── Ambient 2D Glow & Cyber Dot Grid ── -->
+    <div class="ambient-bg">
+        <div class="ambient-glow-top"></div>
+        <div class="ambient-glow-right"></div>
+        <div class="ambient-glow-left"></div>
+        <div class="ambient-grid"></div>
+        <div class="ambient-vignette"></div>
     </div>
 
-    <main class="uv-request-main">
+    <!-- ── Page Wrapper ── -->
+    <div class="request-page-container">
         <!-- ── Top Bar ── -->
-        <div class="uv-top-bar">
+        <div class="request-top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <a href="/Dashboard" class="uv-btn-dashboard" title="Back to Dashboard">
+                <a href="/Dashboard" class="btn-back-dashboard" title="Back to Dashboard">
                     <i class="bi bi-arrow-left"></i>
                     <span>Dashboard</span>
                 </a>
 
-                <a href="/Dashboard" class="uv-brand-inline">
-                    <div class="uv-brand-zap">
+                <a href="/Dashboard" class="brand-link">
+                    <div class="brand-zap-icon">
                         <i class="bi bi-lightning-charge-fill" style="color: #050805; font-size: 14px;"></i>
                     </div>
-                    <span class="uv-brand-text">Uni<span>Verse</span></span>
+                    <span class="brand-title">Uni<span>Verse</span></span>
                 </a>
             </div>
 
-            <div class="uv-runners-pulse-badge" title="@(runnerCount > 0 ? $"{runnerCount} verified student runners registered on campus" : "Campus delivery network online")">
-                <span class="uv-pulse-dot"></span>
-                <span class="uv-runners-text">
+            <div class="runners-pulse-badge" title="@(runnerCount > 0 ? $"{runnerCount} verified student runners registered on campus" : "Campus delivery network online")">
+                <span class="pulse-indicator">
+                    <span class="pulse-ping"></span>
+                    <span class="pulse-dot-core"></span>
+                </span>
+                <span class="runners-text">
                     @(runnerCount > 0 ? $"{runnerCount} Runners Online" : "Campus Network Active")
                 </span>
             </div>
         </div>
 
         <!-- ── Hero Header ── -->
-        <div class="uv-hero-header">
-            <div class="uv-hero-pill">
+        <div class="request-hero-header">
+            <div class="hero-pill-badge">
                 <i class="bi bi-stars"></i>
                 <span>Instant Campus Delivery Network</span>
             </div>
-            <h1 class="uv-hero-title">
+            <h1 class="hero-title">
                 Create <span>Request</span>
             </h1>
-            <p class="uv-hero-desc">
+            <p class="hero-subtitle">
                 Tell us what you need — student runners will deliver it straight to your room.
             </p>
         </div>
 
-        <!-- ── Stepper Navigation ── -->
-        <div class="uv-stepper-wrap">
-            <button type="button" class="uv-step-btn active" id="stepper1" onclick="goToStep(1)">
-                <div class="uv-step-circle" id="circle1">1</div>
-                <span class="uv-step-label">Item Details</span>
+        <!-- ── Dynamic Stepper Header ── -->
+        <div class="stepper-container">
+            <button type="button" class="step-item active" id="stepper1" onclick="goToStep(1)">
+                <div class="step-circle" id="circle1">1</div>
+                <span class="step-label">Item Details</span>
             </button>
 
-            <div class="uv-step-divider">
-                <div class="uv-step-divider-fill" id="divider1"></div>
+            <div class="stepper-line">
+                <div class="stepper-line-progress" id="divider1"></div>
             </div>
 
-            <button type="button" class="uv-step-btn" id="stepper2" onclick="goToStep(2)">
-                <div class="uv-step-circle" id="circle2">2</div>
-                <span class="uv-step-label">Delivery & Reward</span>
+            <button type="button" class="step-item" id="stepper2" onclick="goToStep(2)">
+                <div class="step-circle" id="circle2">2</div>
+                <span class="step-label">Delivery & Reward</span>
             </button>
 
-            <div class="uv-step-divider">
-                <div class="uv-step-divider-fill" id="divider2"></div>
+            <div class="stepper-line">
+                <div class="stepper-line-progress" id="divider2"></div>
             </div>
 
-            <button type="button" class="uv-step-btn" id="stepper3" onclick="goToStep(3)">
-                <div class="uv-step-circle" id="circle3">3</div>
-                <span class="uv-step-label">Confirm</span>
+            <button type="button" class="step-item" id="stepper3" onclick="goToStep(3)">
+                <div class="step-circle" id="circle3">3</div>
+                <span class="step-label">Confirm</span>
             </button>
         </div>
 
-        <!-- Form Validation / Error Box -->
+        <!-- Validation / Error Box -->
         <div id="clientErrorBox" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 14px 18px; color: #fca5a5; font-size: 13px; font-weight: 600; margin-bottom: 20px; align-items: center; gap: 10px;">
-            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+            <i class="bi bi-exclamation-triangle-fill" style="color: #ef4444; font-size: 18px;"></i>
             <span id="clientErrorMsg"></span>
         </div>
 
-        <!-- Actual POST Form -->
+        <!-- Main Form -->
         <form id="deliveryPostForm" asp-controller="Delivery" asp-action="Create" method="post">
             @Html.AntiForgeryToken()
 
@@ -1150,48 +1231,48 @@
             <input type="hidden" name="Instructions" id="hiddenInstructions" value="" />
             <input type="hidden" name="ItemsJson" id="hiddenItemsJson" value="[]" />
 
-            <!-- ── Main Glassmorphic Form Card ── -->
-            <div class="uv-form-card">
+            <!-- Main Glass Card -->
+            <div class="request-form-card">
 
                 <!-- ================= STEP 1: ITEM DETAILS ================= -->
                 <div id="stepContainer1">
-                    <div class="uv-step-header" style="margin-bottom: 20px;">
-                        <div class="uv-step-icon-box">
+                    <div class="step-heading-row" style="margin-bottom: 20px;">
+                        <div class="step-icon-badge">
                             <i class="bi bi-box-seam"></i>
                         </div>
                         <div>
-                            <h2 class="uv-step-title">What do you need delivered?</h2>
-                            <p class="uv-step-desc">Pick a category, tap quick campus favorites or type any custom item.</p>
+                            <h2 class="step-title">What do you need delivered?</h2>
+                            <p class="step-desc">Pick a category, tap quick campus favorites or type any custom item.</p>
                         </div>
                     </div>
 
                     <!-- 7 Category Selector Tiles -->
-                    <div class="uv-categories-grid" style="margin-bottom: 22px;">
-                        <div class="uv-category-tile active" data-cat="Vending Machine" onclick="selectCategory('Vending Machine', this)">
+                    <div class="categories-grid" style="margin-bottom: 22px;">
+                        <div class="category-tile active" data-cat="Vending Machine" onclick="selectCategory('Vending Machine', this)">
                             <i class="bi bi-shop"></i>
                             <span>Vending Machine</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Snack" onclick="selectCategory('Snack', this)">
+                        <div class="category-tile" data-cat="Snack" onclick="selectCategory('Snack', this)">
                             <i class="bi bi-egg-fried"></i>
                             <span>Snack</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Beverage" onclick="selectCategory('Beverage', this)">
+                        <div class="category-tile" data-cat="Beverage" onclick="selectCategory('Beverage', this)">
                             <i class="bi bi-cup-hot"></i>
                             <span>Beverage</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Meal" onclick="selectCategory('Meal', this)">
+                        <div class="category-tile" data-cat="Meal" onclick="selectCategory('Meal', this)">
                             <i class="bi bi-basket"></i>
                             <span>Meal</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Grocery" onclick="selectCategory('Grocery', this)">
+                        <div class="category-tile" data-cat="Grocery" onclick="selectCategory('Grocery', this)">
                             <i class="bi bi-bag"></i>
                             <span>Grocery</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Stationery" onclick="selectCategory('Stationery', this)">
+                        <div class="category-tile" data-cat="Stationery" onclick="selectCategory('Stationery', this)">
                             <i class="bi bi-book"></i>
                             <span>Stationery</span>
                         </div>
-                        <div class="uv-category-tile" data-cat="Medicine" onclick="selectCategory('Medicine', this)">
+                        <div class="category-tile" data-cat="Medicine" onclick="selectCategory('Medicine', this)">
                             <i class="bi bi-capsule"></i>
                             <span>Medicine</span>
                         </div>
@@ -1199,18 +1280,18 @@
 
                     <!-- Vending Machine Section -->
                     <div id="vendingMachineSection" style="margin-bottom: 24px;">
-                        <div class="uv-vending-header" style="margin-bottom: 14px;">
+                        <div class="vending-header-row">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-stars" style="color: #00E676; font-size: 13px;"></i>
-                                <span style="font-size: 12.5px; font-weight: 700; color: #A7B8B0;">
+                                <i class="bi bi-stars" style="color: var(--accent-green); font-size: 13px;"></i>
+                                <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">
                                     Hostel Vending Live Stock:
                                 </span>
-                                <span style="background: rgba(0, 230, 118, 0.15); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 800; color: #00E676;">
+                                <span style="background: rgba(0, 230, 118, 0.15); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 9999px; padding: 2px 8px; font-size: 10px; font-weight: 800; color: var(--accent-green);">
                                     • GF Machines
                                 </span>
                             </div>
 
-                            <div class="uv-search-box">
+                            <div class="vending-search-wrap">
                                 <i class="bi bi-search"></i>
                                 <input type="text" id="vendingSearchInput" placeholder="Search 57 snacks & drinks..." oninput="filterVendingStock()" />
                             </div>
@@ -1218,14 +1299,14 @@
 
                         <!-- Sub-Category Filter Tabs -->
                         <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px;">
-                            <button type="button" class="uv-subfilter-btn active" onclick="filterVendingSub('All', this)">All (57)</button>
-                            <button type="button" class="uv-subfilter-btn" onclick="filterVendingSub('Drinks', this)">🥤 Drinks (21)</button>
-                            <button type="button" class="uv-subfilter-btn" onclick="filterVendingSub('Snacks', this)">🍿 Chips (19)</button>
-                            <button type="button" class="uv-subfilter-btn" onclick="filterVendingSub('Sweets', this)">🍫 Chocolates (17)</button>
+                            <button type="button" class="vending-subfilter-btn active" onclick="filterVendingSub('All', this)">All (57)</button>
+                            <button type="button" class="vending-subfilter-btn" onclick="filterVendingSub('Drinks', this)">🥤 Drinks (21)</button>
+                            <button type="button" class="vending-subfilter-btn" onclick="filterVendingSub('Snacks', this)">🍿 Chips (19)</button>
+                            <button type="button" class="vending-subfilter-btn" onclick="filterVendingSub('Sweets', this)">🍫 Chocolates (17)</button>
                         </div>
 
                         <!-- Products Live Grid -->
-                        <div class="uv-vending-grid" id="vendingProductsGrid">
+                        <div class="products-grid" id="vendingProductsGrid">
                             <!-- Populated dynamically via JS -->
                         </div>
                     </div>
@@ -1233,35 +1314,35 @@
                     <!-- Non-Vending Popular Chips Section (Shown when other category chosen) -->
                     <div id="otherCategoryChipsSection" style="display: none; margin-bottom: 24px;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                            <i class="bi bi-stars" style="color: #00E676; font-size: 13px;"></i>
-                            <span id="otherCatLabel" style="font-size: 12.5px; font-weight: 700; color: #A7B8B0;">Popular Items:</span>
+                            <i class="bi bi-stars" style="color: var(--accent-green); font-size: 13px;"></i>
+                            <span id="otherCatLabel" style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Popular Items:</span>
                         </div>
-                        <div class="uv-popular-chips-wrap" id="popularChipsContainer">
+                        <div class="chips-container" id="popularChipsContainer">
                             <!-- Populated dynamically via JS -->
                         </div>
                     </div>
 
                     <!-- Custom Add Input Box -->
                     <div style="margin-bottom: 24px;">
-                        <div style="font-size: 12px; font-weight: 700; color: #A7B8B0; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                            <i class="bi bi-pencil-square" style="color: #00E676;"></i>
+                        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                            <i class="bi bi-pencil-square" style="color: var(--accent-green);"></i>
                             <span>Or Type Any Custom Campus Item:</span>
                         </div>
-                        <div class="uv-custom-input-box">
-                            <input type="text" id="customItemName" class="uv-input-main" placeholder="Type item name..." />
+                        <div class="custom-item-row">
+                            <input type="text" id="customItemName" class="input-text-standard" placeholder="Type item name..." />
                             
-                            <div class="uv-price-input-wrap">
+                            <div class="price-badge-input">
                                 <span>₹</span>
                                 <input type="number" id="customItemPrice" placeholder="Est. price" min="0" />
                             </div>
 
-                            <div class="uv-qty-ctrls">
+                            <div class="stepper-quantity-wrap">
                                 <button type="button" onclick="adjustCustomQty(-1)">-</button>
                                 <span id="customQtyLabel">1</span>
                                 <button type="button" onclick="adjustCustomQty(1)">+</button>
                             </div>
 
-                            <button type="button" class="uv-btn-add-primary" onclick="addCustomItem()">
+                            <button type="button" class="btn-add-primary" onclick="addCustomItem()">
                                 <i class="bi bi-plus-lg"></i> Add
                             </button>
                         </div>
@@ -1270,32 +1351,32 @@
                     <!-- Added Items Cart -->
                     <div style="margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #A7B8B0;">
+                            <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
                                 Added Items (<span id="cartCountLabel">0</span>)
                             </span>
-                            <button type="button" style="background: transparent; border: none; color: #A7B8B0; font-size: 12px; cursor: pointer;" onclick="clearAllItems()">
+                            <button type="button" style="background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;" onclick="clearAllItems()">
                                 <i class="bi bi-trash"></i> Clear all
                             </button>
                         </div>
 
                         <div id="cartEmptyState" style="border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 32px; text-align: center; background: rgba(0, 0, 0, 0.25);">
-                            <i class="bi bi-box-seam" style="font-size: 26px; color: #00E676; opacity: 0.8;"></i>
+                            <i class="bi bi-box-seam" style="font-size: 26px; color: var(--accent-green); opacity: 0.8;"></i>
                             <h4 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 8px 0 4px 0;">No items added yet</h4>
-                            <p style="font-size: 12px; color: #A7B8B0; margin: 0;">Tap vending items above or type custom items and hit "Add".</p>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Tap vending items above or type custom items and hit "Add".</p>
                         </div>
 
-                        <div id="cartItemsList" class="uv-cart-container" style="display: none;">
+                        <div id="cartItemsList" class="cart-list-box" style="display: none;">
                             <!-- Populated dynamically -->
                         </div>
 
                         <div id="cartTotalSummaryRow" style="display: none; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px;">
-                            <span style="color: #A7B8B0;">Est. Items Total:</span>
-                            <span style="color: #00E676; font-weight: 800; font-size: 15px;">₹<span id="cartEstTotalVal">0</span></span>
+                            <span style="color: var(--text-muted);">Est. Items Total:</span>
+                            <span style="color: var(--accent-green); font-weight: 800; font-size: 15px;">₹<span id="cartEstTotalVal">0</span></span>
                         </div>
                     </div>
 
                     <!-- Step 1 Continue Button -->
-                    <button type="button" class="uv-btn-continue" onclick="handleStep1Continue()">
+                    <button type="button" class="btn-continue-gradient" onclick="handleStep1Continue()">
                         <span>Continue to Delivery Details</span>
                         <i class="bi bi-arrow-right"></i>
                     </button>
@@ -1303,90 +1384,90 @@
 
                 <!-- ================= STEP 2: LOGISTICS & REWARD ================= -->
                 <div id="stepContainer2" style="display: none;">
-                    <div class="uv-step-header" style="margin-bottom: 20px;">
-                        <div class="uv-step-icon-box">
+                    <div class="step-heading-row" style="margin-bottom: 20px;">
+                        <div class="step-icon-badge">
                             <i class="bi bi-geo-alt"></i>
                         </div>
                         <div>
-                            <h2 class="uv-step-title">Logistics & Runner Reward</h2>
-                            <p class="uv-step-desc">Specify where to fetch your items and the reward for the student runner.</p>
+                            <h2 class="step-title">Logistics & Runner Reward</h2>
+                            <p class="step-desc">Specify where to fetch your items and the reward for the student runner.</p>
                         </div>
                     </div>
 
                     <!-- Selected Items Mini Review Card -->
                     <div style="background: rgba(14, 22, 18, 0.95); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 16px; padding: 16px; margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="color: #00E676; font-size: 12px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                            <span style="color: var(--accent-green); font-size: 12px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
                                 <i class="bi bi-box"></i> Selected Items (<span id="step2TotalItemCount">0</span> items)
                             </span>
-                            <button type="button" style="background: transparent; border: none; color: #00E676; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline;" onclick="goToStep(1)">
+                            <button type="button" style="background: transparent; border: none; color: var(--accent-green); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline;" onclick="goToStep(1)">
                                 Edit Items
                             </button>
                         </div>
                         <div id="step2ItemsSummaryList" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto;">
                             <!-- Dynamically generated list -->
                         </div>
-                        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px; margin-top: 10px; font-size: 12px; color: #A7B8B0;">
+                        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px; margin-top: 10px; font-size: 12px; color: var(--text-muted);">
                             <span>Items Est. Total: <strong style="color: #fff;" id="step2EstItemsTotal">₹0</strong></span>
-                            <span>Min Runner Reward: <strong style="color: #00E676;" id="step2MinRewardFormula">₹5 × 1 = ₹5</strong></span>
+                            <span>Min Runner Reward: <strong style="color: var(--accent-green);" id="step2MinRewardFormula">₹5 × 1 = ₹5</strong></span>
                         </div>
                     </div>
 
                     <!-- Pickup Location -->
                     <div style="margin-bottom: 24px;">
-                        <label style="color: #00E676; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                        <label style="color: var(--accent-green); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
                             <i class="bi bi-pin-map"></i> Pickup Location
                         </label>
-                        <div class="uv-option-grid" style="margin-bottom: 12px;">
-                            <button type="button" class="uv-option-tile active" id="btnPickupVending" onclick="selectPickupLocation('Hostel Vending Machine', this)">
+                        <div class="options-two-grid" style="margin-bottom: 12px;">
+                            <button type="button" class="option-button-card active" id="btnPickupVending" onclick="selectPickupLocation('Hostel Vending Machine', this)">
                                 <strong style="color: #fff; font-size: 13px;">Hostel Vending Machine</strong>
-                                <span style="color: #A7B8B0; font-size: 11.5px;">Ground floor instant machines (3-5 min delivery)</span>
+                                <span style="color: var(--text-muted); font-size: 11.5px;">Ground floor instant machines (3-5 min delivery)</span>
                             </button>
-                            <button type="button" class="uv-option-tile" id="btnPickupCustom" onclick="selectPickupLocation('Other (Custom Spot)', this)">
+                            <button type="button" class="option-button-card" id="btnPickupCustom" onclick="selectPickupLocation('Other (Custom Spot)', this)">
                                 <strong style="color: #fff; font-size: 13px;">Other (Custom Spot)</strong>
-                                <span style="color: #A7B8B0; font-size: 11.5px;">Canteen, stationery, Nescafe, campus gate</span>
+                                <span style="color: var(--text-muted); font-size: 11.5px;">Canteen, stationery, Nescafe, campus gate</span>
                             </button>
                         </div>
 
                         <div id="vendingPerkBanner" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #6ee7b7; font-size: 12px;">
-                            <i class="bi bi-lightning-charge-fill" style="color: #00E676;"></i>
+                            <i class="bi bi-lightning-charge-fill" style="color: var(--accent-green);"></i>
                             <span><strong>Hostel Vending Machine:</strong> Student runners in your hostel can dispense and deliver your items to your room in 3–5 minutes!</span>
                         </div>
 
                         <div id="customPickupInputRow" style="display: none; margin-top: 10px;">
-                            <input type="text" id="customPickupField" class="uv-input-main" placeholder="Enter custom pickup spot (e.g. Marwadi Central Canteen, Nescafe near Library)..." oninput="updateCustomPickup(this.value)" />
+                            <input type="text" id="customPickupField" class="input-text-standard" placeholder="Enter custom pickup spot (e.g. Marwadi Central Canteen, Nescafe near Library)..." oninput="updateCustomPickup(this.value)" />
                         </div>
                     </div>
 
                     <!-- Delivery Destination (Hostel + Room) -->
                     <div style="margin-bottom: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px;">
-                        <label style="color: #00E676; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                        <label style="color: var(--accent-green); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
                             <i class="bi bi-building"></i> Delivery Destination (Hostel & Room)
                         </label>
-                        <div class="uv-hostel-chips" style="margin-bottom: 12px;">
-                            <button type="button" class="uv-hostel-chip @(defaultHostel == "Hostel A" ? "active" : "")" onclick="selectHostel('Hostel A', this)">Hostel A</button>
-                            <button type="button" class="uv-hostel-chip @(defaultHostel == "Hostel B" ? "active" : "")" onclick="selectHostel('Hostel B', this)">Hostel B</button>
-                            <button type="button" class="uv-hostel-chip @(defaultHostel == "Hostel C" ? "active" : "")" onclick="selectHostel('Hostel C', this)">Hostel C</button>
-                            <button type="button" class="uv-hostel-chip @(defaultHostel == "Hostel D" ? "active" : "")" onclick="selectHostel('Hostel D', this)">Hostel D</button>
-                            <button type="button" class="uv-hostel-chip @(defaultHostel == "Girls Hostel" ? "active" : "")" onclick="selectHostel('Girls Hostel', this)">Girls Hostel</button>
+                        <div class="hostel-tiles-grid" style="margin-bottom: 12px;">
+                            <button type="button" class="hostel-btn-tile @(defaultHostel == "Hostel A" ? "active" : "")" onclick="selectHostel('Hostel A', this)">Hostel A</button>
+                            <button type="button" class="hostel-btn-tile @(defaultHostel == "Hostel B" ? "active" : "")" onclick="selectHostel('Hostel B', this)">Hostel B</button>
+                            <button type="button" class="hostel-btn-tile @(defaultHostel == "Hostel C" ? "active" : "")" onclick="selectHostel('Hostel C', this)">Hostel C</button>
+                            <button type="button" class="hostel-btn-tile @(defaultHostel == "Hostel D" ? "active" : "")" onclick="selectHostel('Hostel D', this)">Hostel D</button>
+                            <button type="button" class="hostel-btn-tile @(defaultHostel == "Girls Hostel" ? "active" : "")" onclick="selectHostel('Girls Hostel', this)">Girls Hostel</button>
                         </div>
 
-                        <input type="text" id="dropoffRoomInput" class="uv-input-main" value="@defaultRoom" placeholder="Room Number (e.g. 304, B-205)..." oninput="updateDropoffRoom(this.value)" />
+                        <input type="text" id="dropoffRoomInput" class="input-text-standard" value="@defaultRoom" placeholder="Room Number (e.g. 304, B-205)..." oninput="updateDropoffRoom(this.value)" />
                     </div>
 
                     <!-- Delivery Speed -->
                     <div style="margin-bottom: 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px;">
-                        <label style="color: #00E676; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                        <label style="color: var(--accent-green); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
                             <i class="bi bi-clock-history"></i> Delivery Speed & Priority
                         </label>
-                        <div class="uv-option-grid">
-                            <button type="button" class="uv-option-tile active" id="btnUrgencyStandard" onclick="selectUrgency('standard', this)">
+                        <div class="options-two-grid">
+                            <button type="button" class="option-button-card active" id="btnUrgencyStandard" onclick="selectUrgency('standard', this)">
                                 <strong style="color: #34d399; font-size: 13px;">🟢 Standard Delivery</strong>
-                                <span style="color: #A7B8B0; font-size: 11.5px;">Usually delivered within 30-45 minutes</span>
+                                <span style="color: var(--text-muted); font-size: 11.5px;">Usually delivered within 30-45 minutes</span>
                             </button>
-                            <button type="button" class="uv-option-tile" id="btnUrgencyUrgent" onclick="selectUrgency('urgent', this)">
+                            <button type="button" class="option-button-card" id="btnUrgencyUrgent" onclick="selectUrgency('urgent', this)">
                                 <strong style="color: #fff; font-size: 13px;">⚡ Express Priority</strong>
-                                <span style="color: #A7B8B0; font-size: 11.5px;">High runner priority for fast delivery</span>
+                                <span style="color: var(--text-muted); font-size: 11.5px;">High runner priority for fast delivery</span>
                             </button>
                         </div>
                     </div>
@@ -1394,24 +1475,24 @@
                     <!-- Delivery Reward for Runner -->
                     <div style="margin-bottom: 28px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label style="color: #00E676; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <label style="color: var(--accent-green); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                                 <i class="bi bi-coin"></i> Delivery Reward for Runner
                             </label>
-                            <span style="color: #34d399; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 999px;">
+                            <span style="color: #34d399; font-size: 11px; font-weight: 700; background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 9999px;">
                                 ₹5 per item (Min ₹<span id="minRewardBadge">5</span>)
                             </span>
                         </div>
-                        <p style="color: #A7B8B0; font-size: 12px; margin-bottom: 12px;">
+                        <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">
                             The minimum reward is ₹5 per item. You can add extra tip to incentivize runners for fastest pickup.
                         </p>
 
                         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
-                            <div class="uv-price-input-wrap" style="width: 140px; padding: 10px 14px;">
-                                <span style="font-size: 18px; color: #00E676;">₹</span>
+                            <div class="price-badge-input" style="width: 140px; padding: 10px 14px;">
+                                <span style="font-size: 18px; color: var(--accent-green);">₹</span>
                                 <input type="number" id="customRewardInput" style="font-size: 16px; font-weight: 800;" min="5" value="5" oninput="updateRewardVal(this.value)" />
                             </div>
 
-                            <div class="uv-reward-chips" id="rewardPresetsWrap">
+                            <div class="reward-pills-wrap" id="rewardPresetsWrap">
                                 <!-- Populated dynamically based on minimum reward -->
                             </div>
                         </div>
@@ -1419,10 +1500,10 @@
 
                     <!-- Navigation Buttons -->
                     <div style="display: flex; gap: 12px;">
-                        <button type="button" class="uv-btn-back-step" onclick="goToStep(1)">
+                        <button type="button" class="btn-back-square" onclick="goToStep(1)">
                             <i class="bi bi-arrow-left"></i>
                         </button>
-                        <button type="button" class="uv-btn-continue" onclick="handleStep2Continue()">
+                        <button type="button" class="btn-continue-gradient" onclick="handleStep2Continue()">
                             <span>Continue to Summary</span>
                             <i class="bi bi-arrow-right"></i>
                         </button>
@@ -1431,80 +1512,80 @@
 
                 <!-- ================= STEP 3: CONFIRM & SUBMIT ================= -->
                 <div id="stepContainer3" style="display: none;">
-                    <div class="uv-step-header" style="margin-bottom: 20px;">
-                        <div class="uv-step-icon-box">
+                    <div class="step-heading-row" style="margin-bottom: 20px;">
+                        <div class="step-icon-badge">
                             <i class="bi bi-check2-circle"></i>
                         </div>
                         <div>
-                            <h2 class="uv-step-title">Review & Confirm Request</h2>
-                            <p class="uv-step-desc">Double check your request details before publishing for campus runners.</p>
+                            <h2 class="step-title">Review & Confirm Request</h2>
+                            <p class="step-desc">Double check your request details before publishing for campus runners.</p>
                         </div>
                     </div>
 
                     <!-- Special Instructions -->
                     <div style="margin-bottom: 22px;">
-                        <label style="color: #00E676; font-size: 13px; font-weight: 700; margin-bottom: 6px; display: block;">
+                        <label style="color: var(--accent-green); font-size: 13px; font-weight: 700; margin-bottom: 6px; display: block;">
                             Special Instructions (Optional)
                         </label>
-                        <textarea id="instructionsInput" class="uv-input-main" style="width: 100%; min-height: 80px; resize: vertical;" placeholder="e.g. Call when entering hostel gate. Please bring extra ketchup packets..." oninput="updateInstructions(this.value)"></textarea>
+                        <textarea id="instructionsInput" class="input-text-standard" style="width: 100%; min-height: 80px; resize: vertical;" placeholder="e.g. Call when entering hostel gate. Please bring extra ketchup packets..." oninput="updateInstructions(this.value)"></textarea>
                     </div>
 
                     <!-- Order Summary Glass Card -->
-                    <div class="uv-summary-card" style="margin-bottom: 22px;">
-                        <div class="uv-summary-row" style="align-items: flex-start;">
-                            <span class="uv-summary-label">Items (<span id="sumTotalItemCount">1</span>)</span>
+                    <div class="order-summary-box" style="margin-bottom: 22px;">
+                        <div class="order-summary-item" style="align-items: flex-start;">
+                            <span class="summary-label-col">Items (<span id="sumTotalItemCount">1</span>)</span>
                             <div id="sumItemsList" style="text-align: right; display: flex; flex-direction: column; gap: 2px;">
                                 <!-- Items Summary -->
                             </div>
                         </div>
 
-                        <div class="uv-summary-row" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
-                            <span class="uv-summary-label">Pickup Spot</span>
-                            <span class="uv-summary-val" id="sumPickupVal">Hostel Vending Machine</span>
+                        <div class="order-summary-item" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
+                            <span class="summary-label-col">Pickup Spot</span>
+                            <span class="summary-value-col" id="sumPickupVal">Hostel Vending Machine</span>
                         </div>
 
-                        <div class="uv-summary-row">
-                            <span class="uv-summary-label">Delivery Destination</span>
-                            <span class="uv-summary-val" id="sumDropoffVal">@Model.DropoffLocation</span>
+                        <div class="order-summary-item">
+                            <span class="summary-label-col">Delivery Destination</span>
+                            <span class="summary-value-col" id="sumDropoffVal">@Model.DropoffLocation</span>
                         </div>
 
-                        <div class="uv-summary-row">
-                            <span class="uv-summary-label">Delivery Speed</span>
-                            <span class="uv-summary-val" style="color: #34d399;" id="sumSpeedVal">🟢 Standard (~30-45m)</span>
+                        <div class="order-summary-item">
+                            <span class="summary-label-col">Delivery Speed</span>
+                            <span class="summary-value-col" style="color: #34d399;" id="sumSpeedVal">🟢 Standard (~30-45m)</span>
                         </div>
 
-                        <div class="uv-summary-row" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
-                            <span class="uv-summary-label">Est. Items Cost</span>
-                            <span class="uv-summary-val" id="sumEstItemsCost">~₹0</span>
+                        <div class="order-summary-item" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
+                            <span class="summary-label-col">Est. Items Cost</span>
+                            <span class="summary-value-col" id="sumEstItemsCost">~₹0</span>
                         </div>
 
-                        <div class="uv-summary-row" style="border-top: 1px solid rgba(16, 185, 129, 0.25); padding-top: 12px; margin-top: 4px;">
+                        <div class="order-summary-item" style="border-top: 1px solid rgba(16, 185, 129, 0.25); padding-top: 12px; margin-top: 4px;">
                             <div>
                                 <strong style="color: #fff; font-size: 15px; display: block;">Runner Delivery Reward</strong>
-                                <span style="color: #A7B8B0; font-size: 11px;">Credited directly to runner upon OTP match</span>
+                                <span style="color: var(--text-muted); font-size: 11px;">Credited directly to runner upon OTP match</span>
                             </div>
-                            <span style="color: #00E676; font-size: 24px; font-weight: 900;" id="sumRewardVal">₹5</span>
+                            <span style="color: var(--accent-green); font-size: 24px; font-weight: 900;" id="sumRewardVal">₹5</span>
                         </div>
                     </div>
 
                     <!-- Escrow Trust Badges -->
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px;">
                         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 8px; color: #6ee7b7; font-size: 11.5px;">
-                            <i class="bi bi-shield-check" style="color: #00E676; font-size: 16px;"></i>
+                            <i class="bi bi-shield-check" style="color: var(--accent-green); font-size: 16px;"></i>
                             <span>Escrow Protected: Reward released only after 6-digit OTP verification.</span>
                         </div>
                         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.8); font-size: 11.5px;">
-                            <i class="bi bi-lightning-charge-fill" style="color: #00E676; font-size: 16px;"></i>
+                            <i class="bi bi-lightning-charge-fill" style="color: var(--accent-green); font-size: 16px;"></i>
                             <span>High Availability: Student runners match in 3-8 mins.</span>
                         </div>
                     </div>
 
                     <!-- Navigation / Submit Buttons -->
                     <div style="display: flex; gap: 12px;">
-                        <button type="button" class="uv-btn-back-step" onclick="goToStep(2)">
+                        <button type="button" class="btn-back-square" onclick="goToStep(2)">
                             <i class="bi bi-arrow-left"></i>
                         </button>
-                        <button type="button" id="btnPublishRequest" class="uv-btn-continue" onclick="submitFinalDeliveryRequest()">
+                        <button type="button" id="btnPublishRequest" class="btn-continue-gradient" onclick="submitFinalDeliveryRequest()">
                             <span id="btnPublishText">Confirm & Publish Request</span>
                             <i class="bi bi-arrow-right" id="btnPublishIcon"></i>
                         </button>
@@ -1513,639 +1594,633 @@
 
             </div>
         </form>
-    </main>
-</div>
+    </div>
 
-@section Scripts {
-<script>
-    // ─── 57 Authentic Vending Machine Products ───
-    const VENDING_PRODUCTS = [
-        // Snacks (19)
-        { id: "crunchex-chili-tadka", name: "CrunchEx Chili Tadka", price: 20, subType: "Snacks", image: "/products/crunchex-chili-tadka.webp", slot: "A-01" },
-        { id: "kurkure-masala-munch", name: "Kurkure Masala Munch", price: 20, subType: "Snacks", image: "/products/kurkure-masala-munch.webp", slot: "A-02" },
-        { id: "chili-chataka-kurkure", name: "Chili Chataka Kurkure", price: 20, subType: "Snacks", image: "/products/chili-chataka-kurkure.webp", slot: "A-03" },
-        { id: "lays-magic-masala", name: "Lays Magic Masala", price: 20, subType: "Snacks", image: "/products/lays-magic-masala.webp", slot: "A-04" },
-        { id: "lays-sizzling-hot", name: "Lays Sizzling Hot", price: 20, subType: "Snacks", image: "/products/lays-sizzling-hot.webp", slot: "A-05" },
-        { id: "lays-west-indies-sweet-chilli", name: "Lays West Indies Sweet Chilli", price: 20, subType: "Snacks", image: "/products/lays-west-indies-sweet-chilli.webp", slot: "A-06" },
-        { id: "puffcorn-lays", name: "Puffcorn Lays", price: 20, subType: "Snacks", image: "/products/puffcorn-lays.webp", slot: "A-07" },
-        { id: "balaji-masala-wafers", name: "Balaji Masala Wafers", price: 20, subType: "Snacks", image: "/products/balaji-masala-wafers.webp", slot: "A-08" },
-        { id: "balaji-salted-wafers", name: "Balaji Salted Wafers", price: 20, subType: "Snacks", image: "/products/balaji-salted-wafers.webp", slot: "A-09" },
-        { id: "act-butter-popcorn", name: "ACT Butter Popcorn", price: 20, subType: "Snacks", image: "/products/act-butter-popcorn.webp", slot: "A-10" },
-        { id: "gopal-masala-sev-murmura", name: "Gopal Masala Sev Murmura", price: 15, subType: "Snacks", image: "/products/gopal-masala-sev-murmura.webp", slot: "A-11" },
-        { id: "gopal-tikha-mitha-mix", name: "Gopal Tikha Mitha Mix", price: 15, subType: "Snacks", image: "/products/gopal-tikha-mitha-mix.webp", slot: "A-12" },
-        { id: "gopal-farali-chevdo", name: "Gopal Farali Chevdo", price: 20, subType: "Snacks", image: "/products/gopal-farali-chevdo.webp", slot: "A-13" },
-        { id: "gopal-moong-dal", name: "Gopal Moong Dal", price: 15, subType: "Snacks", image: "/products/gopal-moong-dal.webp", slot: "A-14" },
-        { id: "gopal-mexican-chilli", name: "Gopal Mexican Chilli", price: 20, subType: "Snacks", image: "/products/gopal-mexican-chilli.webp", slot: "A-15" },
-        { id: "bingo-mad-angles-achaari", name: "Bingo Mad Angles Achaari", price: 20, subType: "Snacks", image: "/products/bingo-mad-angles-achaari.webp", slot: "A-16" },
-        { id: "roaven-salted-peanut", name: "Roaven Salted Peanut", price: 30, subType: "Snacks", image: "/products/roaven-salted-peanut.webp", slot: "A-17" },
-        { id: "maggi-2-min", name: "Maggi 2-Min", price: 20, subType: "Snacks", image: "/products/maggi-2-min.webp", slot: "A-18" },
-        { id: "doritos-cheese", name: "Doritos Cheese", price: 30, subType: "Snacks", image: "/products/doritos-cheese.webp", slot: "A-19" },
+    <!-- Interactive Scripts -->
+    <script>
+        // ── 57 Authentic Vending Machine Products ──
+        const VENDING_PRODUCTS = [
+            // Snacks (19)
+            { id: "crunchex-chili-tadka", name: "CrunchEx Chili Tadka", price: 20, subType: "Snacks", image: "/products/crunchex-chili-tadka.webp", slot: "A-01" },
+            { id: "kurkure-masala-munch", name: "Kurkure Masala Munch", price: 20, subType: "Snacks", image: "/products/kurkure-masala-munch.webp", slot: "A-02" },
+            { id: "chili-chataka-kurkure", name: "Chili Chataka Kurkure", price: 20, subType: "Snacks", image: "/products/chili-chataka-kurkure.webp", slot: "A-03" },
+            { id: "lays-magic-masala", name: "Lays Magic Masala", price: 20, subType: "Snacks", image: "/products/lays-magic-masala.webp", slot: "A-04" },
+            { id: "lays-sizzling-hot", name: "Lays Sizzling Hot", price: 20, subType: "Snacks", image: "/products/lays-sizzling-hot.webp", slot: "A-05" },
+            { id: "lays-west-indies-sweet-chilli", name: "Lays West Indies Sweet Chilli", price: 20, subType: "Snacks", image: "/products/lays-west-indies-sweet-chilli.webp", slot: "A-06" },
+            { id: "puffcorn-lays", name: "Puffcorn Lays", price: 20, subType: "Snacks", image: "/products/puffcorn-lays.webp", slot: "A-07" },
+            { id: "balaji-masala-wafers", name: "Balaji Masala Wafers", price: 20, subType: "Snacks", image: "/products/balaji-masala-wafers.webp", slot: "A-08" },
+            { id: "balaji-salted-wafers", name: "Balaji Salted Wafers", price: 20, subType: "Snacks", image: "/products/balaji-salted-wafers.webp", slot: "A-09" },
+            { id: "act-butter-popcorn", name: "ACT Butter Popcorn", price: 20, subType: "Snacks", image: "/products/act-butter-popcorn.webp", slot: "A-10" },
+            { id: "gopal-masala-sev-murmura", name: "Gopal Masala Sev Murmura", price: 15, subType: "Snacks", image: "/products/gopal-masala-sev-murmura.webp", slot: "A-11" },
+            { id: "gopal-tikha-mitha-mix", name: "Gopal Tikha Mitha Mix", price: 15, subType: "Snacks", image: "/products/gopal-tikha-mitha-mix.webp", slot: "A-12" },
+            { id: "gopal-farali-chevdo", name: "Gopal Farali Chevdo", price: 20, subType: "Snacks", image: "/products/gopal-farali-chevdo.webp", slot: "A-13" },
+            { id: "gopal-moong-dal", name: "Gopal Moong Dal", price: 15, subType: "Snacks", image: "/products/gopal-moong-dal.webp", slot: "A-14" },
+            { id: "gopal-mexican-chilli", name: "Gopal Mexican Chilli", price: 20, subType: "Snacks", image: "/products/gopal-mexican-chilli.webp", slot: "A-15" },
+            { id: "bingo-mad-angles-achaari", name: "Bingo Mad Angles Achaari", price: 20, subType: "Snacks", image: "/products/bingo-mad-angles-achaari.webp", slot: "A-16" },
+            { id: "roaven-salted-peanut", name: "Roaven Salted Peanut", price: 30, subType: "Snacks", image: "/products/roaven-salted-peanut.webp", slot: "A-17" },
+            { id: "maggi-2-min", name: "Maggi 2-Min", price: 20, subType: "Snacks", image: "/products/maggi-2-min.webp", slot: "A-18" },
+            { id: "doritos-cheese", name: "Doritos Cheese", price: 30, subType: "Snacks", image: "/products/doritos-cheese.webp", slot: "A-19" },
 
-        // Drinks (21)
-        { id: "frooti-400ml", name: "Frooti 400ml", price: 30, subType: "Drinks", image: "/products/frooti-400ml.webp", slot: "B-01" },
-        { id: "appy-fizz-250ml", name: "Appy Fizz 250ml", price: 20, subType: "Drinks", image: "/products/appy-fizz-250ml.webp", slot: "B-02" },
-        { id: "amul-kool-cafe", name: "Amul Kool Cafe", price: 40, subType: "Drinks", image: "/products/amul-kool-cafe.webp", slot: "B-03" },
-        { id: "amul-kool-dark-chocolate", name: "Amul Kool Dark Chocolate", price: 25, subType: "Drinks", image: "/products/amul-kool-dark-chocolate.webp", slot: "B-04" },
-        { id: "amul-kool-koko", name: "Amul Kool Koko", price: 40, subType: "Drinks", image: "/products/amul-kool-koko.webp", slot: "B-05" },
-        { id: "amul-kool-rose", name: "Amul Kool Rose", price: 30, subType: "Drinks", image: "/products/amul-kool-rose.webp", slot: "B-06" },
-        { id: "dark-fantasy-shake", name: "Dark Fantasy Shake", price: 30, subType: "Drinks", image: "/products/dark-fantasy-shake.webp", slot: "B-07" },
-        { id: "britannia-strawberry-shake", name: "Britannia Strawberry Shake", price: 40, subType: "Drinks", image: "/products/britannia-strawberry-shake.webp", slot: "B-08" },
-        { id: "britannia-vanilla-shake", name: "Britannia Vanilla Shake", price: 40, subType: "Drinks", image: "/products/britannia-vanilla-shake.webp", slot: "B-09" },
-        { id: "paper-boat-jamun", name: "Paper Boat Jamun", price: 25, subType: "Drinks", image: "/products/paper-boat-jamun.webp", slot: "B-10" },
-        { id: "paper-boat-apple", name: "Paper Boat Apple", price: 25, subType: "Drinks", image: "/products/paper-boat-apple.webp", slot: "B-11" },
-        { id: "paper-boat-orange", name: "Paper Boat Orange", price: 25, subType: "Drinks", image: "/products/paper-boat-orange.webp", slot: "B-12" },
-        { id: "swing-coconut-water", name: "Swing Coconut Water", price: 20, subType: "Drinks", image: "/products/swing-coconut-water.webp", slot: "B-13" },
-        { id: "swing-mixed-fruit", name: "Swing Mixed Fruit", price: 20, subType: "Drinks", image: "/products/swing-mixed-fruit.webp", slot: "B-14" },
-        { id: "swing-guava", name: "Swing Guava", price: 20, subType: "Drinks", image: "/products/swing-guava.webp", slot: "B-15" },
-        { id: "swing-pomegranate", name: "Swing Pomegranate", price: 20, subType: "Drinks", image: "/products/swing-pomegranate.webp", slot: "B-16" },
-        { id: "jam-in-mix-fruit", name: "Jam-in Mix Fruit", price: 20, subType: "Drinks", image: "/products/jam-in-mix-fruit.webp", slot: "B-17" },
-        { id: "sprite-mrp-20", name: "Sprite MRP 20", price: 20, subType: "Drinks", image: "/products/sprite-mrp-20.webp", slot: "B-18" },
-        { id: "fanta-250ml", name: "Fanta 250ml", price: 20, subType: "Drinks", image: "/products/fanta-250ml.webp", slot: "B-19" },
-        { id: "coca-cola-can", name: "Coca-Cola Can", price: 40, subType: "Drinks", image: "/products/coca-cola-can.webp", slot: "B-20" },
-        { id: "kinley-water-500ml", name: "Kinley Water 500ml", price: 10, subType: "Drinks", image: "/products/kinley-water-500ml.webp", slot: "B-21" },
+            // Drinks (21)
+            { id: "frooti-400ml", name: "Frooti 400ml", price: 30, subType: "Drinks", image: "/products/frooti-400ml.webp", slot: "B-01" },
+            { id: "appy-fizz-250ml", name: "Appy Fizz 250ml", price: 20, subType: "Drinks", image: "/products/appy-fizz-250ml.webp", slot: "B-02" },
+            { id: "amul-kool-cafe", name: "Amul Kool Cafe", price: 40, subType: "Drinks", image: "/products/amul-kool-cafe.webp", slot: "B-03" },
+            { id: "amul-kool-dark-chocolate", name: "Amul Kool Dark Chocolate", price: 25, subType: "Drinks", image: "/products/amul-kool-dark-chocolate.webp", slot: "B-04" },
+            { id: "amul-kool-koko", name: "Amul Kool Koko", price: 40, subType: "Drinks", image: "/products/amul-kool-koko.webp", slot: "B-05" },
+            { id: "amul-kool-rose", name: "Amul Kool Rose", price: 30, subType: "Drinks", image: "/products/amul-kool-rose.webp", slot: "B-06" },
+            { id: "dark-fantasy-shake", name: "Dark Fantasy Shake", price: 30, subType: "Drinks", image: "/products/dark-fantasy-shake.webp", slot: "B-07" },
+            { id: "britannia-strawberry-shake", name: "Britannia Strawberry Shake", price: 40, subType: "Drinks", image: "/products/britannia-strawberry-shake.webp", slot: "B-08" },
+            { id: "britannia-vanilla-shake", name: "Britannia Vanilla Shake", price: 40, subType: "Drinks", image: "/products/britannia-vanilla-shake.webp", slot: "B-09" },
+            { id: "paper-boat-jamun", name: "Paper Boat Jamun", price: 25, subType: "Drinks", image: "/products/paper-boat-jamun.webp", slot: "B-10" },
+            { id: "paper-boat-apple", name: "Paper Boat Apple", price: 25, subType: "Drinks", image: "/products/paper-boat-apple.webp", slot: "B-11" },
+            { id: "paper-boat-orange", name: "Paper Boat Orange", price: 25, subType: "Drinks", image: "/products/paper-boat-orange.webp", slot: "B-12" },
+            { id: "swing-coconut-water", name: "Swing Coconut Water", price: 20, subType: "Drinks", image: "/products/swing-coconut-water.webp", slot: "B-13" },
+            { id: "swing-mixed-fruit", name: "Swing Mixed Fruit", price: 20, subType: "Drinks", image: "/products/swing-mixed-fruit.webp", slot: "B-14" },
+            { id: "swing-guava", name: "Swing Guava", price: 20, subType: "Drinks", image: "/products/swing-guava.webp", slot: "B-15" },
+            { id: "swing-pomegranate", name: "Swing Pomegranate", price: 20, subType: "Drinks", image: "/products/swing-pomegranate.webp", slot: "B-16" },
+            { id: "jam-in-mix-fruit", name: "Jam-in Mix Fruit", price: 20, subType: "Drinks", image: "/products/jam-in-mix-fruit.webp", slot: "B-17" },
+            { id: "sprite-mrp-20", name: "Sprite MRP 20", price: 20, subType: "Drinks", image: "/products/sprite-mrp-20.webp", slot: "B-18" },
+            { id: "fanta-250ml", name: "Fanta 250ml", price: 20, subType: "Drinks", image: "/products/fanta-250ml.webp", slot: "B-19" },
+            { id: "coca-cola-can", name: "Coca-Cola Can", price: 40, subType: "Drinks", image: "/products/coca-cola-can.webp", slot: "B-20" },
+            { id: "kinley-water-500ml", name: "Kinley Water 500ml", price: 10, subType: "Drinks", image: "/products/kinley-water-500ml.webp", slot: "B-21" },
 
-        // Sweets & Chocolates (17)
-        { id: "kitkat", name: "KitKat", price: 30, subType: "Sweets", image: "/products/kitkat.webp", slot: "C-01" },
-        { id: "dairy-milk-chocolate", name: "Dairy Milk Chocolate", price: 45, subType: "Sweets", image: "/products/dairy-milk-chocolate.webp", slot: "C-02" },
-        { id: "amul-fruit-nut", name: "Amul Fruit Nut", price: 45, subType: "Sweets", image: "/products/amul-fruit-nut.webp", slot: "C-03" },
-        { id: "amul-velvet-chocolate", name: "Amul Velvet Chocolate", price: 30, subType: "Sweets", image: "/products/amul-velvet-chocolate.webp", slot: "C-04" },
-        { id: "amul-smooth-chocolate", name: "Amul Smooth Chocolate", price: 20, subType: "Sweets", image: "/products/amul-smooth-chocolate.webp", slot: "C-05" },
-        { id: "dark-fantasy-vanilla", name: "Dark Fantasy Vanilla", price: 30, subType: "Sweets", image: "/products/dark-fantasy-vanilla.webp", slot: "C-06" },
-        { id: "lotte-chocopie", name: "Lotte Chocopie", price: 20, subType: "Sweets", image: "/products/lotte-chocopie.webp", slot: "C-07" },
-        { id: "oreo-vanilla-biscuit", name: "Oreo Vanilla Biscuit", price: 30, subType: "Sweets", image: "/products/oreo-vanilla-biscuit.webp", slot: "C-08" },
-        { id: "dukes-bourbon", name: "Dukes Bourbon", price: 25, subType: "Sweets", image: "/products/dukes-bourbon.webp", slot: "C-09" },
-        { id: "dukes-strawberry-cream", name: "Dukes Strawberry Cream", price: 25, subType: "Sweets", image: "/products/dukes-strawberry-cream.webp", slot: "C-10" },
-        { id: "fab-vanilla-cream", name: "Fab Vanilla Cream", price: 30, subType: "Sweets", image: "/products/fab-vanilla-cream.webp", slot: "C-11" },
-        { id: "milk-bikis-cream", name: "Milk Bikis Cream", price: 30, subType: "Sweets", image: "/products/milk-bikis-cream.webp", slot: "C-12" },
-        { id: "butter-cookies", name: "Butter Cookies", price: 20, subType: "Sweets", image: "/products/butter-cookies.webp", slot: "C-13" },
-        { id: "snow-blueberry-pie", name: "Snow Blueberry Pie", price: 20, subType: "Sweets", image: "/products/snow-blueberry-pie.webp", slot: "C-14" },
-        { id: "nut-grain-energy-bar", name: "Nut & Grain Energy Bar", price: 20, subType: "Sweets", image: "/products/nut-grain-energy-bar.webp", slot: "C-15" },
-        { id: "choco-desire-energy-bar", name: "Choco Desire Energy Bar", price: 20, subType: "Sweets", image: "/products/choco-desire-energy-bar.webp", slot: "C-16" },
-        { id: "amul-premium-butter", name: "Amul Premium Butter", price: 20, subType: "Sweets", image: "/products/amul-premium-butter.webp", slot: "C-17" }
-    ];
-
-    // Popular Items for Other Categories
-    const POPULAR_ITEMS = {
-        "Snack": [
-            { name: "CrunchEx Chili Tadka", price: 20 },
-            { name: "Kurkure Masala Munch", price: 20 },
-            { name: "Chili Chataka Kurkure", price: 20 },
-            { name: "Lays Magic Masala", price: 20 },
-            { name: "Lays Sizzling Hot", price: 20 },
-            { name: "Bingo Mad Angles Achaari", price: 20 },
-            { name: "Maggi 2-Min", price: 20 },
-            { name: "Doritos Cheese", price: 30 },
-            { name: "ACT Butter Popcorn", price: 20 }
-        ],
-        "Beverage": [
-            { name: "Frooti 400ml", price: 30 },
-            { name: "Appy Fizz 250ml", price: 20 },
-            { name: "Amul Kool Cafe", price: 40 },
-            { name: "Paper Boat Jamun", price: 25 },
-            { name: "Sprite MRP 20", price: 20 },
-            { name: "Coca-Cola Can", price: 40 },
-            { name: "Cold Coffee", price: 35 },
-            { name: "Chai / Tea", price: 15 }
-        ],
-        "Meal": [
-            { name: "Paneer Butter Masala", price: 120 },
-            { name: "Egg Roll", price: 50 },
-            { name: "Veg Fried Rice", price: 80 },
-            { name: "Chicken Biryani", price: 140 },
-            { name: "Chole Bhature", price: 70 }
-        ],
-        "Grocery": [
-            { name: "Bread", price: 30 },
-            { name: "Amul Butter", price: 55 },
-            { name: "Milk 500ml", price: 32 },
-            { name: "Eggs (6 pcs)", price: 45 },
-            { name: "Instant Noodles", price: 20 }
-        ],
-        "Stationery": [
-            { name: "A4 Notebook", price: 60 },
-            { name: "Blue Gel Pen", price: 10 },
-            { name: "Sticky Notes", price: 40 },
-            { name: "A4 Papers (50)", price: 50 },
-            { name: "Highlighter", price: 25 }
-        ],
-        "Medicine": [
-            { name: "Paracetamol 650", price: 30 },
-            { name: "Band-Aid", price: 10 },
-            { name: "Strepsils", price: 35 },
-            { name: "Vicks Inhaler", price: 60 },
-            { name: "Digene / Eno", price: 10 }
-        ]
-    };
-
-    // ─── App State ───
-    let currentStep = 1;
-    let selectedCategory = "Vending Machine";
-    let vendingSubFilter = "All";
-    let vendingSearchQuery = "";
-    let cartItems = [];
-    let customItemQty = 1;
-
-    let pickupLocation = "Hostel Vending Machine";
-    let customPickup = "";
-    let dropoffHostel = "@defaultHostel";
-    let dropoffRoom = "@defaultRoom";
-    let deliverySpeed = "standard";
-    let customReward = 5;
-    let instructions = "";
-
-    // Initialize
-    document.addEventListener("DOMContentLoaded", () => {
-        renderVendingProducts();
-        updateCartUI();
-    });
-
-    // ─── Stepper Logic ───
-    function goToStep(step) {
-        if (step === 2 && cartItems.length === 0) {
-            showError("Please add at least one item before continuing.");
-            return;
-        }
-        if (step === 3 && !dropoffRoom.trim()) {
-            showError("Please provide your room number before confirming.");
-            return;
-        }
-
-        clearError();
-        currentStep = step;
-
-        // Toggle Views
-        document.getElementById("stepContainer1").style.display = step === 1 ? "block" : "none";
-        document.getElementById("stepContainer2").style.display = step === 2 ? "block" : "none";
-        document.getElementById("stepContainer3").style.display = step === 3 ? "block" : "none";
-
-        // Update Stepper UI
-        document.getElementById("stepper1").className = "uv-step-btn " + (step === 1 ? "active" : "completed");
-        document.getElementById("stepper2").className = "uv-step-btn " + (step === 2 ? "active" : (step > 2 ? "completed" : ""));
-        document.getElementById("stepper3").className = "uv-step-btn " + (step === 3 ? "active" : "");
-
-        document.getElementById("divider1").style.width = step >= 2 ? "100%" : "0%";
-        document.getElementById("divider2").style.width = step === 3 ? "100%" : "0%";
-
-        if (step === 2) {
-            renderStep2Review();
-            updateRewardPresets();
-        } else if (step === 3) {
-            renderStep3Summary();
-        }
-
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function handleStep1Continue() {
-        if (cartItems.length === 0) {
-            showError("Please add at least one item before proceeding.");
-            return;
-        }
-        goToStep(2);
-    }
-
-    function handleStep2Continue() {
-        if (!dropoffRoom.trim()) {
-            showError("Please enter your room number.");
-            return;
-        }
-        if (pickupLocation === "Other (Custom Spot)" && !customPickup.trim()) {
-            showError("Please enter your custom pickup spot.");
-            return;
-        }
-        const minReq = getMinRequiredReward();
-        if (customReward < minReq) {
-            showError(`Minimum delivery reward is ₹${minReq} (₹5 per item).`);
-            return;
-        }
-        goToStep(3);
-    }
-
-    // ─── Category Selection ───
-    function selectCategory(cat, element) {
-        selectedCategory = cat;
-        document.querySelectorAll(".uv-category-tile").forEach(el => el.classList.remove("active"));
-        element.classList.add("active");
-
-        if (cat === "Vending Machine") {
-            document.getElementById("vendingMachineSection").style.display = "block";
-            document.getElementById("otherCategoryChipsSection").style.display = "none";
-            renderVendingProducts();
-        } else {
-            document.getElementById("vendingMachineSection").style.display = "none";
-            document.getElementById("otherCategoryChipsSection").style.display = "block";
-            document.getElementById("otherCatLabel").innerText = `Popular ${cat} Items:`;
-            renderPopularChips(cat);
-        }
-    }
-
-    // ─── Vending Machine Render & Search ───
-    function filterVendingSub(sub, el) {
-        vendingSubFilter = sub;
-        document.querySelectorAll(".uv-subfilter-btn").forEach(b => b.classList.remove("active"));
-        el.classList.add("active");
-        renderVendingProducts();
-    }
-
-    function filterVendingStock() {
-        vendingSearchQuery = document.getElementById("vendingSearchInput").value.trim().toLowerCase();
-        renderVendingProducts();
-    }
-
-    function renderVendingProducts() {
-        const grid = document.getElementById("vendingProductsGrid");
-        grid.innerHTML = "";
-
-        const filtered = VENDING_PRODUCTS.filter(p => {
-            const matchesTab = vendingSubFilter === "All" || p.subType === vendingSubFilter;
-            const matchesSearch = !vendingSearchQuery || p.name.toLowerCase().includes(vendingSearchQuery) || p.slot.toLowerCase().includes(vendingSearchQuery);
-            return matchesTab && matchesSearch;
-        });
-
-        if (filtered.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: rgba(255,255,255,0.4); font-size: 13px;">No vending products found matching "${vendingSearchQuery}".</div>`;
-            return;
-        }
-
-        filtered.forEach(p => {
-            const inCartItem = cartItems.find(it => it.name.toLowerCase() === p.name.toLowerCase());
-            const qty = inCartItem ? inCartItem.quantity : 0;
-
-            const card = document.createElement("div");
-            card.className = "uv-product-card" + (qty > 0 ? " in-cart" : "");
-            card.onclick = () => {
-                if (qty === 0) addToCart(p.name, "Vending Machine", p.price, 1);
-            };
-
-            let stepperHtml = "";
-            if (qty > 0) {
-                stepperHtml = `
-                    <div class="uv-stepper-mini" onclick="event.stopPropagation()">
-                        <button type="button" onclick="adjustItemQty('${p.name}', -1)">-</button>
-                        <span>${qty}</span>
-                        <button type="button" onclick="adjustItemQty('${p.name}', 1)">+</button>
-                    </div>
-                `;
-            } else {
-                stepperHtml = `
-                    <button type="button" class="uv-btn-add-mini" title="Add ${p.name}">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                `;
-            }
-
-            card.innerHTML = `
-                ${qty > 0 ? `<div class="uv-card-qty-badge">${qty}</div>` : ""}
-                <div class="uv-prod-img-box">
-                    <img src="${p.image}" alt="${p.name}" loading="lazy" />
-                    <span class="uv-slot-badge">${p.slot}</span>
-                </div>
-                <div class="uv-prod-name">${p.name}</div>
-                <div class="uv-prod-footer">
-                    <span class="uv-prod-price">₹${p.price}</span>
-                    ${stepperHtml}
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // ─── Popular Chips Render ───
-    function renderPopularChips(category) {
-        const container = document.getElementById("popularChipsContainer");
-        container.innerHTML = "";
-        const list = POPULAR_ITEMS[category] || [];
-
-        list.forEach(item => {
-            const chip = document.createElement("button");
-            chip.type = "button";
-            chip.className = "uv-popular-chip";
-            chip.onclick = () => addToCart(item.name, category, item.price, 1);
-            chip.innerHTML = `
-                <i class="bi bi-plus-lg" style="color: #00E676;"></i>
-                <span>${item.name}</span>
-                <span class="uv-chip-price">₹${item.price}</span>
-            `;
-            container.appendChild(chip);
-        });
-    }
-
-    // ─── Custom Add ───
-    function adjustCustomQty(delta) {
-        customItemQty = Math.max(1, customItemQty + delta);
-        document.getElementById("customQtyLabel").innerText = customItemQty;
-    }
-
-    function addCustomItem() {
-        const nameInput = document.getElementById("customItemName");
-        const priceInput = document.getElementById("customItemPrice");
-        const name = nameInput.value.trim();
-        const price = priceInput.value ? Math.max(0, parseFloat(priceInput.value)) : 0;
-
-        if (!name) {
-            showError("Please enter an item name.");
-            return;
-        }
-
-        addToCart(name, selectedCategory, price, customItemQty);
-        nameInput.value = "";
-        priceInput.value = "";
-        customItemQty = 1;
-        document.getElementById("customQtyLabel").innerText = "1";
-        clearError();
-    }
-
-    // ─── Cart Operations ───
-    function addToCart(name, category, price, quantity) {
-        const existing = cartItems.find(it => it.name.toLowerCase() === name.toLowerCase());
-        if (existing) {
-            existing.quantity += quantity;
-        } else {
-            cartItems.push({
-                id: Math.random().toString(36).substring(2, 9),
-                name: name,
-                category: category,
-                quantity: quantity,
-                estimatedPrice: price || 0
-            });
-        }
-        updateCartUI();
-        if (selectedCategory === "Vending Machine") renderVendingProducts();
-    }
-
-    function adjustItemQty(name, delta) {
-        const idx = cartItems.findIndex(it => it.name.toLowerCase() === name.toLowerCase());
-        if (idx === -1) return;
-
-        cartItems[idx].quantity += delta;
-        if (cartItems[idx].quantity <= 0) {
-            cartItems.splice(idx, 1);
-        }
-        updateCartUI();
-        if (selectedCategory === "Vending Machine") renderVendingProducts();
-    }
-
-    function removeCartItem(id) {
-        cartItems = cartItems.filter(it => it.id !== id);
-        updateCartUI();
-        if (selectedCategory === "Vending Machine") renderVendingProducts();
-    }
-
-    function clearAllItems() {
-        cartItems = [];
-        updateCartUI();
-        if (selectedCategory === "Vending Machine") renderVendingProducts();
-    }
-
-    function getTotalItemCount() {
-        return cartItems.reduce((sum, it) => sum + it.quantity, 0);
-    }
-
-    function getMinRequiredReward() {
-        const total = getTotalItemCount();
-        return Math.max(5, total * 5);
-    }
-
-    function getEstItemsTotal() {
-        return cartItems.reduce((sum, it) => sum + (it.estimatedPrice || 0) * it.quantity, 0);
-    }
-
-    function updateCartUI() {
-        const count = cartItems.length;
-        document.getElementById("cartCountLabel").innerText = count;
-
-        const empty = document.getElementById("cartEmptyState");
-        const list = document.getElementById("cartItemsList");
-        const totalRow = document.getElementById("cartTotalSummaryRow");
-        const estTotalVal = document.getElementById("cartEstTotalVal");
-
-        if (count === 0) {
-            empty.style.display = "block";
-            list.style.display = "none";
-            totalRow.style.display = "none";
-        } else {
-            empty.style.display = "none";
-            list.style.display = "flex";
-            totalRow.style.display = "flex";
-
-            const estTotal = getEstItemsTotal();
-            estTotalVal.innerText = estTotal;
-
-            list.innerHTML = "";
-            cartItems.forEach(item => {
-                const row = document.createElement("div");
-                row.className = "uv-cart-item-row";
-                row.innerHTML = `
-                    <div class="uv-cart-item-info">
-                        <span class="uv-cart-qty-pill">${item.quantity}x</span>
-                        <span class="uv-cart-item-name">${item.name}</span>
-                        <span class="uv-cart-cat-badge">${item.category}</span>
-                        ${item.estimatedPrice > 0 ? `<span style="color: #34d399; font-size: 12px; font-weight: 700;">~₹${item.estimatedPrice * item.quantity}</span>` : ""}
-                    </div>
-                    <button type="button" class="uv-btn-trash" onclick="removeCartItem('${item.id}')" title="Remove">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                `;
-                list.appendChild(row);
-            });
-        }
-    }
-
-    // ─── Step 2 Review & Options ───
-    function renderStep2Review() {
-        const totalCount = getTotalItemCount();
-        const minReward = getMinRequiredReward();
-        const estTotal = getEstItemsTotal();
-
-        document.getElementById("step2TotalItemCount").innerText = totalCount;
-        document.getElementById("step2EstItemsTotal").innerText = `~₹${estTotal}`;
-        document.getElementById("step2MinRewardFormula").innerText = `₹5 × ${totalCount} = ₹${minReward}`;
-        document.getElementById("minRewardBadge").innerText = minReward;
-
-        const summaryList = document.getElementById("step2ItemsSummaryList");
-        summaryList.innerHTML = "";
-
-        cartItems.forEach(it => {
-            const itemRow = document.createElement("div");
-            itemRow.style.display = "flex";
-            itemRow.style.justifyContent = "space-between";
-            itemRow.style.alignItems = "center";
-            itemRow.style.background = "rgba(0, 0, 0, 0.4)";
-            itemRow.style.border = "1px solid rgba(255, 255, 255, 0.08)";
-            itemRow.style.borderRadius = "10px";
-            itemRow.style.padding = "6px 12px";
-            itemRow.style.fontSize = "12px";
-
-            itemRow.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #00E676; font-weight: 900; background: rgba(0, 230, 118, 0.15); padding: 1px 6px; border-radius: 4px;">${it.quantity}x</span>
-                    <span style="color: #fff; font-weight: 600;">${it.name}</span>
-                    <span style="color: rgba(255,255,255,0.4); font-size: 10px;">(${it.category})</span>
-                </div>
-                <span style="color: #34d399; font-weight: 700;">${it.estimatedPrice > 0 ? `~₹${it.estimatedPrice * it.quantity}` : "Custom"}</span>
-            `;
-            summaryList.appendChild(itemRow);
-        });
-
-        // Ensure custom reward >= minReward
-        if (customReward < minReward) {
-            customReward = minReward;
-            document.getElementById("customRewardInput").value = minReward;
-        }
-    }
-
-    function selectPickupLocation(loc, btn) {
-        pickupLocation = loc;
-        document.querySelectorAll(".uv-option-tile").forEach(el => {
-            if (el.id === "btnPickupVending" || el.id === "btnPickupCustom") el.classList.remove("active");
-        });
-        btn.classList.add("active");
-
-        const isVending = loc === "Hostel Vending Machine";
-        document.getElementById("vendingPerkBanner").style.display = isVending ? "flex" : "none";
-        document.getElementById("customPickupInputRow").style.display = isVending ? "none" : "block";
-    }
-
-    function updateCustomPickup(val) {
-        customPickup = val;
-    }
-
-    function selectHostel(hostel, btn) {
-        dropoffHostel = hostel;
-        document.querySelectorAll(".uv-hostel-chips .uv-hostel-chip").forEach(el => el.classList.remove("active"));
-        btn.classList.add("active");
-    }
-
-    function updateDropoffRoom(val) {
-        dropoffRoom = val;
-    }
-
-    function selectUrgency(urg, btn) {
-        deliverySpeed = urg;
-        document.getElementById("btnUrgencyStandard").classList.remove("active");
-        document.getElementById("btnUrgencyUrgent").classList.remove("active");
-        btn.classList.add("active");
-    }
-
-    function updateRewardPresets() {
-        const min = getMinRequiredReward();
-        const wrap = document.getElementById("rewardPresetsWrap");
-        wrap.innerHTML = "";
-
-        const presets = [
-            { label: `₹${min} (Min)`, val: min },
-            { label: `₹${min + 5}`, val: min + 5 },
-            { label: `₹${min + 10}`, val: min + 10 },
-            { label: `₹${min + 20}`, val: min + 20 },
-            { label: `₹${min + 35}`, val: min + 35 },
-            { label: `₹${min + 50}`, val: min + 50 }
+            // Sweets & Chocolates (17)
+            { id: "kitkat", name: "KitKat", price: 30, subType: "Sweets", image: "/products/kitkat.webp", slot: "C-01" },
+            { id: "dairy-milk-chocolate", name: "Dairy Milk Chocolate", price: 45, subType: "Sweets", image: "/products/dairy-milk-chocolate.webp", slot: "C-02" },
+            { id: "amul-fruit-nut", name: "Amul Fruit Nut", price: 45, subType: "Sweets", image: "/products/amul-fruit-nut.webp", slot: "C-03" },
+            { id: "amul-velvet-chocolate", name: "Amul Velvet Chocolate", price: 30, subType: "Sweets", image: "/products/amul-velvet-chocolate.webp", slot: "C-04" },
+            { id: "amul-smooth-chocolate", name: "Amul Smooth Chocolate", price: 20, subType: "Sweets", image: "/products/amul-smooth-chocolate.webp", slot: "C-05" },
+            { id: "dark-fantasy-vanilla", name: "Dark Fantasy Vanilla", price: 30, subType: "Sweets", image: "/products/dark-fantasy-vanilla.webp", slot: "C-06" },
+            { id: "lotte-chocopie", name: "Lotte Chocopie", price: 20, subType: "Sweets", image: "/products/lotte-chocopie.webp", slot: "C-07" },
+            { id: "oreo-vanilla-biscuit", name: "Oreo Vanilla Biscuit", price: 30, subType: "Sweets", image: "/products/oreo-vanilla-biscuit.webp", slot: "C-08" },
+            { id: "dukes-bourbon", name: "Dukes Bourbon", price: 25, subType: "Sweets", image: "/products/dukes-bourbon.webp", slot: "C-09" },
+            { id: "dukes-strawberry-cream", name: "Dukes Strawberry Cream", price: 25, subType: "Sweets", image: "/products/dukes-strawberry-cream.webp", slot: "C-10" },
+            { id: "fab-vanilla-cream", name: "Fab Vanilla Cream", price: 30, subType: "Sweets", image: "/products/fab-vanilla-cream.webp", slot: "C-11" },
+            { id: "milk-bikis-cream", name: "Milk Bikis Cream", price: 30, subType: "Sweets", image: "/products/milk-bikis-cream.webp", slot: "C-12" },
+            { id: "butter-cookies", name: "Butter Cookies", price: 20, subType: "Sweets", image: "/products/butter-cookies.webp", slot: "C-13" },
+            { id: "snow-blueberry-pie", name: "Snow Blueberry Pie", price: 20, subType: "Sweets", image: "/products/snow-blueberry-pie.webp", slot: "C-14" },
+            { id: "nut-grain-energy-bar", name: "Nut & Grain Energy Bar", price: 20, subType: "Sweets", image: "/products/nut-grain-energy-bar.webp", slot: "C-15" },
+            { id: "choco-desire-energy-bar", name: "Choco Desire Energy Bar", price: 20, subType: "Sweets", image: "/products/choco-desire-energy-bar.webp", slot: "C-16" },
+            { id: "amul-premium-butter", name: "Amul Premium Butter", price: 20, subType: "Sweets", image: "/products/amul-premium-butter.webp", slot: "C-17" }
         ];
 
-        presets.forEach(p => {
-            const chip = document.createElement("button");
-            chip.type = "button";
-            chip.className = "uv-reward-chip" + (customReward === p.val ? " active" : "");
-            chip.innerText = p.label;
-            chip.onclick = () => {
-                customReward = p.val;
-                document.getElementById("customRewardInput").value = p.val;
+        // Popular Items for Other Categories
+        const POPULAR_ITEMS = {
+            "Snack": [
+                { name: "CrunchEx Chili Tadka", price: 20 },
+                { name: "Kurkure Masala Munch", price: 20 },
+                { name: "Chili Chataka Kurkure", price: 20 },
+                { name: "Lays Magic Masala", price: 20 },
+                { name: "Lays Sizzling Hot", price: 20 },
+                { name: "Bingo Mad Angles Achaari", price: 20 },
+                { name: "Maggi 2-Min", price: 20 },
+                { name: "Doritos Cheese", price: 30 },
+                { name: "ACT Butter Popcorn", price: 20 }
+            ],
+            "Beverage": [
+                { name: "Frooti 400ml", price: 30 },
+                { name: "Appy Fizz 250ml", price: 20 },
+                { name: "Amul Kool Cafe", price: 40 },
+                { name: "Paper Boat Jamun", price: 25 },
+                { name: "Sprite MRP 20", price: 20 },
+                { name: "Coca-Cola Can", price: 40 },
+                { name: "Cold Coffee", price: 35 },
+                { name: "Chai / Tea", price: 15 }
+            ],
+            "Meal": [
+                { name: "Paneer Butter Masala", price: 120 },
+                { name: "Egg Roll", price: 50 },
+                { name: "Veg Fried Rice", price: 80 },
+                { name: "Chicken Biryani", price: 140 },
+                { name: "Chole Bhature", price: 70 }
+            ],
+            "Grocery": [
+                { name: "Bread", price: 30 },
+                { name: "Amul Butter", price: 55 },
+                { name: "Milk 500ml", price: 32 },
+                { name: "Eggs (6 pcs)", price: 45 },
+                { name: "Instant Noodles", price: 20 }
+            ],
+            "Stationery": [
+                { name: "A4 Notebook", price: 60 },
+                { name: "Blue Gel Pen", price: 10 },
+                { name: "Sticky Notes", price: 40 },
+                { name: "A4 Papers (50)", price: 50 },
+                { name: "Highlighter", price: 25 }
+            ],
+            "Medicine": [
+                { name: "Paracetamol 650", price: 30 },
+                { name: "Band-Aid", price: 10 },
+                { name: "Strepsils", price: 35 },
+                { name: "Vicks Inhaler", price: 60 },
+                { name: "Digene / Eno", price: 10 }
+            ]
+        };
+
+        // App State
+        let currentStep = 1;
+        let selectedCategory = "Vending Machine";
+        let vendingSubFilter = "All";
+        let vendingSearchQuery = "";
+        let cartItems = [];
+        let customItemQty = 1;
+
+        let pickupLocation = "Hostel Vending Machine";
+        let customPickup = "";
+        let dropoffHostel = "@defaultHostel";
+        let dropoffRoom = "@defaultRoom";
+        let deliverySpeed = "standard";
+        let customReward = 5;
+        let instructions = "";
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            renderVendingProducts();
+            updateCartUI();
+        });
+
+        // ── Stepper Logic ──
+        function goToStep(step) {
+            if (step === 2 && cartItems.length === 0) {
+                showError("Please add at least one item before continuing.");
+                return;
+            }
+            if (step === 3 && !dropoffRoom.trim()) {
+                showError("Please provide your room number before confirming.");
+                return;
+            }
+
+            clearError();
+            currentStep = step;
+
+            document.getElementById("stepContainer1").style.display = step === 1 ? "block" : "none";
+            document.getElementById("stepContainer2").style.display = step === 2 ? "block" : "none";
+            document.getElementById("stepContainer3").style.display = step === 3 ? "block" : "none";
+
+            document.getElementById("stepper1").className = "step-item " + (step === 1 ? "active" : "completed");
+            document.getElementById("stepper2").className = "step-item " + (step === 2 ? "active" : (step > 2 ? "completed" : ""));
+            document.getElementById("stepper3").className = "step-item " + (step === 3 ? "active" : "");
+
+            document.getElementById("divider1").style.width = step >= 2 ? "100%" : "0%";
+            document.getElementById("divider2").style.width = step === 3 ? "100%" : "0%";
+
+            if (step === 2) {
+                renderStep2Review();
                 updateRewardPresets();
-            };
-            wrap.appendChild(chip);
-        });
-    }
+            } else if (step === 3) {
+                renderStep3Summary();
+            }
 
-    function updateRewardVal(val) {
-        const num = parseFloat(val) || getMinRequiredReward();
-        customReward = num;
-        updateRewardPresets();
-    }
-
-    function updateInstructions(val) {
-        instructions = val;
-    }
-
-    // ─── Step 3 Summary Render ───
-    function renderStep3Summary() {
-        const totalCount = getTotalItemCount();
-        const estTotal = getEstItemsTotal();
-
-        document.getElementById("sumTotalItemCount").innerText = `${totalCount} ${totalCount === 1 ? "item" : "items"}`;
-
-        const listContainer = document.getElementById("sumItemsList");
-        listContainer.innerHTML = "";
-        cartItems.forEach(i => {
-            const span = document.createElement("span");
-            span.style.fontSize = "12.5px";
-            span.style.color = "#fff";
-            span.innerHTML = `<strong>${i.quantity}x</strong> ${i.name} <span style="color: #A7B8B0; font-size: 11px;">(${i.category})</span>`;
-            listContainer.appendChild(span);
-        });
-
-        document.getElementById("sumPickupVal").innerText = pickupLocation === "Other (Custom Spot)" ? (customPickup || "Custom Spot") : pickupLocation;
-        document.getElementById("sumDropoffVal").innerText = `${dropoffHostel}, Room ${dropoffRoom}`;
-        document.getElementById("sumSpeedVal").innerText = deliverySpeed === "urgent" ? "⚡ Express Priority" : "🟢 Standard (~30-45m)";
-        document.getElementById("sumEstItemsCost").innerText = `~₹${estTotal}`;
-        document.getElementById("sumRewardVal").innerText = `₹${customReward}`;
-    }
-
-    // ─── Final Submit Execution ───
-    function submitFinalDeliveryRequest() {
-        if (cartItems.length === 0) {
-            showError("Your cart is empty. Please add items.");
-            goToStep(1);
-            return;
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
-        if (!dropoffRoom.trim()) {
-            showError("Please enter your room number.");
+
+        function handleStep1Continue() {
+            if (cartItems.length === 0) {
+                showError("Please add at least one item before proceeding.");
+                return;
+            }
             goToStep(2);
-            return;
         }
 
-        const minReq = getMinRequiredReward();
-        if (customReward < minReq) {
-            showError(`Minimum delivery reward is ₹${minReq} (₹5 per item).`);
-            goToStep(2);
-            return;
+        function handleStep2Continue() {
+            if (!dropoffRoom.trim()) {
+                showError("Please enter your room number.");
+                return;
+            }
+            if (pickupLocation === "Other (Custom Spot)" && !customPickup.trim()) {
+                showError("Please enter your custom pickup spot.");
+                return;
+            }
+            const minReq = getMinRequiredReward();
+            if (customReward < minReq) {
+                showError(`Minimum delivery reward is ₹${minReq} (₹5 per item).`);
+                return;
+            }
+            goToStep(3);
         }
 
-        // Set hidden inputs
-        document.getElementById("hiddenPickupLocation").value = pickupLocation;
-        document.getElementById("hiddenCustomPickup").value = customPickup;
-        document.getElementById("hiddenDropoffHostel").value = dropoffHostel;
-        document.getElementById("hiddenDropoffRoom").value = dropoffRoom;
-        document.getElementById("hiddenDropoffLocation").value = `${dropoffHostel}, Room ${dropoffRoom}`;
-        document.getElementById("hiddenUrgency").value = deliverySpeed;
-        document.getElementById("hiddenDeliveryFee").value = customReward;
-        document.getElementById("hiddenEstimatedAmount").value = getEstItemsTotal();
-        document.getElementById("hiddenInstructions").value = instructions;
-        document.getElementById("hiddenItemsJson").value = JSON.stringify(cartItems);
+        // ── Category Selection ──
+        function selectCategory(cat, element) {
+            selectedCategory = cat;
+            document.querySelectorAll(".category-tile").forEach(el => el.classList.remove("active"));
+            element.classList.add("active");
 
-        // UI Loading Spinner
-        const btn = document.getElementById("btnPublishRequest");
-        const btnText = document.getElementById("btnPublishText");
-        const btnIcon = document.getElementById("btnPublishIcon");
-        btn.disabled = true;
-        btn.style.opacity = "0.8";
-        btnText.innerText = "Publishing Request to Campus...";
-        btnIcon.className = "spinner-border spinner-border-sm text-dark";
+            if (cat === "Vending Machine") {
+                document.getElementById("vendingMachineSection").style.display = "block";
+                document.getElementById("otherCategoryChipsSection").style.display = "none";
+                renderVendingProducts();
+            } else {
+                document.getElementById("vendingMachineSection").style.display = "none";
+                document.getElementById("otherCategoryChipsSection").style.display = "block";
+                document.getElementById("otherCatLabel").innerText = `Popular ${cat} Items:`;
+                renderPopularChips(cat);
+            }
+        }
 
-        // Submit form
-        document.getElementById("deliveryPostForm").submit();
-    }
+        // ── Vending Machine Render & Search ──
+        function filterVendingSub(sub, el) {
+            vendingSubFilter = sub;
+            document.querySelectorAll(".vending-subfilter-btn").forEach(b => b.classList.remove("active"));
+            el.classList.add("active");
+            renderVendingProducts();
+        }
 
-    // ─── Helper Functions ───
-    function showError(msg) {
-        const box = document.getElementById("clientErrorBox");
-        const text = document.getElementById("clientErrorMsg");
-        text.innerText = msg;
-        box.style.display = "flex";
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+        function filterVendingStock() {
+            vendingSearchQuery = document.getElementById("vendingSearchInput").value.trim().toLowerCase();
+            renderVendingProducts();
+        }
 
-    function clearError() {
-        const box = document.getElementById("clientErrorBox");
-        box.style.display = "none";
-    }
-</script>
-}
+        function renderVendingProducts() {
+            const grid = document.getElementById("vendingProductsGrid");
+            grid.innerHTML = "";
+
+            const filtered = VENDING_PRODUCTS.filter(p => {
+                const matchesTab = vendingSubFilter === "All" || p.subType === vendingSubFilter;
+                const matchesSearch = !vendingSearchQuery || p.name.toLowerCase().includes(vendingSearchQuery) || p.slot.toLowerCase().includes(vendingSearchQuery);
+                return matchesTab && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: rgba(255,255,255,0.4); font-size: 13px;">No vending products found matching "${vendingSearchQuery}".</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const inCartItem = cartItems.find(it => it.name.toLowerCase() === p.name.toLowerCase());
+                const qty = inCartItem ? inCartItem.quantity : 0;
+
+                const card = document.createElement("div");
+                card.className = "product-card" + (qty > 0 ? " in-cart" : "");
+                card.onclick = () => {
+                    if (qty === 0) addToCart(p.name, "Vending Machine", p.price, 1);
+                };
+
+                let stepperHtml = "";
+                if (qty > 0) {
+                    stepperHtml = `
+                        <div class="product-stepper-pill" onclick="event.stopPropagation()">
+                            <button type="button" onclick="adjustItemQty('${p.name}', -1)">-</button>
+                            <span>${qty}</span>
+                            <button type="button" onclick="adjustItemQty('${p.name}', 1)">+</button>
+                        </div>
+                    `;
+                } else {
+                    stepperHtml = `
+                        <button type="button" class="btn-add-circle" title="Add ${p.name}">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    `;
+                }
+
+                card.innerHTML = `
+                    ${qty > 0 ? `<div class="product-qty-bubble">${qty}</div>` : ""}
+                    <div class="product-image-container">
+                        <img src="${p.image}" alt="${p.name}" loading="lazy" />
+                        <span class="product-slot-badge">${p.slot}</span>
+                    </div>
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-card-footer">
+                        <span class="product-price-tag">₹${p.price}</span>
+                        ${stepperHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ── Popular Chips Render ──
+        function renderPopularChips(category) {
+            const container = document.getElementById("popularChipsContainer");
+            container.innerHTML = "";
+            const list = POPULAR_ITEMS[category] || [];
+
+            list.forEach(item => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className = "category-chip-btn";
+                chip.onclick = () => addToCart(item.name, category, item.price, 1);
+                chip.innerHTML = `
+                    <i class="bi bi-plus-lg" style="color: var(--accent-green);"></i>
+                    <span>${item.name}</span>
+                    <span class="chip-badge-price">₹${item.price}</span>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        // ── Custom Add ──
+        function adjustCustomQty(delta) {
+            customItemQty = Math.max(1, customItemQty + delta);
+            document.getElementById("customQtyLabel").innerText = customItemQty;
+        }
+
+        function addCustomItem() {
+            const nameInput = document.getElementById("customItemName");
+            const priceInput = document.getElementById("customItemPrice");
+            const name = nameInput.value.trim();
+            const price = priceInput.value ? Math.max(0, parseFloat(priceInput.value)) : 0;
+
+            if (!name) {
+                showError("Please enter an item name.");
+                return;
+            }
+
+            addToCart(name, selectedCategory, price, customItemQty);
+            nameInput.value = "";
+            priceInput.value = "";
+            customItemQty = 1;
+            document.getElementById("customQtyLabel").innerText = "1";
+            clearError();
+        }
+
+        // ── Cart Operations ──
+        function addToCart(name, category, price, quantity) {
+            const existing = cartItems.find(it => it.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.quantity += quantity;
+            } else {
+                cartItems.push({
+                    id: Math.random().toString(36).substring(2, 9),
+                    name: name,
+                    category: category,
+                    quantity: quantity,
+                    estimatedPrice: price || 0
+                });
+            }
+            updateCartUI();
+            if (selectedCategory === "Vending Machine") renderVendingProducts();
+        }
+
+        function adjustItemQty(name, delta) {
+            const idx = cartItems.findIndex(it => it.name.toLowerCase() === name.toLowerCase());
+            if (idx === -1) return;
+
+            cartItems[idx].quantity += delta;
+            if (cartItems[idx].quantity <= 0) {
+                cartItems.splice(idx, 1);
+            }
+            updateCartUI();
+            if (selectedCategory === "Vending Machine") renderVendingProducts();
+        }
+
+        function removeCartItem(id) {
+            cartItems = cartItems.filter(it => it.id !== id);
+            updateCartUI();
+            if (selectedCategory === "Vending Machine") renderVendingProducts();
+        }
+
+        function clearAllItems() {
+            cartItems = [];
+            updateCartUI();
+            if (selectedCategory === "Vending Machine") renderVendingProducts();
+        }
+
+        function getTotalItemCount() {
+            return cartItems.reduce((sum, it) => sum + it.quantity, 0);
+        }
+
+        function getMinRequiredReward() {
+            const total = getTotalItemCount();
+            return Math.max(5, total * 5);
+        }
+
+        function getEstItemsTotal() {
+            return cartItems.reduce((sum, it) => sum + (it.estimatedPrice || 0) * it.quantity, 0);
+        }
+
+        function updateCartUI() {
+            const count = cartItems.length;
+            document.getElementById("cartCountLabel").innerText = count;
+
+            const empty = document.getElementById("cartEmptyState");
+            const list = document.getElementById("cartItemsList");
+            const totalRow = document.getElementById("cartTotalSummaryRow");
+            const estTotalVal = document.getElementById("cartEstTotalVal");
+
+            if (count === 0) {
+                empty.style.display = "block";
+                list.style.display = "none";
+                totalRow.style.display = "none";
+            } else {
+                empty.style.display = "none";
+                list.style.display = "flex";
+                totalRow.style.display = "flex";
+
+                const estTotal = getEstItemsTotal();
+                estTotalVal.innerText = estTotal;
+
+                list.innerHTML = "";
+                cartItems.forEach(item => {
+                    const row = document.createElement("div");
+                    row.className = "cart-row";
+                    row.innerHTML = `
+                        <div class="cart-info">
+                            <span class="cart-qty-pill">${item.quantity}x</span>
+                            <span class="cart-item-title">${item.name}</span>
+                            <span class="cart-item-cat">${item.category}</span>
+                            ${item.estimatedPrice > 0 ? `<span style="color: #34d399; font-size: 12px; font-weight: 700;">~₹${item.estimatedPrice * item.quantity}</span>` : ""}
+                        </div>
+                        <button type="button" class="btn-trash" style="background: transparent; border: none; color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px;" onclick="removeCartItem('${item.id}')" title="Remove">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+        }
+
+        // ── Step 2 Review & Options ──
+        function renderStep2Review() {
+            const totalCount = getTotalItemCount();
+            const minReward = getMinRequiredReward();
+            const estTotal = getEstItemsTotal();
+
+            document.getElementById("step2TotalItemCount").innerText = totalCount;
+            document.getElementById("step2EstItemsTotal").innerText = `~₹${estTotal}`;
+            document.getElementById("step2MinRewardFormula").innerText = `₹5 × ${totalCount} = ₹${minReward}`;
+            document.getElementById("minRewardBadge").innerText = minReward;
+
+            const summaryList = document.getElementById("step2ItemsSummaryList");
+            summaryList.innerHTML = "";
+
+            cartItems.forEach(it => {
+                const itemRow = document.createElement("div");
+                itemRow.style.display = "flex";
+                itemRow.style.justifyContent = "space-between";
+                itemRow.style.alignItems = "center";
+                itemRow.style.background = "rgba(0, 0, 0, 0.4)";
+                itemRow.style.border = "1px solid rgba(255, 255, 255, 0.08)";
+                itemRow.style.borderRadius = "10px";
+                itemRow.style.padding = "6px 12px";
+                itemRow.style.fontSize = "12px";
+
+                itemRow.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: var(--accent-green); font-weight: 900; background: rgba(0, 230, 118, 0.15); padding: 1px 6px; border-radius: 4px;">${it.quantity}x</span>
+                        <span style="color: #fff; font-weight: 600;">${it.name}</span>
+                        <span style="color: rgba(255,255,255,0.4); font-size: 10px;">(${it.category})</span>
+                    </div>
+                    <span style="color: #34d399; font-weight: 700;">${it.estimatedPrice > 0 ? `~₹${it.estimatedPrice * it.quantity}` : "Custom"}</span>
+                `;
+                summaryList.appendChild(itemRow);
+            });
+
+            if (customReward < minReward) {
+                customReward = minReward;
+                document.getElementById("customRewardInput").value = minReward;
+            }
+        }
+
+        function selectPickupLocation(loc, btn) {
+            pickupLocation = loc;
+            document.querySelectorAll(".option-button-card").forEach(el => {
+                if (el.id === "btnPickupVending" || el.id === "btnPickupCustom") el.classList.remove("active");
+            });
+            btn.classList.add("active");
+
+            const isVending = loc === "Hostel Vending Machine";
+            document.getElementById("vendingPerkBanner").style.display = isVending ? "flex" : "none";
+            document.getElementById("customPickupInputRow").style.display = isVending ? "none" : "block";
+        }
+
+        function updateCustomPickup(val) {
+            customPickup = val;
+        }
+
+        function selectHostel(hostel, btn) {
+            dropoffHostel = hostel;
+            document.querySelectorAll(".hostel-btn-tile").forEach(el => el.classList.remove("active"));
+            btn.classList.add("active");
+        }
+
+        function updateDropoffRoom(val) {
+            dropoffRoom = val;
+        }
+
+        function selectUrgency(urg, btn) {
+            deliverySpeed = urg;
+            document.getElementById("btnUrgencyStandard").classList.remove("active");
+            document.getElementById("btnUrgencyUrgent").classList.remove("active");
+            btn.classList.add("active");
+        }
+
+        function updateRewardPresets() {
+            const min = getMinRequiredReward();
+            const wrap = document.getElementById("rewardPresetsWrap");
+            wrap.innerHTML = "";
+
+            const presets = [
+                { label: `₹${min} (Min)`, val: min },
+                { label: `₹${min + 5}`, val: min + 5 },
+                { label: `₹${min + 10}`, val: min + 10 },
+                { label: `₹${min + 20}`, val: min + 20 },
+                { label: `₹${min + 35}`, val: min + 35 },
+                { label: `₹${min + 50}`, val: min + 50 }
+            ];
+
+            presets.forEach(p => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className = "reward-pill-btn" + (customReward === p.val ? " active" : "");
+                chip.innerText = p.label;
+                chip.onclick = () => {
+                    customReward = p.val;
+                    document.getElementById("customRewardInput").value = p.val;
+                    updateRewardPresets();
+                };
+                wrap.appendChild(chip);
+            });
+        }
+
+        function updateRewardVal(val) {
+            const num = parseFloat(val) || getMinRequiredReward();
+            customReward = num;
+            updateRewardPresets();
+        }
+
+        function updateInstructions(val) {
+            instructions = val;
+        }
+
+        // ── Step 3 Summary Render ──
+        function renderStep3Summary() {
+            const totalCount = getTotalItemCount();
+            const estTotal = getEstItemsTotal();
+
+            document.getElementById("sumTotalItemCount").innerText = `${totalCount} ${totalCount === 1 ? "item" : "items"}`;
+
+            const listContainer = document.getElementById("sumItemsList");
+            listContainer.innerHTML = "";
+            cartItems.forEach(i => {
+                const span = document.createElement("span");
+                span.style.fontSize = "12.5px";
+                span.style.color = "#fff";
+                span.innerHTML = `<strong>${i.quantity}x</strong> ${i.name} <span style="color: var(--text-muted); font-size: 11px;">(${i.category})</span>`;
+                listContainer.appendChild(span);
+            });
+
+            document.getElementById("sumPickupVal").innerText = pickupLocation === "Other (Custom Spot)" ? (customPickup || "Custom Spot") : pickupLocation;
+            document.getElementById("sumDropoffVal").innerText = `${dropoffHostel}, Room ${dropoffRoom}`;
+            document.getElementById("sumSpeedVal").innerText = deliverySpeed === "urgent" ? "⚡ Express Priority" : "🟢 Standard (~30-45m)";
+            document.getElementById("sumEstItemsCost").innerText = `~₹${estTotal}`;
+            document.getElementById("sumRewardVal").innerText = `₹${customReward}`;
+        }
+
+        // ── Final Submit Execution ──
+        function submitFinalDeliveryRequest() {
+            if (cartItems.length === 0) {
+                showError("Your cart is empty. Please add items.");
+                goToStep(1);
+                return;
+            }
+            if (!dropoffRoom.trim()) {
+                showError("Please enter your room number.");
+                goToStep(2);
+                return;
+            }
+
+            const minReq = getMinRequiredReward();
+            if (customReward < minReq) {
+                showError(`Minimum delivery reward is ₹${minReq} (₹5 per item).`);
+                goToStep(2);
+                return;
+            }
+
+            document.getElementById("hiddenPickupLocation").value = pickupLocation;
+            document.getElementById("hiddenCustomPickup").value = customPickup;
+            document.getElementById("hiddenDropoffHostel").value = dropoffHostel;
+            document.getElementById("hiddenDropoffRoom").value = dropoffRoom;
+            document.getElementById("hiddenDropoffLocation").value = `${dropoffHostel}, Room ${dropoffRoom}`;
+            document.getElementById("hiddenUrgency").value = deliverySpeed;
+            document.getElementById("hiddenDeliveryFee").value = customReward;
+            document.getElementById("hiddenEstimatedAmount").value = getEstItemsTotal();
+            document.getElementById("hiddenInstructions").value = instructions;
+            document.getElementById("hiddenItemsJson").value = JSON.stringify(cartItems);
+
+            const btn = document.getElementById("btnPublishRequest");
+            const btnText = document.getElementById("btnPublishText");
+            const btnIcon = document.getElementById("btnPublishIcon");
+            btn.disabled = true;
+            btn.style.opacity = "0.8";
+            btnText.innerText = "Publishing Request to Campus...";
+            btnIcon.className = "spinner-border spinner-border-sm text-dark";
+
+            document.getElementById("deliveryPostForm").submit();
+        }
+
+        // ── Helpers ──
+        function showError(msg) {
+            const box = document.getElementById("clientErrorBox");
+            const text = document.getElementById("clientErrorMsg");
+            text.innerText = msg;
+            box.style.display = "flex";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function clearError() {
+            const box = document.getElementById("clientErrorBox");
+            box.style.display = "none";
+        }
+    </script>
+</body>
+</html>
