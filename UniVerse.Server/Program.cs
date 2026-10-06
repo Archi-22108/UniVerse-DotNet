@@ -37,6 +37,7 @@ builder.Services.AddScoped<DbInitializer>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDeliveryRepository, DeliveryRepository>();
 builder.Services.AddScoped<IMarketplaceRepository, MarketplaceRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddSingleton<UniVerse.Server.Services.IEmailVerificationService, UniVerse.Server.Services.EmailVerificationService>();
 builder.Services.AddSingleton<UniVerse.Server.Services.ICampusEmailService, UniVerse.Server.Services.CampusEmailService>();
 

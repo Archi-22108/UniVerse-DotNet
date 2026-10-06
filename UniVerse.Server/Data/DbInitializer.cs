@@ -32,6 +32,7 @@ namespace UniVerse.Server.Data
                 // 1. Create Schema Tables
                 await CreateSchemaAsync();
                 await EnsureUserColumnsAsync();
+                await EnsureNotificationsTableAsync();
 
                 // 2. Check and Seed Initial Data
                 long userCount = await _dbHelper.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM users");
@@ -88,6 +89,32 @@ namespace UniVerse.Server.Data
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Notice: columns check completed");
+            }
+        }
+
+        private async Task EnsureNotificationsTableAsync()
+        {
+            try
+            {
+                await _dbHelper.ExecuteNonQueryAsync(@"
+CREATE TABLE IF NOT EXISTS notifications (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'system',
+    reference_id TEXT,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Notice: notifications table check completed");
             }
         }
 

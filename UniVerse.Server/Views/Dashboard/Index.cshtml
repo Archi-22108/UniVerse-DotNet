@@ -58,7 +58,12 @@
         50% { opacity: 0.4; transform: scale(0.8); }
     }
 
+    .uv-notif-wrapper {
+        position: relative;
+    }
+
     .uv-bell-btn {
+        position: relative;
         background: rgba(10, 15, 12, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
@@ -73,9 +78,361 @@
         transition: all 0.2s ease;
     }
 
-    .uv-bell-btn:hover {
-        border-color: rgba(16, 185, 129, 0.4);
+    .uv-bell-btn:hover, .uv-bell-btn.uv-bell-active {
+        border-color: rgba(16, 185, 129, 0.5);
+        color: #00E676;
+        background: rgba(16, 185, 129, 0.15);
+        box-shadow: 0 0 15px rgba(0, 230, 118, 0.25);
+    }
+
+    .uv-notif-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        z-index: 2;
+    }
+
+    .uv-notif-ping {
+        position: absolute;
+        inset: 0;
+        border-radius: 9999px;
+        background: #34d399;
+        opacity: 0.75;
+        animation: notif-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @@keyframes notif-ping {
+        75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+        }
+    }
+
+    .uv-notif-count {
+        position: relative;
+        padding: 0 4px;
+        height: 18px;
+        min-width: 18px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, #10b981, #00e676);
+        color: #051109;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 18px;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
+    }
+
+    /* Notification Dropdown Panel */
+    .uv-notif-panel {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 390px;
+        max-width: calc(100vw - 24px);
+        background: rgba(10, 18, 14, 0.96);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 230, 118, 0.1);
+        backdrop-filter: blur(24px);
+        z-index: 1000;
+        overflow: hidden;
+        flex-direction: column;
+        animation: panelFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .uv-notif-panel.active {
+        display: flex;
+    }
+
+    @@keyframes panelFadeIn {
+        from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .uv-notif-glowline {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #00E676, transparent);
+    }
+
+    .uv-notif-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .uv-notif-title {
+        font-size: 14px;
+        font-weight: 700;
         color: #ffffff;
+        letter-spacing: 0.3px;
+        margin: 0;
+    }
+
+    .uv-notif-pill {
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(16, 185, 129, 0.15);
+        color: #00E676;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .uv-notif-tool-btn {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .uv-notif-tool-btn:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .uv-notif-tabs {
+        display: flex;
+        gap: 6px;
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.15);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .uv-notif-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .uv-notif-tab {
+        background: transparent;
+        border: 1px solid transparent;
+        color: #94a3b8;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .uv-notif-tab:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .uv-notif-tab.active {
+        background: rgba(16, 185, 129, 0.18);
+        color: #00E676;
+        border-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+    }
+
+    .uv-tab-badge {
+        font-size: 9.5px;
+        padding: 1px 5px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+    }
+
+    .uv-notif-tab.active .uv-tab-badge {
+        background: rgba(16, 185, 129, 0.35);
+        color: #6ee7b7;
+    }
+
+    .uv-notif-scroll {
+        max-height: 340px;
+        min-height: 180px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 230, 118, 0.2) transparent;
+    }
+
+    .uv-notif-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        cursor: pointer;
+        transition: background 0.15s ease;
+        position: relative;
+    }
+
+    .uv-notif-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .uv-notif-item.unread {
+        background: rgba(16, 185, 129, 0.05);
+        border-left: 2.5px solid #00E676;
+    }
+
+    .uv-notif-item.unread:hover {
+        background: rgba(16, 185, 129, 0.09);
+    }
+
+    .uv-notif-icon-wrap {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 15px;
+        margin-top: 2px;
+        border: 1px solid transparent;
+    }
+
+    .uv-notif-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .uv-notif-item-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+    }
+
+    .uv-notif-item-title .time {
+        font-size: 10.5px;
+        font-weight: 500;
+        color: #64748b;
+        font-family: var(--font-mono);
+        white-space: nowrap;
+    }
+
+    .uv-notif-item-msg {
+        font-size: 11.5px;
+        color: #94a3b8;
+        line-height: 1.45;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .uv-notif-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .uv-notif-item:hover .uv-notif-actions {
+        opacity: 1;
+    }
+
+    .uv-notif-act-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: none;
+        color: #94a3b8;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.15s;
+    }
+
+    .uv-notif-act-btn:hover {
+        background: rgba(16, 185, 129, 0.2);
+        color: #00E676;
+    }
+
+    .uv-notif-act-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+    }
+
+    .uv-notif-unread-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #00E676;
+        box-shadow: 0 0 6px #00E676;
+        flex-shrink: 0;
+        align-self: center;
+    }
+
+    .uv-notif-empty {
+        padding: 36px 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .uv-notif-empty-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: #00E676;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 12px;
+        box-shadow: 0 0 25px rgba(0, 230, 118, 0.15);
+    }
+
+    .uv-notif-empty-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 4px;
+    }
+
+    .uv-notif-empty-desc {
+        font-size: 11.5px;
+        color: #94a3b8;
+        max-width: 250px;
+        line-height: 1.4;
+    }
+
+    .uv-notif-footer {
+        padding: 10px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .btn-new-request {
@@ -696,10 +1053,74 @@
         <span>MARWADI CAMPUS OPEN &bull; 2 ACTIVE ORDERS</span>
     </div>
 
-    <!-- Bell Notification -->
-    <button class="uv-bell-btn" title="Campus Notifications" aria-label="Notifications" onclick="showToast('No new campus alerts at this time.')">
-        <i class="bi bi-bell"></i>
-    </button>
+    <!-- Bell Notification with Dropdown Container -->
+    <div class="uv-notif-wrapper">
+        <button type="button" id="uvNotificationBellBtn" class="uv-bell-btn" title="Campus Notifications" aria-label="Notifications">
+            <i class="bi bi-bell"></i>
+            <span id="uvNotifBadge" class="uv-notif-badge" style="display: none;">
+                <span class="uv-notif-ping"></span>
+                <span id="uvNotifCount" class="uv-notif-count">0</span>
+            </span>
+        </button>
+
+        <!-- Notification Panel (Matching NotificationList.tsx from original Next.js codebase) -->
+        <div id="uvNotificationPanel" class="uv-notif-panel">
+            <div class="uv-notif-glowline"></div>
+
+            <!-- Header -->
+            <div class="uv-notif-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h3 class="uv-notif-title">Notifications</h3>
+                    <span id="uvNotifHeaderCount" class="uv-notif-pill">0 new</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <!-- Sound Toggle -->
+                    <button type="button" id="uvNotifSoundBtn" class="uv-notif-tool-btn" title="Toggle audio chime">
+                        <i id="uvNotifSoundIcon" class="bi bi-volume-up"></i>
+                    </button>
+                    <!-- Mark All Read -->
+                    <button type="button" id="uvNotifMarkAllReadBtn" class="uv-notif-tool-btn" title="Mark all as read" style="font-size: 11px; font-weight: 700; color: #10B981; display: flex; align-items: center; gap: 3px; padding: 4px 8px;">
+                        <i class="bi bi-check-all" style="font-size: 14px;"></i>
+                        <span>Read all</span>
+                    </button>
+                    <!-- Clear All -->
+                    <button type="button" id="uvNotifClearBtn" class="uv-notif-tool-btn" title="Clear all notifications">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                    <!-- Close button -->
+                    <button type="button" id="uvNotifCloseBtn" class="uv-notif-tool-btn" title="Close notifications">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Categories Tabs -->
+            <div class="uv-notif-tabs">
+                <button type="button" class="uv-notif-tab active" data-filter="all">All <span id="countTabAll" class="uv-tab-badge">0</span></button>
+                <button type="button" class="uv-notif-tab" data-filter="unread">Unread <span id="countTabUnread" class="uv-tab-badge">0</span></button>
+                <button type="button" class="uv-notif-tab" data-filter="delivery">Delivery <span id="countTabDelivery" class="uv-tab-badge">0</span></button>
+                <button type="button" class="uv-notif-tab" data-filter="request">Request <span id="countTabRequest" class="uv-tab-badge">0</span></button>
+                <button type="button" class="uv-notif-tab" data-filter="runner">Runner <span id="countTabRunner" class="uv-tab-badge">0</span></button>
+            </div>
+
+            <!-- Scrollable Notifications Area -->
+            <div id="uvNotifItemsContainer" class="uv-notif-scroll">
+                <!-- Dynamically populated from /api/notifications -->
+            </div>
+
+            <!-- Footer Status Bar -->
+            <div class="uv-notif-footer">
+                <div style="display: flex; align-items: center; gap: 6px; color: #34D399; font-size: 11px;">
+                    <span class="uv-live-dot" style="width: 6px; height: 6px;"></span>
+                    <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">Realtime Radar Live</span>
+                </div>
+                <a href="/Dashboard/Requests" style="color: #A7B8B0; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+                    <span>Activity Feed</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- New Request Gradient Button -->
     <a href="/Delivery/Create" class="btn-new-request">
@@ -1045,3 +1466,473 @@
         </div>
     </div>
 </div>
+
+<script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    // UniVerse Notification Center (1:1 Port of NotificationList.tsx)
+    // ═══════════════════════════════════════════════════════════════════════════
+    (function () {
+        let notifications = [];
+        let unreadCount = 0;
+        let currentFilter = "all";
+        let soundEnabled = localStorage.getItem("universe_sound_enabled") !== "false";
+
+        // Elements
+        const bellBtn = document.getElementById("uvNotificationBellBtn");
+        const panel = document.getElementById("uvNotificationPanel");
+        const badge = document.getElementById("uvNotifBadge");
+        const countSpan = document.getElementById("uvNotifCount");
+        const headerCount = document.getElementById("uvNotifHeaderCount");
+        const soundBtn = document.getElementById("uvNotifSoundBtn");
+        const soundIcon = document.getElementById("uvNotifSoundIcon");
+        const markAllReadBtn = document.getElementById("uvNotifMarkAllReadBtn");
+        const clearBtn = document.getElementById("uvNotifClearBtn");
+        const closeBtn = document.getElementById("uvNotifCloseBtn");
+        const itemsContainer = document.getElementById("uvNotifItemsContainer");
+        const tabs = document.querySelectorAll(".uv-notif-tab");
+
+        // Tab count badges
+        const countTabAll = document.getElementById("countTabAll");
+        const countTabUnread = document.getElementById("countTabUnread");
+        const countTabDelivery = document.getElementById("countTabDelivery");
+        const countTabRequest = document.getElementById("countTabRequest");
+        const countTabRunner = document.getElementById("countTabRunner");
+
+        function updateSoundUI() {
+            if (soundIcon) {
+                soundIcon.className = soundEnabled ? "bi bi-volume-up text-success" : "bi bi-volume-mute text-secondary";
+            }
+        }
+        updateSoundUI();
+
+        // Synthesize pleasant campus chime via Web Audio API
+        function playChime() {
+            if (!soundEnabled) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const now = ctx.currentTime;
+
+                const osc1 = ctx.createOscillator();
+                const osc2 = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc1.type = "sine";
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12); // A5
+
+                osc2.type = "triangle";
+                osc2.frequency.setValueAtTime(880, now + 0.12);
+                osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.22); // D6
+
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now + 0.12);
+                osc1.stop(now + 0.35);
+                osc2.stop(now + 0.35);
+            } catch (err) {
+                // AudioContext autoplay restrictions handled safely
+            }
+        }
+
+        // Categorize notification helper (matching original logic)
+        function getCategory(notif) {
+            const t = (notif.type || "").toLowerCase();
+            const title = (notif.title || "").toLowerCase();
+            if (t.includes("delivery") || t.includes("picked") || t.includes("transit") || t.includes("delivered")) {
+                return "delivery";
+            }
+            if (t.includes("runner") || title.includes("runner")) {
+                return "runner";
+            }
+            return "request";
+        }
+
+        function formatRelativeTime(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const diffSec = Math.floor((new Date() - date) / 1000);
+                if (diffSec < 60) return "just now";
+                const diffMin = Math.floor(diffSec / 60);
+                if (diffMin < 60) return diffMin + "m ago";
+                const diffHour = Math.floor(diffMin / 60);
+                if (diffHour < 24) return diffHour + "h ago";
+                const diffDays = Math.floor(diffHour / 24);
+                return diffDays + "d ago";
+            } catch {
+                return "recently";
+            }
+        }
+
+        function getCategoryIconMeta(notif) {
+            const t = (notif.type || "").toLowerCase();
+            if (t.includes("delivered")) {
+                return { icon: "bi-geo-alt-fill", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.3)" };
+            }
+            if (t.includes("cancelled")) {
+                return { icon: "bi-exclamation-triangle-fill", color: "#f43f5e", bg: "rgba(244, 63, 94, 0.15)", border: "rgba(244, 63, 94, 0.3)" };
+            }
+            if (t.includes("transit") || t.includes("picked")) {
+                return { icon: "bi-truck", color: "#06b6d4", bg: "rgba(6, 182, 212, 0.15)", border: "rgba(6, 182, 212, 0.3)" };
+            }
+            if (t.includes("accepted")) {
+                return { icon: "bi-check-circle-fill", color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)", border: "rgba(245, 158, 11, 0.3)" };
+            }
+            if (t.includes("broadcast")) {
+                return { icon: "bi-broadcast", color: "#00E676", bg: "rgba(0, 230, 118, 0.2)", border: "rgba(0, 230, 118, 0.4)" };
+            }
+            const cat = getCategory(notif);
+            if (cat === "runner") {
+                return { icon: "bi-bicycle", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.3)" };
+            }
+            if (cat === "delivery") {
+                return { icon: "bi-box-seam", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.3)" };
+            }
+            return { icon: "bi-lightning-charge-fill", color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.3)" };
+        }
+
+        function fetchNotifications(silent = false) {
+            fetch("/api/notifications")
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.success) {
+                        const prevUnread = unreadCount;
+                        notifications = data.notifications || [];
+                        unreadCount = data.unreadCount || 0;
+
+                        if (!silent && unreadCount > prevUnread) {
+                            playChime();
+                        }
+
+                        updateCounts();
+                        renderList();
+                    }
+                })
+                .catch(err => {
+                    console.error("Notifications fetch error:", err);
+                });
+        }
+
+        function updateCounts() {
+            // Bell badge
+            if (unreadCount > 0) {
+                badge.style.display = "flex";
+                countSpan.innerText = unreadCount > 99 ? "99+" : unreadCount;
+                headerCount.innerText = unreadCount + " new";
+                headerCount.style.display = "inline-block";
+            } else {
+                badge.style.display = "none";
+                headerCount.innerText = notifications.length + " total";
+            }
+
+            // Category counts
+            let counts = { all: notifications.length, unread: unreadCount, delivery: 0, request: 0, runner: 0 };
+            notifications.forEach(n => {
+                const cat = getCategory(n);
+                if (cat === "delivery") counts.delivery++;
+                else if (cat === "runner") counts.runner++;
+                else counts.request++;
+            });
+
+            if (countTabAll) countTabAll.innerText = counts.all;
+            if (countTabUnread) countTabUnread.innerText = counts.unread;
+            if (countTabDelivery) countTabDelivery.innerText = counts.delivery;
+            if (countTabRequest) countTabRequest.innerText = counts.request;
+            if (countTabRunner) countTabRunner.innerText = counts.runner;
+        }
+
+        function renderList() {
+            if (!itemsContainer) return;
+
+            const filtered = notifications.filter(n => {
+                if (currentFilter === "all") return true;
+                if (currentFilter === "unread") return !n.isRead;
+                return getCategory(n) === currentFilter;
+            });
+
+            if (filtered.length === 0) {
+                let emptyTitle = "All Quiet on Campus";
+                let emptyDesc = "You're all caught up! Real-time alerts will chime in when campus delivery activity starts.";
+                let btnText = "Explore Campus Hub";
+                let btnLink = "/Dashboard";
+
+                if (currentFilter === "unread") {
+                    emptyTitle = "Zero Unread Alerts";
+                    emptyDesc = "No pending notifications require your attention.";
+                    btnText = "View All Notifications";
+                    btnLink = null;
+                } else if (currentFilter === "delivery") {
+                    emptyTitle = "No Delivery Updates";
+                    emptyDesc = "Active parcel pickups, runner transits, and deliveries will show up here.";
+                    btnText = "Track Deliveries";
+                    btnLink = "/Dashboard/Requests";
+                } else if (currentFilter === "runner") {
+                    emptyTitle = "No Runner Tasks";
+                    emptyDesc = "Accept open delivery requests on campus to start earning reward points.";
+                    btnText = "Open Runner Hub";
+                    btnLink = "/Dashboard/Runner";
+                } else if (currentFilter === "request") {
+                    emptyTitle = "No Request Alerts";
+                    emptyDesc = "Need something delivered or an errand run across campus?";
+                    btnText = "Create a Request";
+                    btnLink = "/Delivery/Create";
+                }
+
+                itemsContainer.innerHTML = `
+                    <div class="uv-notif-empty">
+                        <div class="uv-notif-empty-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <h4 class="uv-notif-empty-title">${emptyTitle}</h4>
+                        <p class="uv-notif-empty-desc">${emptyDesc}</p>
+                        ${btnLink 
+                            ? `<a href="${btnLink}" class="btn-gradient-full" style="width: auto; padding: 7px 18px; font-size: 12px; margin-top: 14px; text-decoration: none;">${btnText} &rarr;</a>`
+                            : `<button type="button" id="btnShowAllTab" class="btn-gradient-full" style="width: auto; padding: 7px 18px; font-size: 12px; margin-top: 14px;">${btnText} &rarr;</button>`
+                        }
+                    </div>
+                `;
+
+                const btnShowAllTab = document.getElementById("btnShowAllTab");
+                if (btnShowAllTab) {
+                    btnShowAllTab.addEventListener("click", () => {
+                        setTab("all");
+                    });
+                }
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(notif => {
+                const meta = getCategoryIconMeta(notif);
+                const isUnread = !notif.isRead;
+                const timeText = formatRelativeTime(notif.createdAt);
+
+                html += `
+                    <div class="uv-notif-item ${isUnread ? "unread" : ""}" data-id="${notif.id}">
+                        <div class="uv-notif-icon-wrap" style="color: ${meta.color}; background: ${meta.bg}; border-color: ${meta.border};">
+                            <i class="bi ${meta.icon}"></i>
+                        </div>
+                        <div class="uv-notif-body">
+                            <div class="uv-notif-item-title">
+                                <span>${escapeHtml(notif.title)}</span>
+                                <span class="time">${timeText}</span>
+                            </div>
+                            <div class="uv-notif-item-msg">${escapeHtml(notif.message)}</div>
+                        </div>
+                        <div class="uv-notif-actions">
+                            ${isUnread ? `
+                                <button type="button" class="uv-notif-act-btn mark-read" title="Mark as read" data-id="${notif.id}">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            ` : ""}
+                            <button type="button" class="uv-notif-act-btn delete" title="Delete notification" data-id="${notif.id}">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                        ${isUnread ? '<div class="uv-notif-unread-dot"></div>' : ""}
+                    </div>
+                `;
+            });
+
+            itemsContainer.innerHTML = html;
+
+            // Wire card item click events
+            itemsContainer.querySelectorAll(".uv-notif-item").forEach(el => {
+                el.addEventListener("click", (e) => {
+                    if (e.target.closest(".uv-notif-actions")) return;
+                    const id = el.getAttribute("data-id");
+                    const notif = notifications.find(n => n.id === id);
+                    if (notif && !notif.isRead) {
+                        markRead(id);
+                    }
+                    togglePanel(false);
+                    if (notif && notif.referenceId) {
+                        window.location.href = "/Dashboard/Requests";
+                    }
+                });
+            });
+
+            // Wire action buttons
+            itemsContainer.querySelectorAll(".uv-notif-act-btn.mark-read").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute("data-id");
+                    markRead(id);
+                });
+            });
+
+            itemsContainer.querySelectorAll(".uv-notif-act-btn.delete").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute("data-id");
+                    deleteNotif(id);
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        function markRead(id) {
+            fetch(`/api/notifications/mark-read/${id}`, { method: "POST" })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.success) {
+                        const n = notifications.find(item => item.id === id);
+                        if (n) n.isRead = true;
+                        unreadCount = data.unreadCount !== undefined ? data.unreadCount : Math.max(0, unreadCount - 1);
+                        updateCounts();
+                        renderList();
+                    }
+                });
+        }
+
+        function deleteNotif(id) {
+            fetch(`/api/notifications/delete/${id}`, { method: "POST" })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.success) {
+                        notifications = notifications.filter(item => item.id !== id);
+                        if (data.unreadCount !== undefined) unreadCount = data.unreadCount;
+                        updateCounts();
+                        renderList();
+                    }
+                });
+        }
+
+        function setTab(filter) {
+            currentFilter = filter;
+            tabs.forEach(t => {
+                if (t.getAttribute("data-filter") === filter) {
+                    t.classList.add("active");
+                } else {
+                    t.classList.remove("active");
+                }
+            });
+            renderList();
+        }
+
+        function togglePanel(forcedState) {
+            const isOpen = forcedState !== undefined ? forcedState : !panel.classList.contains("active");
+            if (isOpen) {
+                panel.classList.add("active");
+                bellBtn.classList.add("uv-bell-active");
+                playChime();
+                fetchNotifications(true);
+            } else {
+                panel.classList.remove("active");
+                bellBtn.classList.remove("uv-bell-active");
+            }
+        }
+
+        // Event listeners
+        if (bellBtn) {
+            bellBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                togglePanel();
+            });
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+                togglePanel(false);
+            });
+        }
+
+        if (soundBtn) {
+            soundBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                soundEnabled = !soundEnabled;
+                localStorage.setItem("universe_sound_enabled", String(soundEnabled));
+                updateSoundUI();
+                if (soundEnabled) playChime();
+            });
+        }
+
+        if (markAllReadBtn) {
+            markAllReadBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (unreadCount === 0) return;
+                fetch("/api/notifications/mark-all-read", { method: "POST" })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.success) {
+                            notifications.forEach(n => n.isRead = true);
+                            unreadCount = 0;
+                            updateCounts();
+                            renderList();
+                        }
+                    });
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if (notifications.length === 0) return;
+                fetch("/api/notifications/clear-all", { method: "POST" })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.success) {
+                            notifications = [];
+                            unreadCount = 0;
+                            updateCounts();
+                            renderList();
+                        }
+                    });
+            });
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                setTab(tab.getAttribute("data-filter"));
+            });
+        });
+
+        // Close on click outside
+        document.addEventListener("click", (e) => {
+            if (panel && panel.classList.contains("active")) {
+                if (!panel.contains(e.target) && !bellBtn.contains(e.target)) {
+                    togglePanel(false);
+                }
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                togglePanel(false);
+            }
+        });
+
+        // Initial fetch on page load
+        fetchNotifications(true);
+
+        // Periodic background poll every 25 seconds
+        setInterval(() => {
+            fetchNotifications(true);
+        }, 25000);
+    })();
+
+    // Global showToast fallback helper
+    window.showToast = function (msg) {
+        const toast = document.createElement("div");
+        toast.style.cssText = "position: fixed; bottom: 24px; right: 24px; background: rgba(10, 18, 14, 0.95); border: 1px solid rgba(16, 185, 129, 0.4); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 13px; z-index: 99999; box-shadow: 0 10px 30px rgba(0,0,0,0.8); backdrop-filter: blur(12px); display: flex; align-items: center; gap: 8px; animation: panelFadeIn 0.2s ease;";
+        toast.innerHTML = '<i class="bi bi-info-circle text-success"></i><span>' + msg + '</span>';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+</script>

@@ -78,6 +78,18 @@ CREATE TABLE IF NOT EXISTS marketplace_offers (
     FOREIGN KEY (buyer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS notifications (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'system',
+    reference_id TEXT,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Indexing for performance
 CREATE INDEX IF NOT EXISTS idx_requests_status ON delivery_requests(status);
 CREATE INDEX IF NOT EXISTS idx_requests_requester ON delivery_requests(requester_id);
@@ -85,3 +97,6 @@ CREATE INDEX IF NOT EXISTS idx_requests_runner ON delivery_requests(runner_id);
 CREATE INDEX IF NOT EXISTS idx_marketplace_status ON marketplace_listings(status);
 CREATE INDEX IF NOT EXISTS idx_marketplace_seller ON marketplace_listings(seller_id);
 CREATE INDEX IF NOT EXISTS idx_offers_listing ON marketplace_offers(listing_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+

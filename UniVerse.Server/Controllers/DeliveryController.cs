@@ -14,11 +14,13 @@ namespace UniVerse.Server.Controllers
     {
         private readonly IDeliveryRepository _deliveryRepo;
         private readonly IUserRepository _userRepo;
+        private readonly INotificationRepository _notifRepo;
 
-        public DeliveryController(IDeliveryRepository deliveryRepo, IUserRepository userRepo)
+        public DeliveryController(IDeliveryRepository deliveryRepo, IUserRepository userRepo, INotificationRepository notifRepo)
         {
             _deliveryRepo = deliveryRepo;
             _userRepo = userRepo;
+            _notifRepo = notifRepo;
         }
 
         [HttpGet]
@@ -171,6 +173,17 @@ namespace UniVerse.Server.Controllers
             };
 
             var requestId = await _deliveryRepo.CreateRequestAsync(newRequest, items);
+
+            // Automatically create notification for the student
+            await _notifRepo.CreateAsync(new Notification
+            {
+                UserId = userId,
+                Title = "Delivery Request Broadcasted",
+                Message = $"Your order for pickup at {pickup} was broadcasted to campus runners.",
+                Type = "status_broadcasted",
+                ReferenceId = requestId
+            });
+
             TempData["SuccessMessage"] = "Delivery request successfully posted to campus runners!";
             return RedirectToAction("Details", new { id = requestId });
         }
@@ -285,6 +298,18 @@ namespace UniVerse.Server.Controllers
             var success = await _deliveryRepo.AssignRunnerAsync(id, userId);
             if (success)
             {
+                var req = await _deliveryRepo.GetRequestByIdAsync(id);
+                if (req != null)
+                {
+                    await _notifRepo.CreateAsync(new Notification
+                    {
+                        UserId = req.RequesterId,
+                        Title = "Runner Accepted Your Order",
+                        Message = "A campus peer runner accepted your request and is heading to the pickup point.",
+                        Type = "status_accepted",
+                        ReferenceId = id
+                    });
+                }
                 TempData["SuccessMessage"] = "Order accepted! Navigate to the pickup spot.";
             }
             else
@@ -300,6 +325,18 @@ namespace UniVerse.Server.Controllers
         public async Task<IActionResult> UpdateStatus(string id, string status)
         {
             await _deliveryRepo.UpdateStatusAsync(id, status);
+            var req = await _deliveryRepo.GetRequestByIdAsync(id);
+            if (req != null)
+            {
+                await _notifRepo.CreateAsync(new Notification
+                {
+                    UserId = req.RequesterId,
+                    Title = $"Order {status.Replace("_", " ").ToUpper()}",
+                    Message = $"Your order status is now {status.Replace("_", " ")}.",
+                    Type = $"status_{status}",
+                    ReferenceId = id
+                });
+            }
             TempData["SuccessMessage"] = $"Delivery status updated to {status.ToUpper()}.";
             return RedirectToAction("Details", new { id });
         }
@@ -313,6 +350,26 @@ namespace UniVerse.Server.Controllers
             var result = await _deliveryRepo.CompleteDeliveryWithOtpAsync(id, userId, otp);
             if (result.Success)
             {
+                var req = await _deliveryRepo.GetRequestByIdAsync(id);
+                if (req != null)
+                {
+                    await _notifRepo.CreateAsync(new Notification
+                    {
+                        UserId = req.RequesterId,
+                        Title = "Order Delivered!",
+                        Message = "Your campus delivery has been safely completed. Enjoy your items!",
+                        Type = "status_delivered",
+                        ReferenceId = id
+                    });
+                }
+                await _notifRepo.CreateAsync(new Notification
+                {
+                    UserId = userId,
+                    Title = "Runner Tip Credited!",
+                    Message = $"₹{result.Reward:F2} delivery tip has been credited to your campus wallet balance.",
+                    Type = "runner",
+                    ReferenceId = id
+                });
                 TempData["SuccessMessage"] = $"Awesome job! Order delivered and ₹{result.Reward:F2} tip credited to your wallet!";
             }
             else
