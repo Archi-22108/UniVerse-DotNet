@@ -1,94 +1,1131 @@
 @model UniVerse.Server.Models.ViewModels.LoginViewModel
 @{
-    ViewData["Title"] = "Student Sign In";
+    Layout = null;
+    ViewData["Title"] = "Student Sign In — UniVerse";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <!-- University Badge Header -->
-            <div class="text-center mb-4">
-                <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <i class="bi bi-shield-lock-fill text-success fs-2"></i>
-                </div>
-                <h2 class="fw-bold text-white mb-1">Student Sign In</h2>
-                <p class="text-secondary small">Marwadi University Campus Authentication</p>
+    <!-- Google Fonts: Inter & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #03050c;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 14px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ─── Tech Spotlight Canvas ─── */
+        #spotlightCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ─── Top Gateway Status Pill ─── */
+        .gateway-pill {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            background: rgba(6, 9, 20, 0.9);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+        }
+
+        .radar-dot-wrap {
+            position: relative;
+            display: flex;
+            width: 8px;
+            height: 8px;
+        }
+
+        .radar-ping {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #34d399;
+            opacity: 0.75;
+            animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .radar-core {
+            position: relative;
+            display: inline-flex;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+        }
+
+        @@keyframes ping {
+            75%, 100% {
+                transform: scale(2.4);
+                opacity: 0;
+            }
+        }
+
+        .gateway-text {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #6ee7b7;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        /* ─── Main Login Card Wrapper with 3D Ambient Aura ─── */
+        .login-card-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+        }
+
+        /* Ambient Back Glow */
+        .ambient-back-glow {
+            position: absolute;
+            inset: -6px;
+            border-radius: 28px;
+            background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.25) 0%, rgba(20, 184, 166, 0.15) 45%, transparent 75%);
+            filter: blur(28px);
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Main Card */
+        .tech-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            border-radius: 20px;
+            padding: 32px 28px;
+            background: linear-gradient(180deg, rgba(8, 14, 28, 0.75) 0%, rgba(4, 7, 16, 0.88) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(28px) saturate(140%);
+            -webkit-backdrop-filter: blur(28px) saturate(140%);
+            box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+
+        /* Razor-thin Top Edge Laser Accent Line */
+        .laser-accent-line {
+            position: absolute;
+            top: 0;
+            left: 32px;
+            right: 32px;
+            height: 1.5px;
+            background: linear-gradient(90deg, transparent, #34d399, transparent);
+            pointer-events: none;
+        }
+
+        /* Ambient Inner Highlight */
+        .inner-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
+            pointer-events: none;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        /* ─── Brand Header ─── */
+        .brand-header-box {
+            text-align: center;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .orbital-emblem-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .orbital-glow {
+            position: absolute;
+            inset: -8px;
+            border-radius: 18px;
+            background: rgba(16, 185, 129, 0.35);
+            filter: blur(10px);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        @@keyframes pulseGlow {
+            0%, 100% { opacity: 0.6; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.04); }
+        }
+
+        .orbital-emblem {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #34d399 0%, #14b8a6 50%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .brand-gradient-text {
+            background: linear-gradient(90deg, #34d399 0%, #2dd4bf 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-top: 6px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        /* ─── Quick Demo Student Access Card ─── */
+        .demo-access-btn {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.12);
+            margin-bottom: 16px;
+        }
+
+        .demo-access-btn:hover {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: #34d399;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* ─── Form Controls ─── */
+        .tech-field-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .tech-field-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+
+        .tech-field-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .green-dot-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+        }
+
+        .tech-input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .tech-input-box.focused {
+            background: rgba(0, 0, 0, 0.65);
+            border-color: #10b981;
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.08);
+        }
+
+        .tech-left-icon {
+            position: absolute;
+            left: 14px;
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+            pointer-events: none;
+            transition: color 0.2s;
+            font-size: 16px;
+        }
+
+        .tech-input-box.focused .tech-left-icon {
+            color: #34d399;
+        }
+
+        .tech-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 13.5px;
+            padding: 14px 50px 14px 42px;
+            font-family: 'Inter', sans-serif;
+            caret-color: #34d399;
+        }
+
+        .tech-input::placeholder {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .tech-right-node {
+            position: absolute;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-clear-input {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.15s;
+        }
+
+        .btn-clear-input:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .btn-eye-toggle {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .btn-eye-toggle:hover {
+            color: #34d399;
+        }
+
+        /* 1-Tap Autocomplete Chip */
+        .chip-autocomplete {
+            margin-top: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(6, 78, 59, 0.7);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #6ee7b7;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .chip-autocomplete:hover {
+            background: rgba(6, 78, 59, 0.95);
+            border-color: #34d399;
+            color: #ffffff;
+        }
+
+        /* Remember Me & Forgot Password Row */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #cbd5e1;
+            user-select: none;
+        }
+
+        .remember-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #10b981;
+            cursor: pointer;
+        }
+
+        .forgot-link {
+            color: #34d399;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: #6ee7b7;
+            text-decoration: underline;
+        }
+
+        /* Ultra-Premium Luminous Sign In Button */
+        .luminous-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #022c22;
+            background: linear-gradient(90deg, #34d399 0%, #2dd4bf 50%, #34d399 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 0 28px rgba(52, 211, 153, 0.38);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .luminous-btn:hover {
+            box-shadow: 0 0 42px rgba(52, 211, 153, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .luminous-btn:active {
+            transform: scale(0.985);
+        }
+
+        .btn-top-shine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+        }
+
+        .divider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0 10px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider-text {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .google-sso-btn {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .google-sso-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.16);
+            color: #ffffff;
+        }
+
+        .create-account-box {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .create-account-box a {
+            color: #34d399;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+        }
+
+        .create-account-box a:hover {
+            text-decoration: underline;
+        }
+
+        /* ─── Bottom Campus Trust Badges ─── */
+        .trust-pills-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 18px;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .alert-error-box {
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .caps-warning {
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tech Spotlight Interactive Canvas Background -->
+    <canvas id="spotlightCanvas"></canvas>
+
+    <!-- Top University Gateway Status Pill -->
+    <div class="gateway-pill">
+        <span class="radar-dot-wrap">
+            <span class="radar-ping"></span>
+            <span class="radar-core"></span>
+        </span>
+        <span class="gateway-text">Marwadi University &bull; Secure Gateway</span>
+    </div>
+
+    <!-- Main Tech Spotlight Glass Card Wrapper -->
+    <div class="login-card-wrapper">
+        <div class="ambient-back-glow"></div>
+
+        <div class="tech-card">
+            <div class="laser-accent-line"></div>
+            <div class="inner-highlight"></div>
+
+            <!-- Brand Header -->
+            <div class="brand-header-box">
+                <a href="/" style="text-decoration: none; color: inherit;">
+                    <div class="orbital-emblem-wrap">
+                        <div class="orbital-glow"></div>
+                        <div class="orbital-emblem">
+                            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 6V14C7 17.866 10.134 21 14 21C17.866 21 21 17.866 21 14V6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" />
+                                <circle cx="14" cy="14" r="2.4" fill="white" />
+                                <circle cx="21" cy="7" r="1.6" fill="#A7F3D0" />
+                                <path d="M5 14C5 9.02944 9.02944 5 14 5" stroke="#6EE7B7" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3" />
+                            </svg>
+                        </div>
+                    </div>
+                    <h1 class="brand-title">
+                        <span>Uni</span><span class="brand-gradient-text">Verse</span>
+                    </h1>
+                </a>
+                <p class="brand-subtitle">Campus Commerce &bull; Student Network</p>
             </div>
 
-            <!-- Quick Demo 1-Click Login Card (Perfect for Viva Examiner) -->
-            <div class="universe-card p-3 mb-4 border-success border-opacity-50" style="background: rgba(16, 185, 129, 0.08);">
-                <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold small">
-                    <span class="spinner-grow spinner-grow-sm text-success"></span>
-                    <span>1-CLICK VIVA EVALUATION ACCESS:</span>
-                </div>
-                <div class="d-grid gap-2">
-                    <a asp-controller="Account" asp-action="QuickLogin" asp-route-email="aarav.patel@marwadiuniversity.ac.in" class="btn btn-emerald btn-sm text-start d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>Aarav Patel</strong> <small class="d-block text-white-50">Student &bull; Hostel D-304</small>
-                        </div>
-                        <i class="bi bi-box-arrow-in-right"></i>
-                    </a>
-                    <a asp-controller="Account" asp-action="QuickLogin" asp-route-email="rohit.sharma@marwadiuniversity.ac.in" class="btn btn-glass btn-sm text-start d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>Rohit Sharma</strong> <small class="d-block text-muted">Runner &bull; Hostel D-212</small>
-                        </div>
-                        <i class="bi bi-box-arrow-in-right"></i>
-                    </a>
-                </div>
+            <!-- 1-Click Viva Demo Accounts Shortcuts -->
+            <div style="margin-bottom: 16px;">
+                <a href="/Account/QuickLogin?email=aarav.patel%40marwadiuniversity.ac.in" class="demo-access-btn" title="Sign in immediately as Aarav Patel (Requester)">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="radar-dot-wrap">
+                            <span class="radar-ping"></span>
+                            <span class="radar-core"></span>
+                        </span>
+                        <span>🎓 Quick Demo: <strong>Aarav Patel</strong> (Hostel D-304)</span>
+                    </div>
+                    <span style="font-weight: 700; color: #34d399;">1-Click &rarr;</span>
+                </a>
+
+                <a href="/Account/QuickLogin?email=rohit.sharma%40marwadiuniversity.ac.in" class="demo-access-btn" style="border-color: rgba(245, 158, 11, 0.35); color: #fde68a;" title="Sign in immediately as Rohit Sharma (Campus Runner)">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>
+                        <span>🏃 Runner Demo: <strong>Rohit Sharma</strong> (Hostel D-212)</span>
+                    </div>
+                    <span style="font-weight: 700; color: #f59e0b;">1-Click &rarr;</span>
+                </a>
             </div>
 
-            <!-- Main Form Card -->
-            <div class="universe-card p-4">
-                <form asp-controller="Account" asp-action="Login" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="ReturnUrl" />
+            <!-- ASP.NET Core MVC Form -->
+            <form asp-controller="Account" asp-action="Login" method="post" id="loginForm" noValidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
 
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+                <!-- Server Errors -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert-error-box">
+                        @Html.ValidationSummary(false, "", new { style = "list-style: none; padding: 0; margin: 0;" })
+                    </div>
+                }
 
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label text-secondary small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">
-                                <i class="bi bi-envelope"></i>
+                <!-- Client Errors -->
+                <div id="clientErrorBox" class="alert-error-box" style="display: none;"></div>
+
+                <!-- 1. Student Email -->
+                <div class="tech-field-wrap">
+                    <div class="tech-field-header">
+                        <label for="emailInput" class="tech-field-label">
+                            <span class="green-dot-indicator"></span>
+                            <span>Student Email</span>
+                        </label>
+                    </div>
+
+                    <div class="tech-input-box" id="emailBox">
+                        <span class="tech-left-icon">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input asp-for="Email" id="emailInput" class="tech-input" type="email" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                        <div class="tech-right-node">
+                            <button type="button" id="clearEmailBtn" class="btn-clear-input" style="display: none;" title="Clear email">
+                                <i class="bi bi-x"></i>
+                            </button>
+                            <span id="emailVerifiedCheck" style="display: none; color: #34d399;" title="Verified University Domain">
+                                <i class="bi bi-check-circle-fill"></i>
                             </span>
-                            <input asp-for="Email" class="form-control" placeholder="name@marwadiuniversity.ac.in" />
-                        </div>
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label text-secondary small fw-semibold"></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">
-                                <i class="bi bi-key"></i>
-                            </span>
-                            <input asp-for="Password" class="form-control" placeholder="••••••••" />
-                        </div>
-                        <span asp-validation-for="Password" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Remember Me -->
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="form-check">
-                            <input asp-for="RememberMe" class="form-check-input bg-dark border-secondary" />
-                            <label asp-for="RememberMe" class="form-check-label text-secondary small"></label>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mb-3">
-                        Sign In to UniVerse
-                    </button>
-
-                    <div class="text-center text-secondary small">
-                        Don't have an account? 
-                        <a asp-controller="Account" asp-action="Register" class="text-success fw-semibold text-decoration-none">
-                            Register as Student
-                        </a>
+                    <!-- 1-Tap Autocomplete Domain Chip -->
+                    <div id="autocompleteChip" style="display: none;">
+                        <span class="chip-autocomplete" id="chipBtn">
+                            <i class="bi bi-stars text-warning"></i>
+                            <span>1-Tap Add: <strong style="text-decoration: underline;">@@marwadiuniversity.ac.in</strong></span>
+                        </span>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <!-- 2. Password -->
+                <div class="tech-field-wrap">
+                    <div class="tech-field-header">
+                        <label for="passInput" class="tech-field-label">
+                            <span class="green-dot-indicator"></span>
+                            <span>Password</span>
+                        </label>
+                    </div>
+
+                    <div class="tech-input-box" id="passBox">
+                        <span class="tech-left-icon">
+                            <i class="bi bi-lock"></i>
+                        </span>
+                        <input asp-for="Password" id="passInput" class="tech-input" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+                        <div class="tech-right-node">
+                            <button type="button" id="togglePassBtn" class="btn-eye-toggle" title="Toggle password visibility">
+                                <i class="bi bi-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Caps Lock Warning -->
+                    <div id="capsLockWarning" class="caps-warning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>Caps Lock is ON</span>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="remember-row">
+                    <label class="remember-label">
+                        <input asp-for="RememberMe" type="checkbox" class="remember-checkbox" checked />
+                        <span>Remember me</span>
+                    </label>
+                    <a href="/Account/Login" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <!-- Luminous Submit Button -->
+                <button type="submit" id="submitBtn" class="luminous-btn">
+                    <div class="btn-top-shine"></div>
+                    <span>Sign In to UniVerse</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+                <!-- OR Divider -->
+                <div class="divider-row">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">OR</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- Google SSO Button -->
+                <a href="/Account/QuickLogin?email=aarav.patel%40marwadiuniversity.ac.in" class="google-sso-btn">
+                    <svg width="17" height="17" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                    <span>Continue with Student Google ID</span>
+                </a>
+
+                <!-- Create Account Link -->
+                <div class="create-account-box">
+                    Don't have an account? <a href="/Account/Register">Create student account &rarr;</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bottom Campus Trust Badges -->
+        <div class="trust-pills-row">
+            <span>Campus Network</span>
+            <span>&bull;</span>
+            <span>100% Hostel Verified</span>
+            <span>&bull;</span>
+            <span>Secure Session</span>
         </div>
     </div>
-</div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         TECH SPOTLIGHT & PARTICLES CANVAS SCRIPT
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <script>
+        const canvas = document.getElementById("spotlightCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        let curMouseX = width / 2;
+        let curMouseY = Math.min(height * 0.45, 420);
+        let targetMouseX = curMouseX;
+        let targetMouseY = curMouseY;
+        let lastActiveTime = Date.now();
+
+        window.addEventListener("resize", () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            targetMouseX = e.clientX;
+            targetMouseY = e.clientY;
+            lastActiveTime = Date.now();
+        });
+
+        // Micro dust particles catching the spotlight beam
+        const DUST_COUNT = 60;
+        const dustParticles = Array.from({ length: DUST_COUNT }, () => {
+            const angle = (Math.random() - 0.5) * 0.75 + Math.PI / 2;
+            const dist = Math.random() * (height * 0.95);
+            return {
+                x: width / 2 + Math.cos(angle) * dist * 0.65,
+                y: Math.sin(angle) * dist,
+                size: Math.random() * 1.5 + 0.5,
+                speedY: Math.random() * 0.22 + 0.08,
+                speedX: (Math.random() - 0.5) * 0.16,
+                opacity: Math.random() * 0.65 + 0.15,
+            };
+        });
+
+        let time = 0;
+
+        const updatePointer = (x, y) => {
+            targetMouseX = x;
+            targetMouseY = y;
+            lastActiveTime = Date.now();
+        };
+
+        window.addEventListener("touchmove", (e) => {
+            if (e.touches.length > 0) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener("touchstart", (e) => {
+            if (e.touches.length > 0) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        let isVisible = true;
+        document.addEventListener("visibilitychange", () => {
+            isVisible = !document.hidden;
+            if (isVisible) requestAnimationFrame(renderSpotlight);
+        });
+
+        function renderSpotlight() {
+            if (!isVisible) return;
+            requestAnimationFrame(renderSpotlight);
+            time += 0.015;
+            ctx.clearRect(0, 0, width, height);
+
+            // Idle breathing focal drift around card
+            if (Date.now() - lastActiveTime > 3500) {
+                targetMouseX = width / 2 + Math.sin(time * 0.8) * 80;
+                targetMouseY = Math.min(height * 0.45, 420) + Math.cos(time * 0.6) * 45;
+            }
+
+            // Smooth mouse interpolation
+            curMouseX += (targetMouseX - curMouseX) * 0.075;
+            curMouseY += (targetMouseY - curMouseY) * 0.075;
+
+            // 1. Volumetric Overhead Architectural Spotlight Beam
+            const beamApexX = width / 2;
+            const beamApexY = -30;
+            const beamSpread = Math.max(width * 0.58, 640);
+
+            ctx.save();
+            if (typeof ctx.filter !== "undefined") {
+                ctx.filter = "blur(40px)";
+            }
+
+            const coneGradient = ctx.createRadialGradient(
+                beamApexX,
+                beamApexY,
+                25,
+                beamApexX,
+                height * 0.52,
+                Math.max(width * 0.75, 750)
+            );
+            coneGradient.addColorStop(0, "rgba(16, 185, 129, 0.22)");
+            coneGradient.addColorStop(0.25, "rgba(20, 184, 166, 0.14)");
+            coneGradient.addColorStop(0.52, "rgba(56, 189, 248, 0.05)");
+            coneGradient.addColorStop(0.85, "rgba(3, 5, 12, 0)");
+            coneGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+            ctx.fillStyle = coneGradient;
+            ctx.beginPath();
+            ctx.moveTo(beamApexX, beamApexY);
+            ctx.lineTo(beamApexX - beamSpread, height);
+            ctx.lineTo(beamApexX + beamSpread, height);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
+            // Secondary focused center spotlight for login card pedestal
+            const centerGlow = ctx.createRadialGradient(
+                beamApexX,
+                Math.min(height * 0.45, 420),
+                40,
+                beamApexX,
+                Math.min(height * 0.45, 420),
+                380
+            );
+            centerGlow.addColorStop(0, "rgba(16, 185, 129, 0.14)");
+            centerGlow.addColorStop(0.5, "rgba(6, 182, 212, 0.06)");
+            centerGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = centerGlow;
+            ctx.beginPath();
+            ctx.arc(beamApexX, Math.min(height * 0.45, 420), 380, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Bottom ambient pedestal bounce
+            const floorGlow = ctx.createRadialGradient(
+                beamApexX,
+                height,
+                50,
+                beamApexX,
+                height,
+                Math.max(width * 0.4, 400)
+            );
+            floorGlow.addColorStop(0, "rgba(16, 185, 129, 0.08)");
+            floorGlow.addColorStop(0.6, "rgba(20, 184, 166, 0.03)");
+            floorGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctx.fillStyle = floorGlow;
+            ctx.fillRect(0, height - 200, width, 200);
+
+            // 2. Interactive Precision Dot Matrix
+            const dotSpacing = 30;
+            const startX = (width % dotSpacing) / 2;
+            const startY = (height % dotSpacing) / 2;
+            const idlePulse = Math.sin(time * 1.5) * 0.04;
+
+            for (let x = startX; x < width; x += dotSpacing) {
+                for (let y = startY; y < height; y += dotSpacing) {
+                    const dx = x - curMouseX;
+                    const dy = y - curMouseY;
+                    const distMouse = Math.sqrt(dx * dx + dy * dy);
+
+                    const distApexX = Math.abs(x - beamApexX);
+                    const apexWeight = Math.max(0, 1 - distApexX / (width * 0.48));
+
+                    let alpha = 0.065 + idlePulse;
+                    let dotColor = "rgba(255, 255, 255, ";
+                    let radius = 0.95;
+
+                    if (distMouse < 190) {
+                        const mouseProximityFactor = 1 - distMouse / 190;
+                        alpha += mouseProximityFactor * 0.65;
+                        radius = 1.1 + mouseProximityFactor * 1.1;
+                        dotColor = "rgba(52, 211, 153, ";
+                    } else if (apexWeight > 0.15 && y < height * 0.78) {
+                        alpha += apexWeight * 0.13;
+                        dotColor = "rgba(167, 243, 208, ";
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `${dotColor}${Math.max(0, Math.min(1, alpha))})`;
+                    ctx.fill();
+                }
+            }
+
+            // 3. Floating Projector Light Dust Particles
+            for (const p of dustParticles) {
+                p.y -= p.speedY;
+                p.x += p.speedX;
+                p.opacity += Math.sin(time * 2 + p.x) * 0.005;
+
+                if (p.y < 0) {
+                    p.y = height + 10;
+                    p.x = width / 2 + (Math.random() - 0.5) * (width * 0.6);
+                }
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
+
+                const distFromCenter = Math.abs(p.x - width / 2);
+                const insideBeam = Math.max(0, 1 - distFromCenter / (width * 0.38));
+                const alpha = Math.max(0.1, Math.min(0.9, (p.opacity + insideBeam * 0.42) * 0.85));
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(110, 231, 183, ${alpha})`;
+                ctx.shadowColor = `rgba(16, 185, 129, ${alpha * 0.7})`;
+                ctx.shadowBlur = p.size * 3.5;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // 4. Tech Crosshairs (+) at Strategic Points
+            const crosshairPositions = [
+                { x: 0.10 * width, y: 0.16 * height, label: "SYS_NODE.01" },
+                { x: 0.90 * width, y: 0.16 * height, label: "SEC_PORT.443" },
+                { x: 0.10 * width, y: 0.84 * height, label: "LAT_22.5.MU" },
+                { x: 0.90 * width, y: 0.84 * height, label: "GATEWAY.OK" },
+            ];
+
+            for (const c of crosshairPositions) {
+                ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
+                ctx.lineWidth = 1;
+                const arm = 8;
+
+                ctx.beginPath();
+                ctx.moveTo(c.x - arm, c.y);
+                ctx.lineTo(c.x + arm, c.y);
+                ctx.moveTo(c.x, c.y - arm);
+                ctx.lineTo(c.x, c.y + arm);
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(148, 163, 184, 0.45)";
+                ctx.font = "9px monospace";
+                ctx.fillText(c.label, c.x + 11, c.y + 3);
+            }
+        }
+
+        renderSpotlight();
+
+        // ─── Interactive Form Logic ───
+        const emailInput = document.getElementById("emailInput");
+        const passInput = document.getElementById("passInput");
+        const emailBox = document.getElementById("emailBox");
+        const passBox = document.getElementById("passBox");
+        const clearEmailBtn = document.getElementById("clearEmailBtn");
+        const emailVerifiedCheck = document.getElementById("emailVerifiedCheck");
+        const autocompleteChip = document.getElementById("autocompleteChip");
+        const chipBtn = document.getElementById("chipBtn");
+        const togglePassBtn = document.getElementById("togglePassBtn");
+        const eyeIcon = document.getElementById("eyeIcon");
+        const capsLockWarning = document.getElementById("capsLockWarning");
+        const loginForm = document.getElementById("loginForm");
+        const clientErrorBox = document.getElementById("clientErrorBox");
+        const submitBtn = document.getElementById("submitBtn");
+
+        const MU_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@@marwadiuniversity\.ac\.in$/i;
+
+        // Focus Handlers
+        emailInput.addEventListener("focus", () => emailBox.classList.add("focused"));
+        emailInput.addEventListener("blur", () => emailBox.classList.remove("focused"));
+        passInput.addEventListener("focus", () => passBox.classList.add("focused"));
+        passInput.addEventListener("blur", () => passBox.classList.remove("focused"));
+
+        // Email Validation & 1-Tap Chip Autocomplete
+        emailInput.addEventListener("input", () => {
+            const val = emailInput.value.trim();
+            clearEmailBtn.style.display = val.length > 0 ? "flex" : "none";
+
+            const isValid = MU_EMAIL_REGEX.test(val);
+            emailVerifiedCheck.style.display = isValid ? "flex" : "none";
+
+            const showChip = val.length >= 2 && !isValid && (!val.includes("@@") || val.endsWith("@@") || val.endsWith("@@m") || val.endsWith("@@marwadi"));
+            autocompleteChip.style.display = showChip ? "block" : "none";
+        });
+
+        clearEmailBtn.addEventListener("click", () => {
+            emailInput.value = "";
+            clearEmailBtn.style.display = "none";
+            emailVerifiedCheck.style.display = "none";
+            autocompleteChip.style.display = "none";
+            emailInput.focus();
+        });
+
+        chipBtn.addEventListener("click", () => {
+            let base = emailInput.value.trim();
+            if (base.includes("@@")) base = base.split("@@")[0];
+            emailInput.value = base + "@@marwadiuniversity.ac.in";
+            emailVerifiedCheck.style.display = "flex";
+            autocompleteChip.style.display = "none";
+            passInput.focus();
+        });
+
+        // Password Show/Hide Toggle
+        togglePassBtn.addEventListener("click", () => {
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                eyeIcon.className = "bi bi-eye-slash";
+            } else {
+                passInput.type = "password";
+                eyeIcon.className = "bi bi-eye";
+            }
+        });
+
+        // Caps Lock Indicator
+        passInput.addEventListener("keyup", (e) => {
+            if (e.getModifierState && typeof e.getModifierState === "function") {
+                capsLockWarning.style.display = e.getModifierState("CapsLock") ? "flex" : "none";
+            }
+        });
+        passInput.addEventListener("keydown", (e) => {
+            if (e.getModifierState && typeof e.getModifierState === "function") {
+                capsLockWarning.style.display = e.getModifierState("CapsLock") ? "flex" : "none";
+            }
+        });
+
+        // Submit Validation
+        loginForm.addEventListener("submit", (e) => {
+            clientErrorBox.style.display = "none";
+            clientErrorBox.innerText = "";
+
+            const email = emailInput.value.trim();
+            const pass = passInput.value;
+
+            if (!email) {
+                e.preventDefault();
+                showError("Student email is required.");
+                return;
+            }
+
+            if (!pass) {
+                e.preventDefault();
+                showError("Password is required.");
+                return;
+            }
+
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm text-dark me-2"></span><span>Authenticating Student ID...</span>';
+            submitBtn.disabled = true;
+        });
+
+        function showError(msg) {
+            clientErrorBox.innerText = msg;
+            clientErrorBox.style.display = "block";
+        }
+    </script>
+</body>
+</html>
