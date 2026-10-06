@@ -539,6 +539,175 @@
             color: #ffffff;
         }
 
+        /* ─── Google SSO Modal ─── */
+        .gmodal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .gmodal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .gmodal-card {
+            background: #1e1f20;
+            color: #e3e3e3;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            transform: scale(0.94);
+            transition: transform 0.25s ease;
+            position: relative;
+        }
+
+        .gmodal-overlay.active .gmodal-card {
+            transform: scale(1);
+        }
+
+        .gmodal-header {
+            padding: 24px 28px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .gmodal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: none;
+            border: none;
+            color: #9aa0a6;
+            cursor: pointer;
+            font-size: 22px;
+            line-height: 1;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .gmodal-close:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .gmodal-body {
+            padding: 20px 24px 24px;
+        }
+
+        .gaccount-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.18s ease;
+            border: 1px solid transparent;
+            margin-bottom: 8px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .gaccount-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .gaccount-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .gaccount-details {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .gaccount-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f1f3f4;
+        }
+
+        .gaccount-email {
+            font-size: 12px;
+            color: #9aa0a6;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .gaccount-domain-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .gmodal-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 16px 0;
+        }
+
+        .ginput {
+            width: 100%;
+            background: #131314;
+            border: 1px solid #3c4043;
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .ginput:focus {
+            border-color: #34d399;
+        }
+
+        .gmodal-error {
+            padding: 10px 14px;
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            border-radius: 8px;
+            color: #fca5a5;
+            font-size: 12px;
+            margin-bottom: 14px;
+            display: none;
+            text-align: left;
+            line-height: 1.4;
+        }
+
         .create-account-box {
             text-align: center;
             margin-top: 20px;
@@ -740,7 +909,7 @@
                 </div>
 
                 <!-- Google SSO Button -->
-                <a href="/Account/QuickLogin?email=aarav.patel%40marwadiuniversity.ac.in" class="google-sso-btn">
+                <button type="button" id="openGoogleModalBtn" class="google-sso-btn">
                     <svg width="17" height="17" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -748,7 +917,7 @@
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                     </svg>
                     <span>Continue with Student Google ID</span>
-                </a>
+                </button>
 
                 <!-- Create Account Link -->
                 <div class="create-account-box">
@@ -764,6 +933,77 @@
             <span>100% Hostel Verified</span>
             <span>&bull;</span>
             <span>Secure Session</span>
+        </div>
+    </div>
+
+    <!-- ─── Google SSO Campus Modal ─── -->
+    <div id="googleAuthModal" class="gmodal-overlay">
+        <div class="gmodal-card">
+            <div class="gmodal-header">
+                <button type="button" class="gmodal-close" id="closeGoogleModalBtn">&times;</button>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                    <span style="font-weight: 600; font-size: 17px; color: #fff;">Sign in with Google</span>
+                </div>
+                <p style="font-size: 12px; color: #94a3b8; margin: 0;">to continue to <strong style="color: #6ee7b7;">UniVerse &bull; Marwadi University</strong></p>
+            </div>
+            <div class="gmodal-body">
+                <div id="gmodalError" class="gmodal-error"></div>
+
+                <p style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; font-weight: 600;">
+                    Choose a Verified Student Account
+                </p>
+
+                <!-- Pre-configured MU Student Accounts -->
+                <div class="gaccount-item" onclick="triggerGoogleLogin('aarav.patel@@marwadiuniversity.ac.in', 'Aarav Patel')">
+                    <div class="gaccount-avatar" style="background: #2563eb;">A</div>
+                    <div class="gaccount-details">
+                        <div class="gaccount-name">Aarav Patel</div>
+                        <div class="gaccount-email">aarav.patel@@marwadiuniversity.ac.in</div>
+                    </div>
+                    <span class="gaccount-domain-badge">Hostel D</span>
+                </div>
+
+                <div class="gaccount-item" onclick="triggerGoogleLogin('priya.sharma@@marwadiuniversity.ac.in', 'Priya Sharma')">
+                    <div class="gaccount-avatar" style="background: #7c3aed;">P</div>
+                    <div class="gaccount-details">
+                        <div class="gaccount-name">Priya Sharma</div>
+                        <div class="gaccount-email">priya.sharma@@marwadiuniversity.ac.in</div>
+                    </div>
+                    <span class="gaccount-domain-badge">Hostel B</span>
+                </div>
+
+                <div class="gaccount-item" onclick="triggerGoogleLogin('archi.kumar@@marwadiuniversity.ac.in', 'Archi Kumar')">
+                    <div class="gaccount-avatar" style="background: #059669;">A</div>
+                    <div class="gaccount-details">
+                        <div class="gaccount-name">Archi Kumar</div>
+                        <div class="gaccount-email">archi.kumar@@marwadiuniversity.ac.in</div>
+                    </div>
+                    <span class="gaccount-domain-badge">Hostel A</span>
+                </div>
+
+                <div class="gmodal-divider"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 11.5px; color: #cbd5e1; font-weight: 600;">Use Another University Account</span>
+                    <span style="font-size: 10.5px; color: #34d399; font-weight: 600;">@@marwadiuniversity.ac.in only</span>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <input type="email" id="customGoogleEmail" class="ginput" placeholder="student.name@@marwadiuniversity.ac.in" />
+                    <button type="button" id="btnCustomGoogleLogin" class="luminous-btn" style="width: auto; padding: 0 16px; margin: 0; white-space: nowrap; font-size: 12px;">
+                        <span>Sign In</span>
+                    </button>
+                </div>
+                <div style="margin-top: 12px; font-size: 10.5px; color: #64748b; text-align: center;">
+                    🔒 University Security Protocol: Non-MU Gmail accounts are rejected automatically.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1091,6 +1331,12 @@
                 return;
             }
 
+            if (!email.toLowerCase().endsWith("@@marwadiuniversity.ac.in")) {
+                e.preventDefault();
+                showError("Access Denied: Only @@marwadiuniversity.ac.in emails are permitted. Personal Gmail or external domains cannot login.");
+                return;
+            }
+
             if (!pass) {
                 e.preventDefault();
                 showError("Password is required.");
@@ -1104,6 +1350,78 @@
         function showError(msg) {
             clientErrorBox.innerText = msg;
             clientErrorBox.style.display = "block";
+        }
+
+        // ─── Google SSO Modal Logic ───
+        const googleAuthModal = document.getElementById("googleAuthModal");
+        const openGoogleModalBtn = document.getElementById("openGoogleModalBtn");
+        const closeGoogleModalBtn = document.getElementById("closeGoogleModalBtn");
+        const customGoogleEmail = document.getElementById("customGoogleEmail");
+        const btnCustomGoogleLogin = document.getElementById("btnCustomGoogleLogin");
+        const gmodalError = document.getElementById("gmodalError");
+
+        openGoogleModalBtn.addEventListener("click", () => {
+            gmodalError.style.display = "none";
+            googleAuthModal.classList.add("active");
+        });
+
+        closeGoogleModalBtn.addEventListener("click", () => {
+            googleAuthModal.classList.remove("active");
+        });
+
+        googleAuthModal.addEventListener("click", (e) => {
+            if (e.target === googleAuthModal) {
+                googleAuthModal.classList.remove("active");
+            }
+        });
+
+        btnCustomGoogleLogin.addEventListener("click", () => {
+            const email = customGoogleEmail.value.trim();
+            if (!email) {
+                showGModalError("Please enter your university Google email.");
+                return;
+            }
+            triggerGoogleLogin(email, "");
+        });
+
+        function showGModalError(msg) {
+            gmodalError.innerText = msg;
+            gmodalError.style.display = "block";
+        }
+
+        function triggerGoogleLogin(email, name) {
+            gmodalError.style.display = "none";
+            const clean = (email || "").trim().toLowerCase();
+
+            // Strict Marwadi University Domain Enforcement
+            if (!clean.endsWith("@@marwadiuniversity.ac.in")) {
+                showGModalError("Access Denied: Only @@marwadiuniversity.ac.in Google Workspace accounts are permitted. '" + clean + "' is not a recognized university account.");
+                return;
+            }
+
+            btnCustomGoogleLogin.disabled = true;
+            btnCustomGoogleLogin.innerHTML = '<span>Verifying...</span>';
+
+            fetch('/Account/GoogleLogin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ googleEmail: clean, fullName: name || '' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirectUrl || '/Dashboard';
+                } else {
+                    showGModalError(data.message || 'Login failed.');
+                    btnCustomGoogleLogin.disabled = false;
+                    btnCustomGoogleLogin.innerHTML = '<span>Sign In</span>';
+                }
+            })
+            .catch(() => {
+                showGModalError('Failed to communicate with the Marwadi University authentication server.');
+                btnCustomGoogleLogin.disabled = false;
+                btnCustomGoogleLogin.innerHTML = '<span>Sign In</span>';
+            });
         }
     </script>
 </body>
