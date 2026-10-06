@@ -122,16 +122,21 @@ namespace UniVerse.Server.Controllers
                     : cleanEmail.Split('@')[0].Replace(".", " ");
                 var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(rawName);
 
+                var prefix = cleanEmail.Split('@')[0];
+                var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+                var enr = digitMatch.Success ? digitMatch.Value : string.Empty;
+
                 user = new User
                 {
                     Id = Guid.NewGuid().ToString(),
                     Email = cleanEmail,
                     FullName = formattedName,
+                    EnrollmentNumber = !string.IsNullOrEmpty(enr) ? enr : "92100" + new Random().Next(10000, 99999),
                     PasswordHash = DbInitializer.HashPassword("GoogleAuth123!"),
                     Role = "student",
                     HostelName = "Hostel D",
                     RoomNumber = "304",
-                    RewardBalance = 50.0,
+                    RewardBalance = 0.0,
                     CreatedAt = DateTime.UtcNow.ToString("o"),
                     UpdatedAt = DateTime.UtcNow.ToString("o")
                 };

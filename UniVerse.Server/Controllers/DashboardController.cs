@@ -38,6 +38,7 @@ namespace UniVerse.Server.Controllers
         private async Task<User> GetCurrentUserAsync()
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userEmail = User.FindFirstValue(ClaimTypes.Email);
             User? currentUser = null;
 
             if (!string.IsNullOrEmpty(userId))
@@ -45,22 +46,26 @@ namespace UniVerse.Server.Controllers
                 currentUser = await _userRepo.GetByIdAsync(userId);
             }
 
+            if (currentUser == null && !string.IsNullOrEmpty(userEmail))
+            {
+                currentUser = await _userRepo.GetByEmailAsync(userEmail);
+            }
+
             if (currentUser == null)
             {
-                var allUsers = await _userRepo.GetAllUsersAsync();
-                currentUser = allUsers.FirstOrDefault() ?? new User
+                var cleanEmail = (userEmail ?? string.Empty).Trim().ToLowerInvariant();
+                var displayName = User.Identity?.Name ?? (!string.IsNullOrEmpty(cleanEmail) ? cleanEmail.Split('@')[0] : "Student");
+                currentUser = new User
                 {
-                    Id = "usr_student_001",
-                    FullName = "Archi Kumar",
-                    Email = "archi.kumar@marwadiuniversity.ac.in",
+                    Id = userId ?? Guid.NewGuid().ToString(),
+                    FullName = displayName,
+                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "student@marwadiuniversity.ac.in",
                     Role = "student",
                     HostelName = "Hostel D",
                     RoomNumber = "304",
-                    PhoneNumber = "+91 98765 43210",
-                    EnrollmentNumber = "92100103001",
-                    RewardBalance = 240.0,
+                    RewardBalance = 0.0,
                     Department = "Computer Science & Engineering",
-                    Semester = "Semester 6"
+                    Semester = "Semester 4"
                 };
             }
 
@@ -72,12 +77,14 @@ namespace UniVerse.Server.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await GetCurrentUserAsync();
-            var requests = await _deliveryRepo.GetRequestsAsync();
+            var allRequests = await _deliveryRepo.GetRequestsAsync();
             var listings = await _marketRepo.GetListingsAsync();
 
-            var active = requests.Where(r => r.Status != "delivered" && r.Status != "cancelled").ToList();
-            var completed = requests.Where(r => r.Status == "delivered").ToList();
-            var cancelled = requests.Where(r => r.Status == "cancelled").ToList();
+            // REAL DATA: Filter requests created by THIS logged-in student
+            var myRequests = allRequests.Where(r => r.RequesterId == user.Id).ToList();
+            var active = myRequests.Where(r => r.Status != "delivered" && r.Status != "cancelled").ToList();
+            var completed = myRequests.Where(r => r.Status == "delivered").ToList();
+            var cancelled = myRequests.Where(r => r.Status == "cancelled").ToList();
 
             ViewBag.ActivePage = "dashboard";
             ViewBag.ActiveRequestsCount = active.Count;
@@ -85,7 +92,7 @@ namespace UniVerse.Server.Controllers
             var vm = new DashboardViewModel
             {
                 CurrentUser = user,
-                AllRequests = requests,
+                AllRequests = myRequests,
                 ActiveRequests = active,
                 CompletedRequests = completed,
                 CancelledRequests = cancelled,
@@ -102,7 +109,10 @@ namespace UniVerse.Server.Controllers
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
-            var filtered = allRequests.AsEnumerable();
+            // REAL DATA: Requests created by this student (or assigned if student is active runner)
+            var myRequests = allRequests.Where(r => r.RequesterId == user.Id || (user.IsActiveRunner && r.RunnerId == user.Id)).ToList();
+
+            var filtered = myRequests.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -110,7 +120,7 @@ namespace UniVerse.Server.Controllers
                 filtered = filtered.Where(r =>
                     r.PickupLocation.ToLowerInvariant().Contains(query) ||
                     r.DropoffLocation.ToLowerInvariant().Contains(query) ||
-                    r.Items.Any(i => i.Name.ToLowerInvariant().Contains(query)));
+                    (r.Items != null && r.Items.Any(i => i.Name.ToLowerInvariant().Contains(query))));
             }
 
             tab = (tab ?? "all").ToLowerInvariant();
@@ -128,7 +138,7 @@ namespace UniVerse.Server.Controllers
             }
 
             var requestList = filtered.ToList();
-            var activeCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+            var activeCount = myRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
 
             ViewBag.ActivePage = "requests";
             ViewBag.ActiveRequestsCount = activeCount;

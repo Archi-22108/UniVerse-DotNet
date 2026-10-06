@@ -32,6 +32,7 @@ namespace UniVerse.Server.Controllers
         private async Task<User> GetCurrentUserAsync()
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? userEmail = User.FindFirstValue(ClaimTypes.Email);
             User? currentUser = null;
 
             if (!string.IsNullOrEmpty(userId))
@@ -39,18 +40,22 @@ namespace UniVerse.Server.Controllers
                 currentUser = await _userRepo.GetByIdAsync(userId);
             }
 
+            if (currentUser == null && !string.IsNullOrEmpty(userEmail))
+            {
+                currentUser = await _userRepo.GetByEmailAsync(userEmail);
+            }
+
             if (currentUser == null)
             {
-                var allUsers = await _userRepo.GetAllUsersAsync();
-                currentUser = allUsers.FirstOrDefault() ?? new User
+                var cleanEmail = (userEmail ?? string.Empty).Trim().ToLowerInvariant();
+                var displayName = User.Identity?.Name ?? (!string.IsNullOrEmpty(cleanEmail) ? cleanEmail.Split('@')[0] : "Student");
+                currentUser = new User
                 {
-                    Id = "usr_student_001",
-                    FullName = "Archi Kumar",
-                    Email = "archi.kumar@marwadiuniversity.ac.in",
-                    EnrollmentNumber = "92100103001",
+                    Id = userId ?? Guid.NewGuid().ToString(),
+                    FullName = displayName,
+                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "student@marwadiuniversity.ac.in",
                     HostelName = "Hostel D",
-                    RoomNumber = "304",
-                    PhoneNumber = "+91 98765 43210"
+                    RoomNumber = "304"
                 };
             }
 

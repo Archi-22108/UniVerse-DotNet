@@ -3,7 +3,7 @@
     Layout = "_DashboardLayout";
     ViewData["Title"] = "Student Dashboard";
     ViewBag.ActivePage = "dashboard";
-    ViewBag.ActiveRequestsCount = 2;
+    ViewBag.ActiveRequestsCount = Model.ActiveRequestsCount;
 
     var user = Model.CurrentUser;
     var rawName = string.IsNullOrEmpty(user?.FullName) ? "Student" : user.FullName;
@@ -764,7 +764,7 @@
                         <i class="bi bi-box-seam"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value">3</div>
+                <div class="uv-stat-value">@Model.TotalRequestsCount</div>
                 <div class="uv-stat-trend">All time campus activity</div>
             </div>
 
@@ -776,7 +776,7 @@
                         <i class="bi bi-bicycle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #00E676;">2</div>
+                <div class="uv-stat-value" style="color: #00E676;">@Model.ActiveRequestsCount</div>
                 <div class="uv-stat-trend" style="color: #34D399;">
                     <span class="uv-live-dot"></span>
                     <span>Live in progress</span>
@@ -791,7 +791,7 @@
                         <i class="bi bi-check-circle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #38BDF8;">1</div>
+                <div class="uv-stat-value" style="color: #38BDF8;">@Model.CompletedRequestsCount</div>
                 <div class="uv-stat-trend">Delivered successfully</div>
             </div>
 
@@ -803,7 +803,7 @@
                         <i class="bi bi-exclamation-circle"></i>
                     </div>
                 </div>
-                <div class="uv-stat-value" style="color: #F87171;">0</div>
+                <div class="uv-stat-value" style="color: #F87171;">@Model.CancelledRequestsCount</div>
                 <div class="uv-stat-trend">All clean &bull; 0 issues</div>
             </div>
         </div>
@@ -812,94 +812,85 @@
         <div class="uv-section-bar">
             <h2 class="uv-section-title">
                 <span>Active Deliveries</span>
-                <span class="uv-section-badge">2</span>
+                <span class="uv-section-badge">@Model.ActiveRequestsCount</span>
             </h2>
             <a href="/Dashboard/Requests" class="uv-view-all">
                 View all <i class="bi bi-arrow-right"></i>
             </a>
         </div>
 
-        <div class="uv-active-grid">
-            <!-- Active Card 1 (Pending) -->
-            <div class="uv-active-card glow-card">
-                <div class="uv-active-head">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="uv-status-pill uv-status-pending">PENDING</span>
-                        <span class="uv-pin-pill">🔐 PIN: 4921</span>
-                    </div>
-                    <div class="uv-tip-val">
-                        ₹30 Tip
-                    </div>
-                </div>
+        @if (Model.ActiveRequests != null && Model.ActiveRequests.Any())
+        {
+            <div class="uv-active-grid">
+                @foreach (var req in Model.ActiveRequests)
+                {
+                    var isTransit = req.Status == "in_transit" || req.Status == "assigned";
+                    var statusColor = isTransit ? "#8B5CF6" : "#00E676";
+                    var statusLabel = isTransit ? "IN TRANSIT" : "PENDING";
+                    var itemsSummary = req.Items != null && req.Items.Any()
+                        ? string.Join(", ", req.Items.Select(i => $"{i.Name} (x{i.Quantity})"))
+                        : "Campus Delivery Package";
 
-                <div class="uv-route-info">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="bi bi-geo-alt-fill text-warning"></i>
-                        <span><b style="color: #fff;">From:</b> Marwadi Central Canteen</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="bi bi-door-closed-fill text-success"></i>
-                        <span><b style="color: #fff;">To:</b> Hostel D, Room 304</span>
-                    </div>
-                </div>
+                    <div class="uv-active-card glow-card" style="border-left-color: @statusColor;">
+                        <div class="uv-active-head">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="uv-status-pill @(isTransit ? "uv-status-transit" : "uv-status-pending")">@statusLabel</span>
+                                @if (!string.IsNullOrEmpty(req.DeliveryOtp))
+                                {
+                                    <span class="uv-pin-pill">🔐 PIN: @req.DeliveryOtp</span>
+                                }
+                            </div>
+                            <div class="uv-tip-val">
+                                ₹@req.DeliveryFee.ToString("F0") Tip
+                            </div>
+                        </div>
 
-                <div class="uv-items-list">
-                    <i class="bi bi-bag-check-fill text-success"></i>
-                    <span>Crispy Samosa (2 pcs) (x1), Cold Bournvita Frappe (x1)</span>
-                </div>
+                        <div class="uv-route-info">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="bi bi-geo-alt-fill text-warning"></i>
+                                <span><b style="color: #fff;">From:</b> @req.PickupLocation</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="bi bi-door-closed-fill text-success"></i>
+                                <span><b style="color: #fff;">To:</b> @req.DropoffLocation</span>
+                            </div>
+                        </div>
 
-                <div class="uv-card-foot">
-                    <div class="uv-runner-profile">
-                        <div class="uv-runner-circle">R</div>
-                        <span>Runner: <b style="color: #fff;">Finding Runner...</b></span>
+                        <div class="uv-items-list">
+                            <i class="bi bi-bag-check-fill text-success"></i>
+                            <span>@itemsSummary</span>
+                        </div>
+
+                        <div class="uv-card-foot">
+                            <div class="uv-runner-profile">
+                                <div class="uv-runner-circle">R</div>
+                                <span>Runner: <b style="color: #fff;">@(string.IsNullOrEmpty(req.RunnerName) ? "Finding Runner..." : req.RunnerName)</b></span>
+                            </div>
+
+                            <a href="/Delivery/Details/@req.Id" class="btn-track-live">
+                                Track Live <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
-
-                    <a href="/Delivery/Details/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" class="btn-track-live">
-                        Track Live <i class="bi bi-arrow-right"></i>
-                    </a>
-                </div>
+                }
             </div>
-
-            <!-- Active Card 2 (In Transit) -->
-            <div class="uv-active-card" style="border-left-color: #8B5CF6;">
-                <div class="uv-active-head">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="uv-status-pill uv-status-transit">IN TRANSIT</span>
-                        <span class="uv-pin-pill">🔐 PIN: 8134</span>
-                    </div>
-                    <div class="uv-tip-val">
-                        ₹25 Tip
-                    </div>
+        }
+        else
+        {
+            <div style="background: rgba(10, 15, 12, 0.4); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 36px 20px; text-align: center; margin-bottom: 24px;">
+                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(0, 230, 118, 0.1); border: 1px solid rgba(0, 230, 118, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--accent-green); font-size: 22px;">
+                    <i class="bi bi-box-seam"></i>
                 </div>
-
-                <div class="uv-route-info">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="bi bi-geo-alt-fill text-warning"></i>
-                        <span><b style="color: #fff;">From:</b> Campus Stationery & Book Depot</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="bi bi-door-closed-fill text-success"></i>
-                        <span><b style="color: #fff;">To:</b> Hostel B, Room 108</span>
-                    </div>
-                </div>
-
-                <div class="uv-items-list">
-                    <i class="bi bi-bag-check-fill text-success"></i>
-                    <span>A2 Grid Drawing Sheet Pack (x5) (x1), 0.5mm Technical Fineliner Pen (x1)</span>
-                </div>
-
-                <div class="uv-card-foot">
-                    <div class="uv-runner-profile">
-                        <div class="uv-runner-circle">R</div>
-                        <span>Runner: <b style="color: #fff;">Rohit Sharma</b></span>
-                    </div>
-
-                    <a href="/Delivery/Details/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" class="btn-track-live">
-                        Track Live <i class="bi bi-arrow-right"></i>
-                    </a>
-                </div>
+                <h4 style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">No Active Deliveries</h4>
+                <p style="font-size: 12px; color: var(--text-muted); max-width: 400px; margin: 0 auto 16px; line-height: 1.5;">
+                    You have no active orders in progress right now. Place a delivery request to get food, stationery, or printouts delivered directly to your hostel room.
+                </p>
+                <a href="/Delivery/Create" class="btn-new-request" style="font-size: 12px; padding: 8px 18px;">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Your First Request</span>
+                </a>
             </div>
-        </div>
+        }
 
         <!-- Dashboard Charts Section -->
         <div class="uv-charts-card">
@@ -1030,35 +1021,27 @@
                 <span class="uv-live-dot"></span>
             </div>
 
-            <div class="uv-timeline-item">
-                <div class="uv-timeline-icon" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">
-                    <i class="bi bi-chat-left-dots-fill"></i>
+            @if (Model.AllRequests != null && Model.AllRequests.Any())
+            {
+                @foreach (var act in Model.AllRequests.Take(3))
+                {
+                    <div class="uv-timeline-item">
+                        <div class="uv-timeline-icon" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <div class="uv-timeline-text">Delivery to <b style="color: #00E676;">@act.DropoffLocation</b>: @act.Status.ToUpper()</div>
+                            <div class="uv-timeline-time">₹@act.DeliveryFee.ToString("F0") tip &bull; @act.PickupLocation</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div style="font-size: 12px; color: var(--text-muted); padding: 12px 0; text-align: center;">
+                    No recent activity yet. When you create or complete deliveries, they will appear here.
                 </div>
-                <div>
-                    <div class="uv-timeline-text">Your request for <b style="color: #818CF8;">Crispy Samosa</b> was created.</div>
-                    <div class="uv-timeline-time">5 mins ago</div>
-                </div>
-            </div>
-
-            <div class="uv-timeline-item">
-                <div class="uv-timeline-icon" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
-                    <i class="bi bi-bicycle"></i>
-                </div>
-                <div>
-                    <div class="uv-timeline-text">A runner accepted delivery for <b style="color: #00E676;">Cold Bournvita</b>.</div>
-                    <div class="uv-timeline-time">22 mins ago</div>
-                </div>
-            </div>
-
-            <div class="uv-timeline-item" style="margin-bottom: 0;">
-                <div class="uv-timeline-icon" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <div>
-                    <div class="uv-timeline-text">Order was delivered to <b style="color: #00E676;">Hostel D, Room 304</b>.</div>
-                    <div class="uv-timeline-time">1 hour ago</div>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </div>
