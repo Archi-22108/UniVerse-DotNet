@@ -159,16 +159,10 @@ namespace UniVerse.Server.Controllers
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
-            var pending = allRequests.Where(r => r.Status == "pending" && r.RequesterId != user.Id).ToList();
-            var activeDeliveries = allRequests.Where(r => (r.Status == "accepted" || r.Status == "in_transit") && r.RunnerId == user.Id).ToList();
+            // All pending campus delivery requests must be visible on the runner radar feed
+            var pending = allRequests.Where(r => r.Status == "pending").ToList();
+            var activeDeliveries = allRequests.Where(r => (r.Status == "accepted" || r.Status == "picked_up" || r.Status == "in_transit") && r.RunnerId == user.Id).ToList();
             var completedDeliveries = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).ToList();
-
-            if (!activeDeliveries.Any() && !completedDeliveries.Any())
-            {
-                // Campus demo runner preview
-                activeDeliveries = allRequests.Where(r => r.Status == "in_transit" || r.Status == "accepted").Take(2).ToList();
-                completedDeliveries = allRequests.Where(r => r.Status == "delivered").Take(3).ToList();
-            }
 
             ViewBag.ActivePage = "runner";
             ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
@@ -183,6 +177,14 @@ namespace UniVerse.Server.Controllers
             };
 
             return View(vm);
+        }
+
+        [HttpGet]
+        [Route("api/runner/radar-sync")]
+        public async Task<IActionResult> RadarSync()
+        {
+            var pending = await _deliveryRepo.GetRequestsAsync("pending");
+            return Json(new { pendingCount = pending.Count });
         }
 
         [HttpPost]
@@ -202,7 +204,6 @@ namespace UniVerse.Server.Controllers
             var result = await _deliveryRepo.CompleteDeliveryWithOtpAsync(id, user.Id, otp);
             if (result.Success)
             {
-                await _userRepo.AddRewardBalanceAsync(user.Id, result.Reward);
                 TempData["SuccessMessage"] = $"Delivery verified! +₹{result.Reward:F0} credited to your wallet.";
             }
             else

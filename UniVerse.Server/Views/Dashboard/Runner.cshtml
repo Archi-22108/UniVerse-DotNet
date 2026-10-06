@@ -229,13 +229,17 @@
                     <!-- OTP Completion Form -->
                     <form method="post" action="/Dashboard/CompleteDelivery" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <input type="hidden" name="id" value="@active.Id" />
-                        <div style="flex: 1; min-width: 200px;">
-                            <input type="text" name="otp" placeholder="Enter Student's 4-Digit OTP" required maxlength="6" style="width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px 14px; color: #fff; font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.1em;" />
+                        <div style="flex: 1; min-width: 180px;">
+                            <input type="text" name="otp" placeholder="Enter Student's OTP" required maxlength="6" style="width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 10px 14px; color: #fff; font-family: var(--font-mono); font-size: 14px; font-weight: 700; letter-spacing: 0.1em;" />
                         </div>
                         <button type="submit" class="btn-accept-order" style="padding: 11px 20px;">
                             <i class="bi bi-shield-check"></i>
                             <span>Verify & Complete</span>
                         </button>
+                        <a href="/Deliveries/Details/@active.Id" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none;">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Live Tracker</span>
+                        </a>
                     </form>
                 </div>
             }
@@ -248,8 +252,11 @@
             <h2 style="font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
                 <i class="bi bi-radar text-success"></i>
                 <span>Available Campus Radar</span>
+                <span class="uv-live-dot ms-1"></span>
             </h2>
-            <span style="font-size: 12px; color: var(--text-muted);">Real-time peer deliveries</span>
+            <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                Live sync active • @Model.PendingDeliveries.Count ready
+            </span>
         </div>
 
         @if (Model.PendingDeliveries.Count == 0)
@@ -257,7 +264,7 @@
             <div style="text-align: center; padding: 48px; background: rgba(10, 16, 13, 0.6); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 20px;">
                 <i class="bi bi-clock-history" style="font-size: 32px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 10px;"></i>
                 <h4 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px;">No pending orders in your zone</h4>
-                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Stay on duty. New student requests from Canteen will appear immediately!</p>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Stay on duty. New student requests will broadcast to your radar immediately!</p>
             </div>
         }
         else
@@ -279,7 +286,7 @@
                         </div>
                         <div>
                             <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">DESTINATION</span>
-                            <div style="font-weight: 700; color: #fff; font-size: 13.5px;">@order.DropoffLocation</div>
+                            <div style="font-weight: 700; color: #00E676; font-size: 13.5px;">@order.DropoffLocation</div>
                         </div>
                     </div>
 
@@ -291,20 +298,46 @@
                         </div>
                     }
 
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <span style="font-size: 11.5px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
-                            Placed: @order.CreatedAt
+                            Placed: @(DateTime.TryParse(order.CreatedAt, out var dt) ? dt.ToLocalTime().ToString("MMM d, h:mm tt") : order.CreatedAt)
                         </span>
-                        <form method="post" action="/Dashboard/AcceptDelivery">
-                            <input type="hidden" name="id" value="@order.Id" />
-                            <button type="submit" class="btn-accept-order">
-                                <i class="bi bi-bicycle"></i>
-                                <span>Accept Delivery</span>
-                            </button>
-                        </form>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <a href="/Deliveries/Details/@order.Id" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none;">
+                                <i class="bi bi-eye"></i>
+                                <span>Details</span>
+                            </a>
+                            <form method="post" action="/Dashboard/AcceptDelivery" style="display: inline;">
+                                <input type="hidden" name="id" value="@order.Id" />
+                                <button type="submit" class="btn-accept-order">
+                                    <i class="bi bi-bicycle"></i>
+                                    <span>Accept Delivery</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             }
         }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    // Real-time radar sync: polls for newly broadcasted campus orders
+    const currentPendingCount = @Model.PendingDeliveries.Count;
+    setInterval(async () => {
+        try {
+            const res = await fetch('/api/runner/radar-sync');
+            if (res.ok) {
+                const data = await res.json();
+                if (typeof data.pendingCount === 'number' && data.pendingCount !== currentPendingCount) {
+                    window.location.reload();
+                }
+            }
+        } catch (e) {
+            // Silently ignore background polling network errors
+        }
+    }, 4000);
+</script>
+}
