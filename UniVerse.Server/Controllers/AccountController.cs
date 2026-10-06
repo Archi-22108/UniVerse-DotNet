@@ -355,11 +355,13 @@ namespace UniVerse.Server.Controllers
             return View(user);
         }
 
+        [HttpGet]
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Account");
         }
 
         private async Task SignInUserAsync(User user, bool isPersistent)
