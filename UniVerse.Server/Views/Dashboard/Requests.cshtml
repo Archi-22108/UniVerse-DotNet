@@ -18,12 +18,20 @@
 
     .uv-hud-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
         margin-bottom: 28px;
     }
 
-    @@media (max-width: 860px) {
+    @@media (max-width: 1200px) {
+        .uv-hud-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @@media (max-width: 768px) {
+        .uv-hud-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 480px) {
         .uv-hud-grid { grid-template-columns: 1fr; }
     }
 
@@ -31,17 +39,25 @@
         background: rgba(11, 19, 14, 0.85);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        padding: 20px;
+        padding: 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         backdrop-filter: blur(16px);
         transition: all 0.25s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .uv-hud-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
     }
 
     .uv-hud-card.active-hud {
-        border-color: rgba(16, 185, 129, 0.35);
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.12);
     }
 
     .uv-hud-icon {
@@ -231,72 +247,118 @@
         </div>
     </div>
 
-    <!-- Top Metrics HUD Banner -->
+    <!-- Top Metrics HUD Banner (Total, Pending, In-Flight, Completed, Cancelled) -->
     <div class="uv-hud-grid">
-        <!-- 1. Active In Flight -->
-        <div class="uv-hud-card active-hud">
-            <div>
-                <div style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 4px;">
-                    <span class="uv-live-dot"></span>
-                    <span>Active In-Flight</span>
-                </div>
-                <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #fff;">
-                    @Model.ActiveCount @(Model.ActiveCount == 1 ? "Order" : "Orders")
-                </div>
-            </div>
-            <div class="uv-hud-icon">
-                <i class="bi bi-truck"></i>
-            </div>
-        </div>
-
-        <!-- 2. Delivered Safely -->
-        <div class="uv-hud-card">
+        <!-- 1. Total Placed -->
+        <a href="/Dashboard/Requests?tab=all" class="uv-hud-card @(Model.SelectedTab == "all" ? "active-hud" : "")" title="Click to view all requests">
             <div>
                 <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; margin-bottom: 4px;">
-                    Delivered Safely
+                    Total Orders
                 </div>
-                <div style="font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #fff;">
-                    @Model.CompletedCount @(Model.CompletedCount == 1 ? "Order" : "Orders")
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #fff;">
+                    @Model.TotalCount
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+                    All-time campus orders
                 </div>
             </div>
             <div class="uv-hud-icon" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #fff;">
+                <i class="bi bi-box-seam"></i>
+            </div>
+        </a>
+
+        <!-- 2. Pending on Radar -->
+        <a href="/Dashboard/Requests?tab=pending" class="uv-hud-card @(Model.SelectedTab == "pending" ? "active-hud" : "")" style="@(Model.PendingCount > 0 ? "border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);" : "")" title="Click to view pending requests">
+            <div>
+                <div style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #F59E0B; text-transform: uppercase; margin-bottom: 4px;">
+                    <span class="uv-live-dot" style="background: #F59E0B;"></span>
+                    <span>Pending Radar</span>
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #FBBF24;">
+                    @Model.PendingCount
+                </div>
+                <div style="font-size: 11px; color: rgba(245, 158, 11, 0.8); font-family: var(--font-mono);">
+                    Waiting for runner
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); color: #F59E0B;">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </a>
+
+        <!-- 3. In-Flight Active -->
+        <a href="/Dashboard/Requests?tab=active" class="uv-hud-card @(Model.SelectedTab == "active" ? "active-hud" : "")" title="Click to view in-flight requests">
+            <div>
+                <div style="display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #38BDF8; text-transform: uppercase; margin-bottom: 4px;">
+                    <span class="uv-live-dot" style="background: #38BDF8;"></span>
+                    <span>In-Flight</span>
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #38BDF8;">
+                    @Model.InTransitCount
+                </div>
+                <div style="font-size: 11px; color: rgba(56, 189, 248, 0.8); font-family: var(--font-mono);">
+                    Runner on the way
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.3); color: #38BDF8;">
+                <i class="bi bi-bicycle"></i>
+            </div>
+        </a>
+
+        <!-- 4. Delivered Safely -->
+        <a href="/Dashboard/Requests?tab=completed" class="uv-hud-card @(Model.SelectedTab == "completed" ? "active-hud" : "")" title="Click to view delivered requests">
+            <div>
+                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-bottom: 4px;">
+                    Completed
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: var(--accent-green);">
+                    @Model.CompletedCount
+                </div>
+                <div style="font-size: 11px; color: rgba(16, 185, 129, 0.8); font-family: var(--font-mono);">
+                    Delivered safely
+                </div>
+            </div>
+            <div class="uv-hud-icon" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-green);">
                 <i class="bi bi-check2-circle"></i>
             </div>
-        </div>
+        </a>
 
-        <!-- 3. Campus Peer Network -->
-        <div class="uv-hud-card">
+        <!-- 5. Cancelled -->
+        <a href="/Dashboard/Requests?tab=cancelled" class="uv-hud-card @(Model.SelectedTab == "cancelled" ? "active-hud" : "")" style="@(Model.CancelledCount > 0 ? "border-color: rgba(239, 68, 68, 0.3);" : "")" title="Click to view cancelled requests">
             <div>
-                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #38BDF8; text-transform: uppercase; margin-bottom: 4px;">
-                    Avg. Delivery
+                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #F87171; text-transform: uppercase; margin-bottom: 4px;">
+                    Cancelled
                 </div>
-                <div style="font-family: var(--font-heading); font-size: 20px; font-weight: 800; color: #fff;">
-                    ~15 mins
+                <div style="font-family: var(--font-heading); font-size: 26px; font-weight: 900; color: #F87171;">
+                    @Model.CancelledCount
                 </div>
-                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.4); font-family: var(--font-mono);">
-                    Verified Student Peers
+                <div style="font-size: 11px; color: rgba(239, 68, 68, 0.8); font-family: var(--font-mono);">
+                    Revoked orders
                 </div>
             </div>
-            <div class="uv-hud-icon" style="background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.25); color: #38BDF8;">
-                <i class="bi bi-shield-check"></i>
+            <div class="uv-hud-icon" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); color: #F87171;">
+                <i class="bi bi-x-circle"></i>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Filter Bar & Search -->
     <div class="uv-filter-bar">
         <div class="uv-tabs-wrap">
             <a href="/Dashboard/Requests?tab=all" class="uv-tab-btn @(Model.SelectedTab == "all" ? "active" : "")">
-                All Orders (@Model.Requests.Count)
+                All Orders (@Model.TotalCount)
+            </a>
+            <a href="/Dashboard/Requests?tab=pending" class="uv-tab-btn @(Model.SelectedTab == "pending" ? "active" : "")" style="@(Model.SelectedTab == "pending" ? "color: #F59E0B; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.15);" : "")">
+                ⏳ Pending (@Model.PendingCount)
             </a>
             <a href="/Dashboard/Requests?tab=active" class="uv-tab-btn @(Model.SelectedTab == "active" ? "active" : "")">
-                ● Active (@Model.ActiveCount)
+                ● In-Flight (@Model.InTransitCount)
             </a>
             <a href="/Dashboard/Requests?tab=completed" class="uv-tab-btn @(Model.SelectedTab == "completed" ? "active" : "")">
-                Completed (@Model.CompletedCount)
+                ✓ Completed (@Model.CompletedCount)
             </a>
-            <a href="/Dashboard/Requests?tab=cancelled" class="uv-tab-btn @(Model.SelectedTab == "cancelled" ? "active" : "")">
-                Cancelled (@Model.CancelledCount)
+            <a href="/Dashboard/Requests?tab=cancelled" class="uv-tab-btn @(Model.SelectedTab == "cancelled" ? "active" : "")" style="@(Model.SelectedTab == "cancelled" ? "color: #F87171; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.15);" : "")">
+                ✕ Cancelled (@Model.CancelledCount)
             </a>
         </div>
 
@@ -312,9 +374,18 @@
     {
         <div style="text-align: center; padding: 64px 20px; background: rgba(10, 15, 12, 0.5); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 24px;">
             <i class="bi bi-inbox" style="font-size: 42px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 14px;"></i>
-            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">No delivery requests found</h3>
-            <p style="color: var(--text-muted); font-size: 13px; max-width: 400px; margin: 0 auto 20px auto;">
-                There are no orders matching this filter. Place your first campus delivery order!
+            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+                @(Model.SelectedTab == "pending" ? "No pending orders right now" :
+                  Model.SelectedTab == "cancelled" ? "No cancelled requests found" :
+                  Model.SelectedTab == "completed" ? "No delivered orders yet" :
+                  Model.SelectedTab == "active" ? "No active in-flight deliveries" :
+                  "No delivery requests found")
+            </h3>
+            <p style="color: var(--text-muted); font-size: 13px; max-width: 420px; margin: 0 auto 20px auto;">
+                @(Model.SelectedTab == "pending" ? "Your active orders have either been accepted by runners or delivered!" :
+                  Model.SelectedTab == "cancelled" ? "Great! You haven't cancelled any orders." :
+                  Model.SelectedTab == "completed" ? "Your delivered orders will appear here once received." :
+                  "There are no orders matching this filter. Place a new campus delivery order!")
             </p>
             <a href="/Delivery/Create" class="btn-new-request" style="display: inline-flex;">
                 <i class="bi bi-plus-lg"></i>
@@ -327,15 +398,47 @@
         @foreach (var req in Model.Requests)
         {
             var isPending = req.Status == "pending";
+            var isInTransit = req.Status == "accepted" || req.Status == "picked_up" || req.Status == "in_transit";
             var isDelivered = req.Status == "delivered";
             var isCancelled = req.Status == "cancelled";
 
-            <div class="uv-req-card" style="border-left-color: @(isPending ? "#F59E0B" : isDelivered ? "#00E676" : isCancelled ? "#ef4444" : "#38BDF8")">
+            var cardBorderColor = isPending ? "#F59E0B" : isInTransit ? "#38BDF8" : isDelivered ? "#00E676" : isCancelled ? "#ef4444" : "#A7B8B0";
+
+            <div class="uv-req-card" style="border-left-color: @cardBorderColor;">
                 <div class="uv-req-top">
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="uv-status-pill @(isPending ? "uv-status-pending" : isDelivered ? "uv-status-active" : "")" style="background: @(isCancelled ? "rgba(239, 68, 68, 0.15)" : ""); color: @(isCancelled ? "#ef4444" : ""); border: 1px solid @(isCancelled ? "rgba(239, 68, 68, 0.3)" : "transparent")">
-                            @(req.Status.Replace("_", " "))
-                        </span>
+                        @if (isPending)
+                        {
+                            <span class="uv-status-pill uv-status-pending" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="uv-live-dot" style="background: #F59E0B;"></span>
+                                <span>WAITING FOR RUNNER</span>
+                            </span>
+                        }
+                        else if (isInTransit)
+                        {
+                            <span class="uv-status-pill" style="background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="uv-live-dot" style="background: #38BDF8;"></span>
+                                <span>@(req.Status.Replace("_", " ").ToUpper())</span>
+                            </span>
+                        }
+                        else if (isDelivered)
+                        {
+                            <span class="uv-status-pill uv-status-active" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>DELIVERED</span>
+                            </span>
+                        }
+                        else if (isCancelled)
+                        {
+                            <span class="uv-status-pill" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-x-circle-fill"></i>
+                                <span>CANCELLED</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="uv-status-pill">@req.Status.Replace("_", " ").ToUpper()</span>
+                        }
                         @if (!string.IsNullOrEmpty(req.DeliveryOtp))
                         {
                             <span class="uv-pin-pill" title="Give this OTP to runner upon delivery">

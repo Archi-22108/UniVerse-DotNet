@@ -182,9 +182,14 @@ namespace UniVerse.Server.Models.ViewModels
         public List<DeliveryRequestDetailDto> Requests { get; set; } = new();
         public string SelectedTab { get; set; } = "all";
         public string SearchQuery { get; set; } = string.Empty;
-        public int ActiveCount => Requests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
-        public int CompletedCount => Requests.Count(r => r.Status == "delivered");
-        public int CancelledCount => Requests.Count(r => r.Status == "cancelled");
+
+        // Global student order activity stats:
+        public int TotalCount { get; set; }
+        public int PendingCount { get; set; }
+        public int InTransitCount { get; set; }
+        public int ActiveCount { get; set; }
+        public int CompletedCount { get; set; }
+        public int CancelledCount { get; set; }
     }
 
     // ─── Runner Page ViewModel ────────────────────────────────────────────────

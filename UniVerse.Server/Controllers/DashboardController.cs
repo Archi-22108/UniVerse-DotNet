@@ -112,6 +112,14 @@ namespace UniVerse.Server.Controllers
             // REAL DATA: Requests created by this student (or assigned if student is active runner)
             var myRequests = allRequests.Where(r => r.RequesterId == user.Id || (user.IsActiveRunner && r.RunnerId == user.Id)).ToList();
 
+            // Global stats for THIS student across all their orders:
+            var totalCount = myRequests.Count;
+            var pendingCount = myRequests.Count(r => r.Status == "pending");
+            var inTransitCount = myRequests.Count(r => r.Status == "accepted" || r.Status == "picked_up" || r.Status == "in_transit");
+            var activeCount = myRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+            var completedCount = myRequests.Count(r => r.Status == "delivered");
+            var cancelledCount = myRequests.Count(r => r.Status == "cancelled");
+
             var filtered = myRequests.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(q))
@@ -124,11 +132,15 @@ namespace UniVerse.Server.Controllers
             }
 
             tab = (tab ?? "all").ToLowerInvariant();
-            if (tab == "active")
+            if (tab == "pending")
+            {
+                filtered = filtered.Where(r => r.Status == "pending");
+            }
+            else if (tab == "active" || tab == "in_transit")
             {
                 filtered = filtered.Where(r => r.Status != "delivered" && r.Status != "cancelled");
             }
-            else if (tab == "completed")
+            else if (tab == "completed" || tab == "delivered")
             {
                 filtered = filtered.Where(r => r.Status == "delivered");
             }
@@ -138,7 +150,6 @@ namespace UniVerse.Server.Controllers
             }
 
             var requestList = filtered.ToList();
-            var activeCount = myRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
 
             ViewBag.ActivePage = "requests";
             ViewBag.ActiveRequestsCount = activeCount;
@@ -148,7 +159,13 @@ namespace UniVerse.Server.Controllers
                 CurrentUser = user,
                 Requests = requestList,
                 SelectedTab = tab,
-                SearchQuery = q ?? string.Empty
+                SearchQuery = q ?? string.Empty,
+                TotalCount = totalCount,
+                PendingCount = pendingCount,
+                InTransitCount = inTransitCount,
+                ActiveCount = activeCount,
+                CompletedCount = completedCount,
+                CancelledCount = cancelledCount
             };
 
             return View(vm);
