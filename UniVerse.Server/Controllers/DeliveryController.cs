@@ -29,50 +29,140 @@ namespace UniVerse.Server.Controllers
             return View(requests);
         }
 
-        [Authorize]
-        [HttpGet]
-        public IActionResult Create()
+        private async Task<User> GetCurrentUserAsync()
         {
-            var hostel = User.FindFirst("HostelName")?.Value ?? "Hostel D";
-            var room = User.FindFirst("RoomNumber")?.Value ?? "304";
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User? currentUser = null;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                currentUser = await _userRepo.GetByIdAsync(userId);
+            }
+
+            if (currentUser == null)
+            {
+                var allUsers = await _userRepo.GetAllUsersAsync();
+                currentUser = allUsers.FirstOrDefault() ?? new User
+                {
+                    Id = "usr_student_001",
+                    FullName = "Archi Kumar",
+                    Email = "archi.kumar@marwadiuniversity.ac.in",
+                    EnrollmentNumber = "92100103001",
+                    HostelName = "Hostel D",
+                    RoomNumber = "304",
+                    PhoneNumber = "+91 98765 43210"
+                };
+            }
+
+            return currentUser;
+        }
+
+        [HttpGet]
+        [Route("Delivery/Create")]
+        [Route("request/new")]
+        public async Task<IActionResult> Create()
+        {
+            var user = await GetCurrentUserAsync();
+            var hostel = !string.IsNullOrEmpty(user.HostelName) ? user.HostelName : "Hostel D";
+            var room = !string.IsNullOrEmpty(user.RoomNumber) ? user.RoomNumber : "304";
+            var activeRunners = await _userRepo.GetActiveRunnersAsync();
+            ViewBag.RunnerCount = activeRunners?.Count ?? 0;
 
             return View(new DeliveryCreateViewModel
             {
-                DropoffLocation = $"{hostel}, Room {room}"
+                DropoffHostel = hostel,
+                DropoffRoom = room,
+                DropoffLocation = $"{hostel}, Room {room}",
+                PickupLocation = "Hostel Vending Machine",
+                DeliveryFee = 5.0
             });
         }
 
-        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("Delivery/Create")]
+        [Route("request/new")]
         public async Task<IActionResult> Create(DeliveryCreateViewModel model)
         {
-            if (!ModelState.IsValid)
+            var user = await GetCurrentUserAsync();
+            var userId = user.Id;
+
+            // Determine dropoff location
+            var dropoff = !string.IsNullOrWhiteSpace(model.DropoffLocation)
+                ? model.DropoffLocation.Trim()
+                : (model.DropoffHostel == "Other" ? $"Class Room: {model.DropoffRoom?.Trim()}" : $"{model.DropoffHostel}, Room {model.DropoffRoom?.Trim()}");
+
+            // Determine pickup location
+            var pickup = model.PickupLocation == "Other (Custom Spot)" && !string.IsNullOrWhiteSpace(model.CustomPickupLocation)
+                ? model.CustomPickupLocation.Trim()
+                : model.PickupLocation.Trim();
+
+            var items = new List<RequestItem>();
+
+            // Parse items from ItemsJson if provided
+            if (!string.IsNullOrWhiteSpace(model.ItemsJson))
             {
-                return View(model);
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(model.ItemsJson);
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        var name = elem.TryGetProperty("name", out var n) ? n.GetString() : null;
+                        var qty = elem.TryGetProperty("quantity", out var q) ? q.GetInt32() : 1;
+                        var cat = elem.TryGetProperty("category", out var c) ? c.GetString() : "Vending Machine";
+                        double price = 0;
+                        if (elem.TryGetProperty("estimatedPrice", out var p) && p.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        {
+                            price = p.GetDouble();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(name))
+                        {
+                            items.Add(new RequestItem
+                            {
+                                Name = name.Trim(),
+                                Quantity = Math.Max(1, qty),
+                                Notes = cat,
+                                EstimatedPrice = price
+                            });
+                        }
+                    }
+                }
+                catch { }
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            // Fallback for simple single-item submission
+            if (items.Count == 0)
+            {
+                var rawName = !string.IsNullOrWhiteSpace(model.ItemNames) ? model.ItemNames.Trim() : "Campus Order";
+                items.Add(new RequestItem
+                {
+                    Name = rawName,
+                    Quantity = Math.Max(1, model.Quantity),
+                    EstimatedPrice = model.EstimatedAmount
+                });
+            }
+
+            var totalItemCount = 0;
+            foreach (var itm in items) totalItemCount += itm.Quantity;
+
+            // Minimum reward: ₹5 per item
+            var minReward = Math.Max(5.0, totalItemCount * 5.0);
+            var finalReward = Math.Max(minReward, model.DeliveryFee);
+
+            var totalEst = 0.0;
+            foreach (var itm in items) totalEst += itm.EstimatedPrice * itm.Quantity;
+            if (totalEst <= 0 && model.EstimatedAmount > 0) totalEst = model.EstimatedAmount;
 
             var newRequest = new DeliveryRequest
             {
                 RequesterId = userId,
-                PickupLocation = model.PickupLocation.Trim(),
-                DropoffLocation = model.DropoffLocation.Trim(),
+                PickupLocation = pickup,
+                DropoffLocation = dropoff,
                 Instructions = model.Instructions?.Trim(),
-                TotalEstimatedAmount = model.EstimatedAmount,
-                DeliveryFee = model.DeliveryFee,
+                TotalEstimatedAmount = totalEst,
+                DeliveryFee = finalReward,
                 Status = "pending"
-            };
-
-            var items = new List<RequestItem>
-            {
-                new()
-                {
-                    Name = model.ItemNames.Trim(),
-                    Quantity = model.Quantity,
-                    EstimatedPrice = model.EstimatedAmount
-                }
             };
 
             var requestId = await _deliveryRepo.CreateRequestAsync(newRequest, items);

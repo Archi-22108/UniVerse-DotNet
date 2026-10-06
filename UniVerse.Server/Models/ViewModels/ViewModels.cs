@@ -69,31 +69,40 @@ namespace UniVerse.Server.Models.ViewModels
     public class DeliveryCreateViewModel
     {
         [Required(ErrorMessage = "Pickup location is required.")]
-        [Display(Name = "Pickup Spot (Canteen, Stationery, Gate)")]
-        public string PickupLocation { get; set; } = "Marwadi Central Canteen";
+        [Display(Name = "Pickup Spot")]
+        public string PickupLocation { get; set; } = "Hostel Vending Machine";
+
+        public string? CustomPickupLocation { get; set; }
 
         [Required(ErrorMessage = "Drop-off hostel is required.")]
         [Display(Name = "Drop-off Location")]
         public string DropoffLocation { get; set; } = "Hostel D, Room 304";
 
+        public string DropoffHostel { get; set; } = "Hostel D";
+
+        public string DropoffRoom { get; set; } = "304";
+
+        public string Urgency { get; set; } = "standard";
+
         [Display(Name = "Special Instructions for Runner")]
         public string? Instructions { get; set; }
 
-        [Range(10, 500, ErrorMessage = "Delivery fee tip must be between ₹10 and ₹500.")]
+        [Range(5, 500, ErrorMessage = "Delivery fee tip must be between ₹5 and ₹500.")]
         [Display(Name = "Runner Tip / Delivery Fee (₹)")]
-        public double DeliveryFee { get; set; } = 30.0;
+        public double DeliveryFee { get; set; } = 5.0;
 
-        [Required(ErrorMessage = "Item name is required.")]
-        [Display(Name = "Items Ordered (e.g. Samosa, Cold Coffee, Drawing Sheet)")]
-        public string ItemNames { get; set; } = string.Empty;
+        [Display(Name = "Items Ordered")]
+        public string? ItemNames { get; set; }
 
-        [Range(1, 20, ErrorMessage = "Quantity must be between 1 and 20.")]
+        [Range(1, 100, ErrorMessage = "Quantity must be between 1 and 100.")]
         [Display(Name = "Quantity")]
         public int Quantity { get; set; } = 1;
 
-        [Range(0, 10000, ErrorMessage = "Estimated price must be valid.")]
+        [Range(0, 50000, ErrorMessage = "Estimated price must be valid.")]
         [Display(Name = "Total Estimated Amount (₹)")]
-        public double EstimatedAmount { get; set; } = 100.0;
+        public double EstimatedAmount { get; set; } = 0.0;
+
+        public string? ItemsJson { get; set; }
     }
 
     public class RunnerHubViewModel
