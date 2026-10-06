@@ -31,6 +31,7 @@ namespace UniVerse.Server.Data
 
                 // 1. Create Schema Tables
                 await CreateSchemaAsync();
+                await EnsureUserColumnsAsync();
 
                 // 2. Check and Seed Initial Data
                 long userCount = await _dbHelper.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM users");
@@ -49,6 +50,35 @@ namespace UniVerse.Server.Data
             {
                 _logger.LogError(ex, "Failed to initialize or seed UniVerse database.");
                 throw;
+            }
+        }
+
+        private async Task EnsureUserColumnsAsync()
+        {
+            try
+            {
+                var columns = new[]
+                {
+                    ("avatar_url", "TEXT"),
+                    ("department", "TEXT DEFAULT 'Computer Science & Engineering'"),
+                    ("semester", "TEXT DEFAULT 'Semester 6'")
+                };
+
+                foreach (var (col, def) in columns)
+                {
+                    try
+                    {
+                        await _dbHelper.ExecuteNonQueryAsync($"ALTER TABLE users ADD COLUMN {col} {def};");
+                    }
+                    catch
+                    {
+                        // Column already exists, safe to continue
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Notice: columns check completed");
             }
         }
 
@@ -75,6 +105,9 @@ CREATE TABLE IF NOT EXISTS users (
     hostel_name TEXT,
     room_number TEXT,
     phone_number TEXT,
+    department TEXT DEFAULT 'Computer Science & Engineering',
+    semester TEXT DEFAULT 'Semester 6',
+    avatar_url TEXT,
     is_active_runner INTEGER NOT NULL DEFAULT 0,
     reward_balance REAL NOT NULL DEFAULT 0.0,
     created_at TEXT NOT NULL,

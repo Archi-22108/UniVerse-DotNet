@@ -90,7 +90,6 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
-        display: none;
     }
 
     .uv-cam-btn {
@@ -131,13 +130,6 @@
     .uv-input-field:focus {
         border-color: var(--accent-green);
         background: rgba(255, 255, 255, 0.05);
-    }
-
-    .uv-input-field:read-only {
-        background: rgba(255, 255, 255, 0.02);
-        color: rgba(255, 255, 255, 0.5);
-        border-color: rgba(255, 255, 255, 0.05);
-        cursor: not-allowed;
     }
 
     .uv-input-icon {
@@ -295,49 +287,52 @@
 
     <!-- Profile Form Card matching ProfileForm.tsx -->
     <div class="uv-profile-card">
-        <!-- Photo Upload Section -->
-        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-wrap: wrap;">
-            <div class="uv-avatar-box-lg" id="profileAvatarBox">
-                <span id="profileAvatarText">@initial</span>
-                <img id="profileAvatarImg" class="uv-avatar-img" alt="Profile" />
-                <button type="button" class="uv-cam-btn" onclick="document.getElementById('profilePhotoInput').click()" title="Change photo">
-                    <i class="bi bi-camera-fill" style="font-size: 14px;"></i>
-                </button>
-            </div>
+        <form method="post" action="/Dashboard/UpdateProfile" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Hidden inputs for avatar handling -->
+            <input type="file" id="profilePhotoInput" name="avatarFile" accept="image/*" style="display: none;" onchange="handlePhotoSelect(this)" />
+            <input type="hidden" name="avatarBase64" id="avatarBase64" />
+            <input type="hidden" name="removePhoto" id="removePhotoInput" value="false" />
 
-            <div style="flex: 1; min-width: 200px;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">
-                    Profile Photo
-                </h3>
-                <p style="font-size: 12px; color: rgba(255, 255, 255, 0.5); margin: 0 0 12px 0;">
-                    Upload a clear photo so others can recognize you at the hostel gate.
-                </p>
-
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handlePhotoSelect(this)" />
-                    <button type="button" class="btn-upload-photo" onclick="document.getElementById('profilePhotoInput').click()">
-                        <i class="bi bi-upload"></i>
-                        <span>Upload Photo</span>
-                    </button>
-                    <button type="button" class="btn-remove-photo" onclick="handleRemovePhoto()">
-                        <i class="bi bi-trash3"></i>
-                        <span>Remove Photo</span>
+            <!-- Photo Upload Section -->
+            <div style="display: flex; align-items: center; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-wrap: wrap;">
+                <div class="uv-avatar-box-lg" id="profileAvatarBox">
+                    <span id="profileAvatarText" style="@(!string.IsNullOrEmpty(user.AvatarUrl) ? "display: none;" : "")">@initial</span>
+                    <img id="profileAvatarImg" src="@(user.AvatarUrl ?? "")" class="uv-avatar-img" style="@(!string.IsNullOrEmpty(user.AvatarUrl) ? "display: block;" : "display: none;")" alt="Profile" />
+                    <button type="button" class="uv-cam-btn" onclick="document.getElementById('profilePhotoInput').click()" title="Change photo">
+                        <i class="bi bi-camera-fill" style="font-size: 14px;"></i>
                     </button>
                 </div>
-                <div class="uv-hint">JPG, PNG or WebP. Max size 2MB.</div>
-            </div>
-        </div>
 
-        <!-- Form Elements -->
-        <form method="post" action="/Dashboard/UpdateProfile" style="display: flex; flex-direction: column; gap: 16px;">
-            <!-- University Email (Locked) -->
+                <div style="flex: 1; min-width: 200px;">
+                    <h3 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">
+                        Profile Photo
+                    </h3>
+                    <p style="font-size: 12px; color: rgba(255, 255, 255, 0.5); margin: 0 0 12px 0;">
+                        Upload a clear photo so others can recognize you at the hostel gate.
+                    </p>
+
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-upload-photo" onclick="document.getElementById('profilePhotoInput').click()">
+                            <i class="bi bi-upload"></i>
+                            <span>Upload Photo</span>
+                        </button>
+                        <button type="button" class="btn-remove-photo" onclick="handleRemovePhoto()">
+                            <i class="bi bi-trash3"></i>
+                            <span>Remove Photo</span>
+                        </button>
+                    </div>
+                    <div class="uv-hint">JPG, PNG or WebP. Max size 5MB.</div>
+                </div>
+            </div>
+
+            <!-- University Email (Editable so student can set their exact email) -->
             <div>
                 <label class="uv-label">University Email</label>
                 <div style="position: relative;">
                     <i class="bi bi-envelope uv-input-icon"></i>
-                    <input type="email" value="@user.Email" class="uv-input-field" readonly />
+                    <input type="email" name="email" id="emailInput" value="@user.Email" class="uv-input-field" placeholder="your.name@marwadiuniversity.ac.in" required />
                 </div>
-                <div class="uv-hint">Your email cannot be changed as it is tied to your university identity.</div>
+                <div class="uv-hint">Enter your official Marwadi University email address.</div>
             </div>
 
             <!-- Full Name -->
@@ -450,18 +445,26 @@
 <script>
     function handlePhotoSelect(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                if (window.showToast) showToast('File size must be under 5MB', true);
+                return;
+            }
+            document.getElementById('removePhotoInput').value = 'false';
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = document.getElementById('profileAvatarImg');
                 const txt = document.getElementById('profileAvatarText');
+                const base64Input = document.getElementById('avatarBase64');
                 img.src = e.target.result;
                 img.style.display = 'block';
                 txt.style.display = 'none';
+                if (base64Input) base64Input.value = e.target.result;
                 if (window.showToast) {
                     showToast('Photo selected! Click "Save Changes" to save.');
                 }
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         }
     }
 
@@ -469,12 +472,17 @@
         const img = document.getElementById('profileAvatarImg');
         const txt = document.getElementById('profileAvatarText');
         const fileInput = document.getElementById('profilePhotoInput');
+        const base64Input = document.getElementById('avatarBase64');
+        const removeInput = document.getElementById('removePhotoInput');
+        
         fileInput.value = '';
+        if (base64Input) base64Input.value = '';
+        if (removeInput) removeInput.value = 'true';
         img.src = '';
         img.style.display = 'none';
         txt.style.display = 'block';
         if (window.showToast) {
-            showToast('Photo removed.');
+            showToast('Photo removed! Click "Save Changes" to save.');
         }
     }
 

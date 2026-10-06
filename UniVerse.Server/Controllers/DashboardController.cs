@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniVerse.Server.Data.Repositories;
 using UniVerse.Server.Models;
@@ -15,15 +20,18 @@ namespace UniVerse.Server.Controllers
         private readonly IDeliveryRepository _deliveryRepo;
         private readonly IUserRepository _userRepo;
         private readonly IMarketplaceRepository _marketRepo;
+        private readonly IWebHostEnvironment _env;
 
         public DashboardController(
             IDeliveryRepository deliveryRepo,
             IUserRepository userRepo,
-            IMarketplaceRepository marketRepo)
+            IMarketplaceRepository marketRepo,
+            IWebHostEnvironment env)
         {
             _deliveryRepo = deliveryRepo;
             _userRepo = userRepo;
             _marketRepo = marketRepo;
+            _env = env;
         }
 
         private async Task<User> GetCurrentUserAsync()
@@ -41,9 +49,9 @@ namespace UniVerse.Server.Controllers
                 var allUsers = await _userRepo.GetAllUsersAsync();
                 currentUser = allUsers.FirstOrDefault() ?? new User
                 {
-                    Id = "usr_aarav_001",
-                    FullName = "Aarav Patel",
-                    Email = "aarav.patel@marwadiuniversity.ac.in",
+                    Id = "usr_student_001",
+                    FullName = "Archi Kumar",
+                    Email = "archi.kumar@marwadiuniversity.ac.in",
                     Role = "student",
                     HostelName = "Hostel D",
                     RoomNumber = "304",
@@ -425,17 +433,119 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(string fullName, string hostelName, string roomNumber, string phoneNumber, string? department, string? semester)
+        public async Task<IActionResult> UpdateProfile(
+            string fullName,
+            string? email,
+            string hostelName,
+            string roomNumber,
+            string phoneNumber,
+            string? department,
+            string? semester,
+            IFormFile? avatarFile,
+            string? avatarBase64,
+            bool removePhoto = false)
         {
             var user = await GetCurrentUserAsync();
-            user.FullName = fullName ?? user.FullName;
-            user.HostelName = hostelName ?? user.HostelName;
-            user.RoomNumber = roomNumber ?? user.RoomNumber;
-            user.PhoneNumber = phoneNumber ?? user.PhoneNumber;
-            user.Department = department ?? user.Department;
-            user.Semester = semester ?? user.Semester;
+            user.FullName = string.IsNullOrWhiteSpace(fullName) ? user.FullName : fullName.Trim();
+
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                user.Email = email.Trim().ToLowerInvariant();
+            }
+
+            user.HostelName = string.IsNullOrWhiteSpace(hostelName) ? user.HostelName : hostelName.Trim();
+            user.RoomNumber = string.IsNullOrWhiteSpace(roomNumber) ? user.RoomNumber : roomNumber.Trim();
+            user.PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? user.PhoneNumber : phoneNumber.Trim();
+            user.Department = string.IsNullOrWhiteSpace(department) ? user.Department : department.Trim();
+            user.Semester = string.IsNullOrWhiteSpace(semester) ? user.Semester : semester.Trim();
+
+            // Handle Profile Photo Upload / Removal
+            if (removePhoto)
+            {
+                user.AvatarUrl = null;
+            }
+            else if (avatarFile != null && avatarFile.Length > 0)
+            {
+                try
+                {
+                    var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    var uploadsDir = Path.Combine(webRoot, "uploads", "avatars");
+                    if (!Directory.Exists(uploadsDir))
+                    {
+                        Directory.CreateDirectory(uploadsDir);
+                    }
+
+                    var ext = Path.GetExtension(avatarFile.FileName).ToLowerInvariant();
+                    if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+                    var fileName = $"{user.Id}_{DateTime.UtcNow.Ticks}{ext}";
+                    var filePath = Path.Combine(uploadsDir, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await avatarFile.CopyToAsync(stream);
+                    }
+
+                    user.AvatarUrl = $"/uploads/avatars/{fileName}";
+                }
+                catch
+                {
+                    // Fallback to base64 if needed
+                }
+            }
+            else if (!string.IsNullOrEmpty(avatarBase64) && avatarBase64.StartsWith("data:image"))
+            {
+                try
+                {
+                    var webRoot = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    var uploadsDir = Path.Combine(webRoot, "uploads", "avatars");
+                    if (!Directory.Exists(uploadsDir))
+                    {
+                        Directory.CreateDirectory(uploadsDir);
+                    }
+
+                    var commaIdx = avatarBase64.IndexOf(',');
+                    var rawBase64 = commaIdx > 0 ? avatarBase64.Substring(commaIdx + 1) : avatarBase64;
+                    var bytes = Convert.FromBase64String(rawBase64);
+                    var fileName = $"{user.Id}_{DateTime.UtcNow.Ticks}.png";
+                    var filePath = Path.Combine(uploadsDir, fileName);
+                    await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+                    user.AvatarUrl = $"/uploads/avatars/{fileName}";
+                }
+                catch
+                {
+                    user.AvatarUrl = avatarBase64;
+                }
+            }
 
             await _userRepo.UpdateUserAsync(user);
+
+            // Re-sign in user cookie with updated profile claims
+            try
+            {
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, user.Id),
+                    new(ClaimTypes.Name, user.FullName),
+                    new(ClaimTypes.Email, user.Email),
+                    new(ClaimTypes.Role, user.Role),
+                    new("HostelName", user.HostelName ?? "Hostel D"),
+                    new("RoomNumber", user.RoomNumber ?? "304"),
+                    new("RewardBalance", user.RewardBalance.ToString("F2")),
+                    new("IsActiveRunner", user.IsActiveRunner.ToString()),
+                    new("AvatarUrl", user.AvatarUrl ?? "")
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    new AuthenticationProperties { IsPersistent = true, ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7) });
+            }
+            catch
+            {
+                // Ignore if sign in context not available
+            }
 
             TempData["SuccessMessage"] = "Profile details updated successfully!";
             return RedirectToAction(nameof(Profile));

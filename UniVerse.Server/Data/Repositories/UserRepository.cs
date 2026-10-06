@@ -16,6 +16,8 @@ namespace UniVerse.Server.Data.Repositories
         private readonly AdoNetDbHelper _db;
         private readonly ILogger<UserRepository> _logger;
 
+        private const string UserSelectFields = @"id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at, avatar_url, department, semester";
+
         public UserRepository(AdoNetDbHelper db, ILogger<UserRepository> logger)
         {
             _db = db;
@@ -24,8 +26,8 @@ namespace UniVerse.Server.Data.Repositories
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            const string sql = @"
-SELECT id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at
+            string sql = $@"
+SELECT {UserSelectFields}
 FROM users
 WHERE LOWER(email) = LOWER(@email);";
 
@@ -35,8 +37,8 @@ WHERE LOWER(email) = LOWER(@email);";
 
         public async Task<User?> GetByIdAsync(string id)
         {
-            const string sql = @"
-SELECT id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at
+            string sql = $@"
+SELECT {UserSelectFields}
 FROM users
 WHERE id = @id;";
 
@@ -46,8 +48,8 @@ WHERE id = @id;";
 
         public async Task<List<User>> GetAllUsersAsync()
         {
-            const string sql = @"
-SELECT id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at
+            string sql = $@"
+SELECT {UserSelectFields}
 FROM users
 ORDER BY created_at ASC;";
 
@@ -56,8 +58,8 @@ ORDER BY created_at ASC;";
 
         public async Task<List<User>> GetActiveRunnersAsync()
         {
-            const string sql = @"
-SELECT id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at
+            string sql = $@"
+SELECT {UserSelectFields}
 FROM users
 WHERE role = 'runner' AND is_active_runner = 1
 ORDER BY full_name ASC;";
@@ -68,8 +70,8 @@ ORDER BY full_name ASC;";
         public async Task<int> CreateUserAsync(User user)
         {
             const string sql = @"
-INSERT INTO users (id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at)
-VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, @role, @hostel_name, @room_number, @phone_number, @is_active_runner, @reward_balance, @created_at, @updated_at);";
+INSERT INTO users (id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, is_active_runner, reward_balance, created_at, updated_at, avatar_url, department, semester)
+VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, @role, @hostel_name, @room_number, @phone_number, @is_active_runner, @reward_balance, @created_at, @updated_at, @avatar_url, @department, @semester);";
 
             var parameters = new[]
             {
@@ -85,7 +87,10 @@ VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, @role, @hos
                 AdoNetDbHelper.CreateParameter("@is_active_runner", user.IsActiveRunner ? 1 : 0),
                 AdoNetDbHelper.CreateParameter("@reward_balance", user.RewardBalance),
                 AdoNetDbHelper.CreateParameter("@created_at", user.CreatedAt),
-                AdoNetDbHelper.CreateParameter("@updated_at", user.UpdatedAt)
+                AdoNetDbHelper.CreateParameter("@updated_at", user.UpdatedAt),
+                AdoNetDbHelper.CreateParameter("@avatar_url", (object?)user.AvatarUrl ?? DBNull.Value),
+                AdoNetDbHelper.CreateParameter("@department", (object?)user.Department ?? "Computer Science & Engineering"),
+                AdoNetDbHelper.CreateParameter("@semester", (object?)user.Semester ?? "Semester 6")
             };
 
             return await _db.ExecuteNonQueryAsync(sql, parameters);
@@ -129,10 +134,14 @@ WHERE id = @id;";
         {
             const string sql = @"
 UPDATE users
-SET full_name = @full_name,
+SET email = @email,
+    full_name = @full_name,
     hostel_name = @hostel_name,
     room_number = @room_number,
     phone_number = @phone_number,
+    department = @department,
+    semester = @semester,
+    avatar_url = @avatar_url,
     role = @role,
     updated_at = @updated_at
 WHERE id = @id;";
@@ -140,10 +149,14 @@ WHERE id = @id;";
             var parameters = new[]
             {
                 AdoNetDbHelper.CreateParameter("@id", user.Id),
+                AdoNetDbHelper.CreateParameter("@email", user.Email.Trim().ToLowerInvariant()),
                 AdoNetDbHelper.CreateParameter("@full_name", user.FullName.Trim()),
                 AdoNetDbHelper.CreateParameter("@hostel_name", user.HostelName?.Trim()),
                 AdoNetDbHelper.CreateParameter("@room_number", user.RoomNumber?.Trim()),
                 AdoNetDbHelper.CreateParameter("@phone_number", user.PhoneNumber?.Trim()),
+                AdoNetDbHelper.CreateParameter("@department", (object?)user.Department ?? "Computer Science & Engineering"),
+                AdoNetDbHelper.CreateParameter("@semester", (object?)user.Semester ?? "Semester 6"),
+                AdoNetDbHelper.CreateParameter("@avatar_url", (object?)user.AvatarUrl ?? DBNull.Value),
                 AdoNetDbHelper.CreateParameter("@role", user.Role.ToLowerInvariant()),
                 AdoNetDbHelper.CreateParameter("@updated_at", DateTime.UtcNow.ToString("o"))
             };
@@ -167,7 +180,10 @@ WHERE id = @id;";
                 IsActiveRunner = reader.GetInt32(9) == 1,
                 RewardBalance = reader.GetDouble(10),
                 CreatedAt = reader.GetString(11),
-                UpdatedAt = reader.GetString(12)
+                UpdatedAt = reader.GetString(12),
+                AvatarUrl = reader.FieldCount > 13 && !reader.IsDBNull(13) ? reader.GetString(13) : null,
+                Department = reader.FieldCount > 14 && !reader.IsDBNull(14) ? reader.GetString(14) : "Computer Science & Engineering",
+                Semester = reader.FieldCount > 15 && !reader.IsDBNull(15) ? reader.GetString(15) : "Semester 6"
             };
         }
     }
