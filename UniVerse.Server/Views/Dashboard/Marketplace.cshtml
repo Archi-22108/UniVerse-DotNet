@@ -1,13 +1,77 @@
 @model UniVerse.Server.Models.ViewModels.MarketplacePageViewModel
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Marketplace";
+    ViewData["Title"] = "UniVerse Resale · Campus Marketplace";
     ViewBag.ActivePage = "marketplace";
+
+    var categories = new[]
+    {
+        new { Id = "all", Label = "All Items", Icon = "✨" },
+        new { Id = "books", Label = "Books", Icon = "📚" },
+        new { Id = "electronics", Label = "Electronics", Icon = "💻" },
+        new { Id = "study_materials", Label = "Study Notes", Icon = "📝" },
+        new { Id = "hostel", Label = "Hostel Life", Icon = "🛏️" },
+        new { Id = "sports", Label = "Sports", Icon = "⚽" },
+        new { Id = "furniture", Label = "Furniture", Icon = "🪑" },
+        new { Id = "clothing", Label = "Clothing", Icon = "👕" },
+        new { Id = "gaming", Label = "Gaming", Icon = "🎮" },
+        new { Id = "other", Label = "Other", Icon = "✨" }
+    };
+
+    bool hasActiveFilters = !string.IsNullOrWhiteSpace(Model.SearchQuery) || 
+                            (!string.IsNullOrWhiteSpace(Model.SelectedCategory) && Model.SelectedCategory != "all") ||
+                            !string.IsNullOrWhiteSpace(Model.SelectedCondition) ||
+                            Model.MinPrice.HasValue ||
+                            Model.MaxPrice.HasValue ||
+                            Model.SortOption != "newest";
 }
 
 @section Styles {
 <style>
-    .uv-market-header {
+    /* UniVerse Resale Stardust & Nebula Background */
+    .uv-resale-container {
+        position: relative;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding-bottom: 48px;
+    }
+
+    .uv-resale-ambient-grid {
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(rgba(16, 185, 129, 0.07) 1px, transparent 1px);
+        background-size: 24px 24px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.65;
+    }
+
+    /* Breadcrumbs */
+    .uv-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    .uv-breadcrumb a {
+        color: rgba(167, 184, 176, 0.6);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .uv-breadcrumb a:hover {
+        color: #A7B8B0;
+    }
+    .uv-breadcrumb-sep {
+        color: rgba(167, 184, 176, 0.3);
+    }
+    .uv-breadcrumb-curr {
+        color: var(--accent-green);
+        font-weight: 700;
+    }
+
+    /* Page Header */
+    .uv-resale-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -16,221 +80,1043 @@
         margin-bottom: 24px;
     }
 
-    .uv-cat-chips {
+    .uv-resale-title-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+    .uv-resale-icon-badge {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #00E676 0%, #14b8a6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #03140a;
+        font-size: 20px;
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.35);
+        flex-shrink: 0;
+    }
+
+    .uv-resale-title {
+        font-family: var(--font-heading);
+        font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        letter-spacing: -0.02em;
+    }
+
+    .uv-resale-pill-tag {
+        font-size: 10.5px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        background: rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: var(--accent-green);
+        font-family: var(--font-mono);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .uv-resale-sub {
+        color: rgba(167, 184, 176, 0.75);
+        font-size: 13.5px;
+        margin: 0;
+        padding-left: 54px;
+    }
+
+    @@media (max-width: 640px) {
+        .uv-resale-sub { padding-left: 0; }
+    }
+
+    /* Header Actions */
+    .uv-resale-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .uv-resale-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: 12px;
+        background: rgba(12, 20, 16, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        backdrop-filter: blur(12px);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .uv-resale-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+
+    .uv-resale-btn-sell {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #10B981 0%, #34D399 50%, #2dd4bf 100%);
+        border: none;
+        color: #022c22;
+        font-size: 13.5px;
+        font-weight: 900;
+        text-decoration: none;
+        box-shadow: 0 0 24px rgba(16, 185, 129, 0.4);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .uv-resale-btn-sell:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 32px rgba(16, 185, 129, 0.6);
+        color: #022c22;
+    }
+
+    /* Search Bar */
+    .uv-resale-search-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: rgba(12, 20, 16, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(14px);
+        padding: 4px 16px;
+        margin-bottom: 18px;
+        transition: all 0.25s;
+    }
+    .uv-resale-search-bar:focus-within {
+        border-color: rgba(16, 185, 129, 0.5);
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.18);
+    }
+    .uv-resale-search-bar i.bi-search {
+        color: var(--accent-green);
+        font-size: 16px;
+        margin-right: 12px;
+    }
+    .uv-resale-search-bar input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #fff;
+        font-size: 14px;
+        padding: 10px 0;
+    }
+    .uv-resale-search-bar input::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+    }
+    .uv-search-clear-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 6px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .uv-search-clear-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+
+    /* Category Chips Carousel */
+    .uv-resale-categories {
         display: flex;
         align-items: center;
         gap: 8px;
         overflow-x: auto;
-        padding-bottom: 8px;
-        margin-bottom: 24px;
+        padding-bottom: 6px;
+        margin-bottom: 22px;
+        scrollbar-width: none;
+    }
+    .uv-resale-categories::-webkit-scrollbar {
+        display: none;
     }
 
-    .uv-cat-pill {
+    .uv-resale-cat-chip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 8px 16px;
         border-radius: 9999px;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         text-decoration: none;
         white-space: nowrap;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        color: rgba(255, 255, 255, 0.7);
-        transition: all 0.2s;
+        color: rgba(167, 184, 176, 0.8);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+    .uv-resale-cat-chip:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+    .uv-resale-cat-chip.active {
+        background: rgba(0, 230, 118, 0.15);
+        border-color: rgba(0, 230, 118, 0.4);
+        color: var(--accent-green);
+        box-shadow: 0 0 16px rgba(0, 230, 118, 0.2);
     }
 
-    .uv-cat-pill:hover {
-        background: rgba(255, 255, 255, 0.08);
+    /* Filter & Sort Bar */
+    .uv-resale-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .uv-toggle-filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        background: rgba(10, 15, 12, 0.7);
+        border: 1px solid rgba(102, 255, 178, 0.12);
+        color: #A7B8B0;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .uv-toggle-filter-btn:hover {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #00E676;
+    }
+    .uv-toggle-filter-btn.active {
+        background: rgba(0, 230, 118, 0.12);
+        border-color: rgba(0, 230, 118, 0.4);
+        color: #00E676;
+    }
+    .uv-filter-badge-on {
+        background: #00E676;
+        color: #050A07;
+        font-size: 9.5px;
+        font-weight: 900;
+        padding: 1px 6px;
+        border-radius: 6px;
+    }
+
+    .uv-sort-select {
+        appearance: none;
+        background: rgba(10, 15, 12, 0.7);
+        border: 1px solid rgba(102, 255, 178, 0.12);
+        border-radius: 12px;
+        color: #A7B8B0;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 32px 8px 14px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .uv-sort-select:hover, .uv-sort-select:focus {
+        border-color: rgba(16, 185, 129, 0.4);
         color: #fff;
     }
 
-    .uv-cat-pill.active {
-        background: rgba(0, 230, 118, 0.15);
-        border-color: rgba(0, 230, 118, 0.35);
-        color: var(--accent-green);
-        font-weight: 700;
+    .uv-sort-wrapper {
+        position: relative;
+        margin-left: auto;
+    }
+    .uv-sort-wrapper i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: rgba(167, 184, 176, 0.6);
+        font-size: 12px;
     }
 
-    .uv-items-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
+    .uv-listings-count {
+        color: rgba(167, 184, 176, 0.6);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: var(--font-mono);
     }
 
-    .uv-item-card {
-        background: rgba(10, 16, 13, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Advanced Filters Collapsible Box */
+    .uv-advanced-filters-panel {
+        background: rgba(10, 15, 12, 0.85);
+        border: 1px solid rgba(102, 255, 178, 0.14);
         border-radius: 20px;
-        overflow: hidden;
+        padding: 20px;
+        margin-bottom: 28px;
         backdrop-filter: blur(16px);
-        transition: all 0.25s ease;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
+    .uv-filter-group {
         display: flex;
         flex-direction: column;
+        gap: 6px;
+    }
+    .uv-filter-label {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        color: rgba(167, 184, 176, 0.6);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .uv-filter-input, .uv-filter-dropdown {
+        background: rgba(13, 19, 16, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #fff;
+        padding: 9px 12px;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s;
+    }
+    .uv-filter-input:focus, .uv-filter-dropdown:focus {
+        border-color: rgba(16, 185, 129, 0.5);
     }
 
-    .uv-item-card:hover {
-        border-color: rgba(16, 185, 129, 0.4);
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+    /* ─── Premium Resale Listing Card (Matching ResaleListingCard.tsx) ─── */
+    .uv-resale-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 22px;
     }
 
-    .uv-item-thumb {
-        height: 160px;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    .uv-resale-card {
+        background: rgba(10, 15, 12, 0.65);
+        border: 1px solid rgba(102, 255, 178, 0.08);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        backdrop-filter: blur(16px);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s;
+        text-decoration: none;
+    }
+    .uv-resale-card:hover {
+        transform: translateY(-4px) scale(1.015);
+        border-color: rgba(0, 230, 118, 0.35);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), 0 0 20px rgba(16, 185, 129, 0.12);
+    }
+
+    /* 4:3 Image Area */
+    .uv-resale-card-media {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: rgba(5, 10, 7, 0.85);
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .uv-resale-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .uv-resale-card:hover .uv-resale-card-img {
+        transform: scale(1.06);
+    }
+
+    /* Fallback image container */
+    .uv-resale-card-media-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 20, 12, 0.9) 100%);
+    }
+
+    /* Top Left Overlay Badges */
+    .uv-card-badge-left {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        z-index: 2;
+    }
+    .uv-badge-new {
+        background: #00E676;
+        color: #050A07;
+        font-size: 10px;
+        font-weight: 900;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .uv-badge-discount {
+        background: rgba(239, 68, 68, 0.9);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.02em;
+    }
+
+    /* Top Right Condition & Favorite Overlay */
+    .uv-card-badge-right {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 2;
+    }
+    .uv-card-fav-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(10, 15, 12, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        transition: all 0.2s;
+    }
+    .uv-card-fav-btn:hover {
+        color: #f87171;
+        border-color: rgba(248, 113, 113, 0.4);
+        background: rgba(248, 113, 113, 0.15);
+        transform: scale(1.1);
+    }
+    .uv-card-fav-btn.favorited {
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.5);
+        background: rgba(239, 68, 68, 0.2);
     }
 
-    .uv-item-badge {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: #fff;
-        padding: 3px 8px;
-        border-radius: 9999px;
+    .uv-badge-condition {
         font-size: 10.5px;
+        font-weight: 800;
+        padding: 4px 9px;
+        border-radius: 8px;
+        backdrop-filter: blur(8px);
+        display: inline-flex;
+        align-items: center;
+        height: 32px;
+        box-sizing: border-box;
+    }
+    .uv-badge-condition.cond-new {
+        background: rgba(0, 230, 118, 0.15);
+        color: #00E676;
+        border: 1px solid rgba(0, 230, 118, 0.4);
+    }
+    .uv-badge-condition.cond-like-new {
+        background: rgba(52, 211, 153, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+    .uv-badge-condition.cond-good {
+        background: rgba(96, 165, 250, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(96, 165, 250, 0.4);
+    }
+    .uv-badge-condition.cond-fair {
+        background: rgba(167, 184, 176, 0.15);
+        color: #A7B8B0;
+        border: 1px solid rgba(167, 184, 176, 0.3);
+    }
+
+    /* Card Content Area */
+    .uv-resale-card-body {
+        padding: 16px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        gap: 8px;
+    }
+
+    .uv-resale-card-title {
+        color: #fff;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1.35;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.2s;
+    }
+    .uv-resale-card:hover .uv-resale-card-title {
+        color: #6ee7b7;
+    }
+
+    .uv-resale-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .uv-resale-price {
+        color: #00E676;
+        font-size: 1.3rem;
+        font-weight: 900;
+        font-family: var(--font-heading);
+        letter-spacing: -0.02em;
+    }
+    .uv-resale-orig-price {
+        color: rgba(167, 184, 176, 0.5);
+        font-size: 12.5px;
+        text-decoration: line-through;
         font-family: var(--font-mono);
+    }
+    .uv-resale-negotiable-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #A7B8B0;
+        font-size: 11px;
         font-weight: 700;
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 2px 8px;
+        border-radius: 6px;
+    }
+
+    .uv-resale-desc {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12.5px;
+        line-height: 1.45;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Meta Divider & Details */
+    .uv-resale-card-meta {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid rgba(102, 255, 178, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .uv-resale-seller-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11.5px;
+    }
+    .uv-resale-verified-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #fbbf24;
+        font-weight: 700;
+        font-family: var(--font-mono);
+    }
+
+    .uv-resale-loc-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        color: rgba(167, 184, 176, 0.75);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Action Buttons in Card */
+    .uv-resale-card-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .uv-btn-card-details {
+        flex: 1;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 14px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .uv-btn-card-details:hover {
+        background: rgba(0, 230, 118, 0.15);
+        border-color: rgba(0, 230, 118, 0.4);
+        color: #00E676;
+    }
+    .uv-btn-card-chat {
+        background: rgba(0, 230, 118, 0.12);
+        border: 1px solid rgba(0, 230, 118, 0.25);
+        color: var(--accent-green);
+        padding: 9px 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .uv-btn-card-chat:hover {
+        background: rgba(0, 230, 118, 0.25);
+        color: #fff;
+        transform: scale(1.05);
     }
 </style>
 }
 
-<div style="max-w: 1200px; margin: 0 auto;">
-    <!-- Page Header -->
-    <div class="uv-market-header">
+<div class="uv-resale-ambient-grid"></div>
+
+<div class="uv-resale-container">
+    <!-- Breadcrumb -->
+    <div class="uv-breadcrumb">
+        <a href="/Dashboard">Dashboard</a>
+        <span class="uv-breadcrumb-sep">/</span>
+        <span class="uv-breadcrumb-curr">UniVerse Resale</span>
+    </div>
+
+    <!-- Page Header (Matching Next.js ResaleMarketplace Header) -->
+    <div class="uv-resale-header">
         <div>
-            <h1 style="font-family: var(--font-heading); font-size: clamp(1.8rem, 3vw, 2.3rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                <span>Marketplace</span>
-                <span style="color: var(--accent-green); font-size: 22px;">✦</span>
-            </h1>
-            <p style="color: var(--text-muted); font-size: 13.5px; margin: 4px 0 0 0;">
-                Buy and sell second-hand academic books, drafters, electronics & hostel essentials.
+            <div class="uv-resale-title-box">
+                <div class="uv-resale-icon-badge">
+                    <i class="bi bi-bag-fill"></i>
+                </div>
+                <h1 class="uv-resale-title">
+                    <span>UniVerse Resale</span>
+                    <span class="uv-resale-pill-tag">Campus Marketplace</span>
+                </h1>
+            </div>
+            <p class="uv-resale-sub">
+                Buy and sell textbooks, electronics, and hostel essentials within your university.
             </p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <form method="get" action="/Dashboard/Marketplace" class="uv-search-box" style="min-width: 240px;">
-                <input type="hidden" name="category" value="@Model.SelectedCategory" />
-                <i class="bi bi-search"></i>
-                <input type="text" name="q" value="@Model.SearchQuery" placeholder="Search campus resale..." />
-            </form>
-
-            <a href="/Marketplace/Create" class="btn-new-request">
-                <i class="bi bi-plus-lg"></i>
-                <span>Sell Item</span>
+        <div class="uv-resale-actions">
+            <a href="/Dashboard/Marketplace?filter=my" class="uv-resale-btn-secondary" title="View your listings">
+                <i class="bi bi-box-seam text-success"></i>
+                <span>My Listings</span>
+            </a>
+            <a href="/Dashboard/Marketplace?filter=saved" class="uv-resale-btn-secondary" id="savedFilterBtn" title="View saved listings">
+                <i class="bi bi-heart text-danger"></i>
+                <span>Saved</span>
+            </a>
+            <a href="/Marketplace/Create" class="uv-resale-btn-sell">
+                <i class="bi bi-plus-lg" style="stroke-width: 2;"></i>
+                <span>Sell an Item</span>
             </a>
         </div>
     </div>
 
-    <!-- Category Pills -->
-    <div class="uv-cat-chips">
-        <a href="/Dashboard/Marketplace?category=all" class="uv-cat-pill @(Model.SelectedCategory == "all" ? "active" : "")">
-            <span>✨ All Categories</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=books" class="uv-cat-pill @(Model.SelectedCategory == "books" ? "active" : "")">
-            <span>📚 Books</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=electronics" class="uv-cat-pill @(Model.SelectedCategory == "electronics" ? "active" : "")">
-            <span>💻 Electronics</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=study_materials" class="uv-cat-pill @(Model.SelectedCategory == "study_materials" ? "active" : "")">
-            <span>📝 Study Notes</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=hostel" class="uv-cat-pill @(Model.SelectedCategory == "hostel" ? "active" : "")">
-            <span>🛏️ Hostel Life</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=sports" class="uv-cat-pill @(Model.SelectedCategory == "sports" ? "active" : "")">
-            <span>⚽ Sports</span>
-        </a>
-        <a href="/Dashboard/Marketplace?category=gaming" class="uv-cat-pill @(Model.SelectedCategory == "gaming" ? "active" : "")">
-            <span>🎮 Gaming</span>
-        </a>
-    </div>
+    <!-- Search Bar with Live Filter Support -->
+    <form id="marketplaceFilterForm" method="get" action="/Dashboard/Marketplace">
+        <input type="hidden" name="category" id="hiddenCategoryInput" value="@Model.SelectedCategory" />
+        <input type="hidden" name="sort" id="hiddenSortInput" value="@Model.SortOption" />
+        <input type="hidden" name="condition" id="hiddenConditionInput" value="@Model.SelectedCondition" />
+        @if (!string.IsNullOrEmpty(Model.ActiveFilter))
+        {
+            <input type="hidden" name="filter" value="@Model.ActiveFilter" />
+        }
 
-    <!-- Listings Grid -->
+        <div class="uv-resale-search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text"
+                   name="q"
+                   id="marketplaceSearchInput"
+                   value="@Model.SearchQuery"
+                   placeholder="Search books, electronics, drafters, kettles, bicycles and more..."
+                   autocomplete="off" />
+            @if (!string.IsNullOrEmpty(Model.SearchQuery))
+            {
+                <button type="button" class="uv-search-clear-btn" onclick="clearSearch()" title="Clear search">
+                    <i class="bi bi-x"></i>
+                </button>
+            }
+        </div>
+
+        <!-- Category Pills (Horizontal Chips) -->
+        <div class="uv-resale-categories" role="tablist">
+            @foreach (var cat in categories)
+            {
+                var isCatActive = (string.IsNullOrEmpty(Model.SelectedCategory) && cat.Id == "all") ||
+                                  Model.SelectedCategory.Equals(cat.Id, StringComparison.OrdinalIgnoreCase);
+
+                <button type="button"
+                        onclick="selectCategory('@cat.Id')"
+                        class="uv-resale-cat-chip @(isCatActive ? "active" : "")">
+                    <span>@cat.Icon</span>
+                    <span>@cat.Label</span>
+                </button>
+            }
+        </div>
+
+        <!-- Filter / Sort Toolbar -->
+        <div class="uv-resale-toolbar">
+            <button type="button"
+                    id="toggleFilterBtn"
+                    onclick="toggleFiltersPanel()"
+                    class="uv-toggle-filter-btn @(hasActiveFilters ? "active" : "")">
+                <i class="bi bi-sliders"></i>
+                <span>Filters</span>
+                @if (hasActiveFilters)
+                {
+                    <span class="uv-filter-badge-on">ON</span>
+                }
+            </button>
+
+            <!-- Sort Dropdown -->
+            <div class="uv-sort-wrapper">
+                <select name="sort" class="uv-sort-select" onchange="submitFilters()">
+                    <option value="newest" selected="@(Model.SortOption == "newest")">Newest</option>
+                    <option value="oldest" selected="@(Model.SortOption == "oldest")">Oldest</option>
+                    <option value="price_low_to_high" selected="@(Model.SortOption == "price_low_to_high")">Price: Low to High</option>
+                    <option value="price_high_to_low" selected="@(Model.SortOption == "price_high_to_low")">Price: High to Low</option>
+                </select>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+
+            <span class="uv-listings-count">
+                @Model.Listings.Count listing@(Model.Listings.Count != 1 ? "s" : "")
+            </span>
+        </div>
+
+        <!-- Advanced Filters Collapsible Panel -->
+        <div id="advancedFiltersPanel" class="uv-advanced-filters-panel" style="@(hasActiveFilters ? "display: grid;" : "display: none;")">
+            <div class="uv-filter-group">
+                <label class="uv-filter-label">Condition</label>
+                <select name="condition" class="uv-filter-dropdown" onchange="submitFilters()">
+                    <option value="">All Conditions</option>
+                    <option value="new" selected="@(Model.SelectedCondition == "new")">New</option>
+                    <option value="like_new" selected="@(Model.SelectedCondition == "like_new")">Like New</option>
+                    <option value="good" selected="@(Model.SelectedCondition == "good")">Good</option>
+                    <option value="fair" selected="@(Model.SelectedCondition == "fair")">Fair</option>
+                </select>
+            </div>
+
+            <div class="uv-filter-group">
+                <label class="uv-filter-label">Min Price (₹)</label>
+                <input type="number"
+                       name="minPrice"
+                       value="@(Model.MinPrice.HasValue ? Model.MinPrice.Value.ToString() : "")"
+                       placeholder="0"
+                       min="0"
+                       class="uv-filter-input"
+                       onchange="submitFilters()" />
+            </div>
+
+            <div class="uv-filter-group">
+                <label class="uv-filter-label">Max Price (₹)</label>
+                <input type="number"
+                       name="maxPrice"
+                       value="@(Model.MaxPrice.HasValue ? Model.MaxPrice.Value.ToString() : "")"
+                       placeholder="Any"
+                       min="0"
+                       class="uv-filter-input"
+                       onchange="submitFilters()" />
+            </div>
+
+            @if (hasActiveFilters)
+            {
+                <div class="uv-filter-group" style="justify-content: flex-end;">
+                    <a href="/Dashboard/Marketplace" class="uv-resale-btn-secondary" style="border-color: rgba(239, 68, 68, 0.35); color: #f87171; justify-content: center;">
+                        <i class="bi bi-x-circle me-1"></i> Clear All
+                    </a>
+                </div>
+            }
+        </div>
+    </form>
+
+    <!-- ─── Listings Grid (Using ResaleListingCard Design) ─── -->
     @if (Model.Listings.Count == 0)
     {
-        <div style="text-align: center; padding: 64px 20px; background: rgba(10, 16, 13, 0.5); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 24px;">
-            <i class="bi bi-bag-x" style="font-size: 40px; color: rgba(255, 255, 255, 0.3); display: block; margin-bottom: 12px;"></i>
-            <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">No listings in this category</h3>
-            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;">
-                Be the first to list an item for fellow Marwadi University students!
+        <!-- Empty State (Matching ResaleEmptyState) -->
+        <div style="text-align: center; padding: 64px 24px; background: rgba(10, 15, 12, 0.7); border: 1px dashed rgba(16, 185, 129, 0.25); border-radius: 24px; margin-top: 16px;">
+            <div style="width: 68px; height: 68px; border-radius: 20px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 30px; margin: 0 auto 16px auto;">
+                <i class="bi bi-search"></i>
+            </div>
+            <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 6px;">No listings found matching your search</h3>
+            <p style="color: rgba(167, 184, 176, 0.7); font-size: 13.5px; max-width: 480px; margin: 0 auto 20px auto; line-height: 1.5;">
+                Try searching for another keyword, adjusting price filters, or be the first to list this item!
             </p>
-            <a href="/Marketplace/Create" class="btn-new-request" style="display: inline-flex;">
-                <i class="bi bi-plus-lg"></i>
-                <span>Post Free Listing</span>
-            </a>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="/Dashboard/Marketplace" class="uv-resale-btn-secondary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+                </a>
+                <a href="/Marketplace/Create" class="uv-resale-btn-sell">
+                    <i class="bi bi-plus-lg"></i> Post Free Listing
+                </a>
+            </div>
         </div>
     }
     else
     {
-        <div class="uv-items-grid">
+        <div class="uv-resale-grid">
             @foreach (var item in Model.Listings)
             {
-                <div class="uv-item-card">
-                    <div class="uv-item-thumb">
-                        <span class="uv-item-badge">@item.Condition</span>
-                        <div style="font-size: 42px; opacity: 0.85;">
-                            @(item.Category.ToLower() switch {
-                                "books" => "📚",
-                                "electronics" => "💻",
-                                "study_materials" => "📝",
-                                "sports" => "🏸",
-                                "hostel" => "🛏️",
-                                _ => "📦"
-                            })
-                        </div>
-                    </div>
+                // Discount calculation
+                int? discountPct = null;
+                if (item.OriginalPrice.HasValue && item.OriginalPrice > item.Price)
+                {
+                    discountPct = (int)Math.Round(((item.OriginalPrice.Value - item.Price) / item.OriginalPrice.Value) * 100);
+                }
 
-                    <div style="padding: 18px; flex: 1; display: flex; flex-direction: column;">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
-                            <div style="display: flex; align-items: baseline; gap: 6px;">
-                                <span style="font-family: var(--font-heading); font-size: 22px; font-weight: 900; color: var(--accent-green);">
-                                    ₹@item.Price.ToString("F0")
-                                </span>
-                                @if (item.OriginalPrice.HasValue && item.OriginalPrice > item.Price)
-                                {
-                                    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.4); text-decoration: line-through;">
-                                        ₹@item.OriginalPrice.Value.ToString("F0")
-                                    </span>
-                                }
-                            </div>
-                            <span style="font-size: 10.5px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">
-                                @item.Category
+                // Condition style class
+                string condClass = (item.Condition?.ToLowerInvariant()) switch
+                {
+                    "new" => "cond-new",
+                    "like new" or "like_new" => "cond-like-new",
+                    "good" => "cond-good",
+                    _ => "cond-fair"
+                };
+
+                // Fallback photo if null or empty
+                string cardImgUrl = !string.IsNullOrWhiteSpace(item.ImageUrl)
+                    ? item.ImageUrl
+                    : (item.Category?.ToLowerInvariant()) switch
+                    {
+                        "books" => "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600",
+                        "electronics" => "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=600",
+                        _ => "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600"
+                    };
+
+                <article class="uv-resale-card" data-listing-id="@item.Id">
+                    <!-- 4:3 Aspect Ratio Photo Area -->
+                    <div class="uv-resale-card-media">
+                        <!-- Top Left Badges -->
+                        <div class="uv-card-badge-left">
+                            <span class="uv-badge-new">NEW</span>
+                            @if (discountPct.HasValue && discountPct > 0)
+                            {
+                                <span class="uv-badge-discount">@discountPct% OFF</span>
+                            }
+                        </div>
+
+                        <!-- Top Right Badges: Favorite & Condition -->
+                        <div class="uv-card-badge-right">
+                            <button type="button"
+                                    class="uv-card-fav-btn"
+                                    onclick="toggleFavoriteListing('@item.Id', this, event)"
+                                    title="Save to favorites">
+                                <i class="bi bi-heart"></i>
+                            </button>
+                            <span class="uv-badge-condition @condClass">
+                                @item.Condition
                             </span>
                         </div>
 
-                        <h3 style="font-size: 15px; font-weight: 800; color: #fff; margin: 0 0 6px 0; line-height: 1.3;">
+                        <!-- Real Photo with Fallback -->
+                        <img src="@cardImgUrl"
+                             alt="@item.Title"
+                             class="uv-resale-card-img"
+                             loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                        <div class="uv-resale-card-media-fallback" style="display: none;">
+                            <i class="bi bi-tag text-success" style="font-size: 36px; opacity: 0.6;"></i>
+                            <span style="font-size: 11px; color: rgba(167, 184, 176, 0.6); font-family: var(--font-mono);">UniVerse Resale</span>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="uv-resale-card-body">
+                        <!-- Title (2 Lines clamped) -->
+                        <h3 class="uv-resale-card-title" title="@item.Title">
                             @item.Title
                         </h3>
 
-                        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 14px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                            @(string.IsNullOrEmpty(item.Description) ? "Quality verified student listing on campus." : item.Description)
-                        </p>
-
-                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: rgba(255, 255, 255, 0.5); margin-bottom: 14px;">
-                            <i class="bi bi-geo-alt text-warning"></i>
-                            <span>@item.PickupLocation</span>
+                        <!-- Price Row -->
+                        <div class="uv-resale-price-row">
+                            <span class="uv-resale-price">
+                                ₹@item.Price.ToString("F0")
+                            </span>
+                            @if (item.OriginalPrice.HasValue && item.OriginalPrice > item.Price)
+                            {
+                                <span class="uv-resale-orig-price">
+                                    ₹@item.OriginalPrice.Value.ToString("F0")
+                                </span>
+                            }
+                            @if (item.Negotiable)
+                            {
+                                <span class="uv-resale-negotiable-badge" title="Price is open for negotiation">
+                                    <i class="bi bi-cash-stack"></i> Negotiable
+                                </span>
+                            }
                         </div>
 
-                        <div style="display: flex; gap: 8px; margin-top: auto;">
-                            <a href="/Marketplace/Details/@item.Id" style="flex: 1; text-align: center; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; font-weight: 700; font-size: 12.5px; padding: 9px; border-radius: 12px; text-decoration: none; transition: all 0.2s;">
+                        <!-- Description Snippet -->
+                        <p class="uv-resale-desc">
+                            @(string.IsNullOrWhiteSpace(item.Description) ? "Student resale listing on campus." : item.Description)
+                        </p>
+
+                        <!-- Meta Info Row -->
+                        <div class="uv-resale-card-meta">
+                            <div class="uv-resale-seller-row">
+                                <span class="uv-resale-verified-tag">
+                                    <i class="bi bi-patch-check-fill text-warning"></i>
+                                    <span>Verified Student · @(string.IsNullOrWhiteSpace(item.SellerName) ? "Hostel Resident" : item.SellerName)</span>
+                                </span>
+                            </div>
+
+                            <div class="uv-resale-loc-row" title="@item.PickupLocation">
+                                <i class="bi bi-geo-alt text-warning"></i>
+                                <span>@(string.IsNullOrWhiteSpace(item.PickupLocation) ? "Marwadi Campus" : item.PickupLocation)</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Footer -->
+                        <div class="uv-resale-card-footer">
+                            <a href="/Marketplace/Details/@item.Id" class="uv-btn-card-details">
                                 View Details
                             </a>
-                            <a href="/Dashboard/Chat" style="background: rgba(0, 230, 118, 0.12); border: 1px solid rgba(0, 230, 118, 0.25); color: var(--accent-green); padding: 9px 14px; border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;" title="Message Seller">
-                                <i class="bi bi-chat-dots"></i>
+                            <a href="/Dashboard/Chat" class="uv-btn-card-chat" title="Chat with seller">
+                                <i class="bi bi-chat-dots-fill"></i>
                             </a>
                         </div>
                     </div>
-                </div>
+                </article>
             }
         </div>
     }
 </div>
+
+@section Scripts {
+<script>
+    // Category pill click handler
+    function selectCategory(catId) {
+        document.getElementById('hiddenCategoryInput').value = catId;
+        submitFilters();
+    }
+
+    // Toggle advanced filters panel
+    function toggleFiltersPanel() {
+        const panel = document.getElementById('advancedFiltersPanel');
+        const btn = document.getElementById('toggleFilterBtn');
+        if (!panel) return;
+        const isHidden = panel.style.display === 'none' || panel.style.display === '';
+        panel.style.display = isHidden ? 'grid' : 'none';
+        btn.classList.toggle('active', isHidden);
+    }
+
+    // Clear search
+    function clearSearch() {
+        const input = document.getElementById('marketplaceSearchInput');
+        if (input) input.value = '';
+        submitFilters();
+    }
+
+    // Submit filter form
+    function submitFilters() {
+        const form = document.getElementById('marketplaceFilterForm');
+        if (form) form.submit();
+    }
+
+    // Interactive Favorites / Wishlist in LocalStorage
+    const FAV_STORAGE_KEY = 'universe_saved_resale_ids';
+
+    function getSavedListingIds() {
+        try {
+            const raw = localStorage.getItem(FAV_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function toggleFavoriteListing(listingId, btnEl, evt) {
+        if (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
+
+        let saved = getSavedListingIds();
+        const index = saved.indexOf(listingId);
+        let nowFavorited = false;
+
+        if (index > -1) {
+            saved.splice(index, 1);
+            btnEl.classList.remove('favorited');
+            const icon = btnEl.querySelector('i');
+            if (icon) {
+                icon.className = 'bi bi-heart';
+            }
+        } else {
+            saved.push(listingId);
+            nowFavorited = true;
+            btnEl.classList.add('favorited');
+            const icon = btnEl.querySelector('i');
+            if (icon) {
+                icon.className = 'bi bi-heart-fill text-danger';
+            }
+        }
+
+        try {
+            localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(saved));
+        } catch (e) {}
+
+        // Small pulse haptic animation
+        btnEl.style.transform = 'scale(1.25)';
+        setTimeout(() => { btnEl.style.transform = ''; }, 200);
+    }
+
+    // Restore favorited buttons on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const saved = getSavedListingIds();
+        if (saved.length > 0) {
+            document.querySelectorAll('.uv-resale-card').forEach(card => {
+                const id = card.getAttribute('data-listing-id');
+                if (id && saved.includes(id)) {
+                    const btn = card.querySelector('.uv-card-fav-btn');
+                    if (btn) {
+                        btn.classList.add('favorited');
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.className = 'bi bi-heart-fill text-danger';
+                    }
+                }
+            });
+        }
+    });
+</script>
+}

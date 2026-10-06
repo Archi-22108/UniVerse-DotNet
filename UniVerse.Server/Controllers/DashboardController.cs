@@ -292,21 +292,69 @@ namespace UniVerse.Server.Controllers
 
         // ─── 5. Marketplace ───────────────────────────────────────────────────
         [HttpGet]
-        public async Task<IActionResult> Marketplace(string? category = "all", string? q = null)
+        public async Task<IActionResult> Marketplace(
+            string? category = "all",
+            string? q = null,
+            string? condition = null,
+            string? sort = "newest",
+            double? minPrice = null,
+            double? maxPrice = null,
+            string? filter = null)
         {
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
-            var listings = await _marketRepo.GetListingsAsync(category == "all" ? null : category);
 
+            string? queryCat = (string.IsNullOrEmpty(category) || category.Equals("all", StringComparison.OrdinalIgnoreCase)) 
+                ? null 
+                : category;
+
+            var listings = await _marketRepo.GetListingsAsync(queryCat);
+
+            // Filter by search query
             if (!string.IsNullOrWhiteSpace(q))
             {
                 var query = q.Trim().ToLowerInvariant();
                 listings = listings.Where(l =>
                     l.Title.ToLowerInvariant().Contains(query) ||
                     l.PickupLocation.ToLowerInvariant().Contains(query) ||
+                    l.Category.ToLowerInvariant().Contains(query) ||
                     (l.Description != null && l.Description.ToLowerInvariant().Contains(query))
                 ).ToList();
             }
+
+            // Filter by condition
+            if (!string.IsNullOrWhiteSpace(condition) && !condition.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                var normCondition = condition.Trim().ToLowerInvariant().Replace("_", " ");
+                listings = listings.Where(l =>
+                    l.Condition.ToLowerInvariant().Replace("_", " ").Contains(normCondition)
+                ).ToList();
+            }
+
+            // Filter by price range
+            if (minPrice.HasValue && minPrice.Value > 0)
+            {
+                listings = listings.Where(l => l.Price >= minPrice.Value).ToList();
+            }
+            if (maxPrice.HasValue && maxPrice.Value > 0)
+            {
+                listings = listings.Where(l => l.Price <= maxPrice.Value).ToList();
+            }
+
+            // Filter by user context (my listings)
+            if (filter == "my")
+            {
+                listings = listings.Where(l => l.SellerId == user.Id).ToList();
+            }
+
+            // Sort options matching Next.js
+            listings = sort switch
+            {
+                "oldest" => listings.OrderBy(l => l.CreatedAt).ToList(),
+                "price_low_to_high" => listings.OrderBy(l => l.Price).ToList(),
+                "price_high_to_low" => listings.OrderByDescending(l => l.Price).ToList(),
+                _ => listings.OrderByDescending(l => l.CreatedAt).ToList() // newest default
+            };
 
             ViewBag.ActivePage = "marketplace";
             ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
@@ -316,7 +364,12 @@ namespace UniVerse.Server.Controllers
                 CurrentUser = user,
                 Listings = listings,
                 SelectedCategory = category ?? "all",
-                SearchQuery = q ?? string.Empty
+                SearchQuery = q ?? string.Empty,
+                SelectedCondition = condition ?? string.Empty,
+                SortOption = sort ?? "newest",
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                ActiveFilter = filter ?? string.Empty
             };
 
             return View(vm);

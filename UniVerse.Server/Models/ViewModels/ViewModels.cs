@@ -223,6 +223,11 @@ namespace UniVerse.Server.Models.ViewModels
         public List<MarketplaceListingDetailDto> Listings { get; set; } = new();
         public string SelectedCategory { get; set; } = "all";
         public string SearchQuery { get; set; } = string.Empty;
+        public string SelectedCondition { get; set; } = string.Empty;
+        public string SortOption { get; set; } = "newest";
+        public double? MinPrice { get; set; }
+        public double? MaxPrice { get; set; }
+        public string ActiveFilter { get; set; } = string.Empty;
     }
 
     // ─── Chat ViewModels ──────────────────────────────────────────────────────
