@@ -1,0 +1,140 @@
+================================================================================
+UNIVERSE - BACKEND TECHNICAL REFERENCE & PROFESSOR VIVA DEFENSE GUIDE
+Marwadi University | Department of Computer Science & Engineering
+Tech Stack: C# .NET 10 | ASP.NET Core MVC | Pure ADO.NET | Relational SQLite
+================================================================================
+
+1. SIR KO 1-MINUTE ME SAMJHANE KE LIYE (OPENING PITCH):
+--------------------------------------------------------------------------------
+"Sir, hamara UniVerse project ek Enterprise 3-Tier Architecture par based hai
+jise C# .NET 10 aur ASP.NET Core MVC me banaya gaya hai. Database ke liye university
+grading guidelines ke mutabiq humne ORM (Entity Framework) ke bajaye pure ADO.NET
+(SqliteConnection, SqliteCommand, SqliteDataReader, SqliteParameter, SqliteTransaction)
+use kiya hai. Database relational SQLite format me 'universe.db' file me store hai.
+Isme Repository Pattern, Dependency Injection, Claims Cookie Authentication, aur
+Anti-Fraud Security Controls fully implemented hain."
+
+
+2. KIDHAR KYA SAVE HAI? (DIRECTORY & FILE LAYOUT):
+--------------------------------------------------------------------------------
+1. Live Database File:
+   UniVerse.Server/bin/Debug/net10.0/universe.db
+   (Saare students, food orders, items, aur marketplace data yahan real-time save hote hain)
+
+2. Source Database Template:
+   UniVerse.Server/universe.db
+
+3. Database Schema Script (DDL):
+   Data/Schema.sql (6 Tables, Primary Keys, Foreign Keys with cascades, Indexes)
+
+4. Pure ADO.NET Engine:
+   Data/AdoNetDbHelper.cs (Generic helper for Connection, Command, DataReader, Transaction)
+
+5. Repositories (Data Access Layer - DAL):
+   Data/Repositories/ (UserRepository, DeliveryRepository, MarketplaceRepository, NotificationRepository)
+
+6. Controllers (Business Logic & Endpoints):
+   Controllers/ (AccountController, DeliveryController, DashboardController)
+
+7. Entity Models (C# Classes):
+   Models/ (User.cs, DeliveryRequest.cs, RequestItem.cs, MarketplaceListing.cs)
+
+8. OTP Service:
+   Services/EmailVerificationService.cs (Campus OTP verification engine with fallback '123456')
+
+9. App Configuration & Dependency Injection:
+   Program.cs (IoC container, Cookie Auth, Session, Swagger API docs)
+
+10. Media / Photos:
+    UniVerse.Server/wwwroot/uploads/avatars/ (Uploaded profile pictures)
+
+11. Email & OTP Logs:
+    UniVerse.Server/bin/Debug/net10.0/logs/sent_emails.log
+
+
+3. DATABASE SCHEMA (6 RELATIONAL TABLES):
+--------------------------------------------------------------------------------
+1. 'users':
+   Columns: id (PK), email (UNIQUE), password_hash, full_name, enrollment_number,
+   role, hostel_name, room_number, reward_balance, created_at, updated_at
+   Role: Student & Runner profiles. Enforces @marwadiuniversity.ac.in domain.
+
+2. 'delivery_requests':
+   Columns: id (PK), requester_id (FK), runner_id (FK), pickup_location,
+   dropoff_location, total_estimated_amount, delivery_fee, status, delivery_otp
+   Role: Food orders. Lifecycle: pending -> accepted -> picked_up -> completed.
+
+3. 'request_items':
+   Columns: id (PK), request_id (FK), name, quantity, estimated_price, notes
+   Role: Order items (1-to-Many relation with delivery_requests, cascade delete).
+
+4. 'marketplace_listings':
+   Columns: id (PK), seller_id (FK), title, description, price, category, status
+   Role: Buy/sell books, calculators, gadgets listed by students.
+
+5. 'marketplace_offers':
+   Columns: id (PK), listing_id (FK), buyer_id (FK), offer_price, status
+   Role: Bargaining offers submitted by buyers to sellers.
+
+6. 'notifications':
+   Columns: id (PK), user_id (FK), title, message, type, is_read, created_at
+   Role: Order update alerts and acceptance notifications.
+
+
+4. PURE ADO.NET IMPLEMENTATION (COLLEGE REQUIREMENT):
+--------------------------------------------------------------------------------
+- Entity Framework use nahi kiya gaya; pure ADO.NET implement kiya gaya hai.
+- 4 Core Objects used:
+  1. SqliteConnection -> Database connection open/close karta hai.
+  2. SqliteCommand -> Parameterized SQL queries run karta hai.
+  3. SqliteParameter -> Input ko sanitize karta hai (100% SQL Injection Proof).
+  4. SqliteDataReader -> Streaming row-by-row data read karta hai.
+  5. SqliteTransaction -> Atomic ACID transaction (order accept + status update).
+
+
+5. SECURITY & ANTI-FRAUD LOGIC:
+--------------------------------------------------------------------------------
+- Campus Anti-Fraud: Jo student food order create karega, woh apna order khud
+  accept nahi kar sakta (requester_id != currentUserId). Runner board par uske
+  khud ke orders automatically filter hokar hide ho jaate hain.
+- Cryptographic Password Hashing: PBKDF2 SHA-256 algorithm with 128-bit salt
+  (10,000 iterations). Plain text password database me kabhi store nahi hota.
+- Cookie Claims Auth: ASP.NET Core built-in cookie scheme with encrypted claims.
+- Fail-Safe Campus OTP Gateway: Real-time on-screen OTP sync badge + universal
+  emergency code '123456' for viva/offline tests.
+
+
+6. PROFESSOR / VIVA QUESTIONS & ANSWERS (TOP 6):
+--------------------------------------------------------------------------------
+Q1. Project ka Architecture kya hai?
+Ans: Sir, 3-Tier MVC Architecture hai:
+     1. Presentation Layer: Razor Views (.cshtml) + CSS UI.
+     2. Business Logic Layer: Controllers + Domain Services.
+     3. Data Access Layer (DAL): Pure ADO.NET Repositories + SQLite DB.
+
+Q2. Entity Framework kyu nahi use kiya, ADO.NET kyu use kiya?
+Ans: Sir, syllabus ka primary objective ADO.NET sikhna hai. ADO.NET low-level
+     database control, connection pooling, raw SQL optimization, aur explicit
+     transaction handling provide karta hai jo ORM se jyada transparent hai.
+
+Q3. SQL Injection attacks se project kaise secure hai?
+Ans: Sir, pure project me kahin bhi string concatenation se query nahi banti.
+     Har query me SqliteParameter use hota hai, jisse database engine input ko
+     pure data treat karta hai, executable code nahi.
+
+Q4. Dependency Injection (DI) kaise configure kiya hai?
+Ans: Sir, Program.cs me built-in IoC container use kiya hai:
+     - AdoNetDbHelper -> Singleton
+     - Repositories -> Scoped (per HTTP request lifecycle)
+     Controllers me interfaces inject hoti hain (Loose Coupling).
+
+Q5. Concurrency kaise handle hoti hai agar do runners ek sath accept karein?
+Ans: Sir, update query me atomic condition check hai:
+     'WHERE id = @Id AND status = 'pending''. Pehla runner accept karte hi
+     status 'accepted' ho jata hai, jisse second runner ke execute karne par
+     rowsAffected == 0 return hota hai aur transaction cleanly rollback ho jata hai.
+
+Q6. Live API testing kaise kar sakte hain?
+Ans: Sir, project me Swagger OpenAPI integrated hai. Browser me
+     'http://localhost:5277/swagger' open karke live endpoints test kiye ja sakte hain.
+================================================================================
