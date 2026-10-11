@@ -37,7 +37,7 @@ WHERE l.status = 'active'";
             SqliteParameter[] parameters;
             if (!string.IsNullOrEmpty(category) && !category.Equals("All", StringComparison.OrdinalIgnoreCase))
             {
-                sql += " AND LOWER(l.category) = LOWER(@category) ";
+                sql += " AND (LOWER(l.category) = LOWER(@category) OR LOWER(l.category) LIKE '%' || LOWER(@category) || '%' OR LOWER(@category) LIKE '%' || LOWER(l.category) || '%') ";
                 parameters = new[] { AdoNetDbHelper.CreateParameter("@category", category) };
             }
             else

@@ -1,14 +1,16 @@
 @model UniVerse.Server.Models.MarketplaceListingDetailDto
 @{
+    Layout = "_DashboardLayout";
     ViewData["Title"] = Model.Title;
+    ViewBag.ActivePage = "marketplace";
     bool isSeller = ViewBag.IsSeller ?? false;
 }
 
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-9 col-lg-8">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <a asp-action="Index" class="btn btn-glass btn-sm">
+                <a href="/Dashboard/Marketplace" class="btn btn-outline-light btn-sm" style="border-radius: 12px; background: rgba(255,255,255,0.05);">
                     &larr; Back to Marketplace
                 </a>
                 <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
@@ -18,6 +20,13 @@
 
             <!-- Item Main Card -->
             <div class="universe-card p-4 p-md-5 mb-4">
+                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                {
+                    <div class="mb-4 text-center rounded-4 overflow-hidden" style="max-height: 380px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
+                        <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid w-100" style="max-height: 380px; object-fit: cover;" onerror="this.style.display='none';" />
+                    </div>
+                }
+
                 <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-2">

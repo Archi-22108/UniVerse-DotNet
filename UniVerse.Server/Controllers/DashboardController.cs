@@ -347,7 +347,19 @@ namespace UniVerse.Server.Controllers
 
             string? queryCat = (string.IsNullOrEmpty(category) || category.Equals("all", StringComparison.OrdinalIgnoreCase)) 
                 ? null 
-                : category;
+                : category.ToLowerInvariant() switch
+                {
+                    "study_materials" or "study-materials" or "study_notes" or "studynotes" => "Study Notes",
+                    "hostel" or "hostel_life" or "hostel life" => "Hostel Life",
+                    "books" => "Books",
+                    "electronics" => "Electronics",
+                    "sports" => "Sports",
+                    "furniture" => "Furniture",
+                    "clothing" => "Clothing",
+                    "gaming" => "Gaming",
+                    "other" => "Other",
+                    _ => category
+                };
 
             var listings = await _marketRepo.GetListingsAsync(queryCat);
 
