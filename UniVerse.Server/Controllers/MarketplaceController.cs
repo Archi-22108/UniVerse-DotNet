@@ -23,11 +23,9 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string? category)
+        public IActionResult Index(string? category)
         {
-            var listings = await _marketplaceRepo.GetListingsAsync(category);
-            ViewBag.CurrentCategory = category ?? "All";
-            return View(listings);
+            return RedirectToAction("Marketplace", "Dashboard", new { category });
         }
 
         [Authorize]

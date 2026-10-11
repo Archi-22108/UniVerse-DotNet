@@ -1,157 +1,763 @@
 @model UniVerse.Server.Models.MarketplaceListingDetailDto
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = $"{Model.Title} · UniVerse Resale";
     ViewBag.ActivePage = "marketplace";
     bool isSeller = ViewBag.IsSeller ?? false;
+    bool isAvailable = Model.Status == "active";
+
+    // Category display name
+    string catLabel = Model.Category?.ToLowerInvariant() switch
+    {
+        "books" => "Books 📚",
+        "electronics" => "Electronics 💻",
+        "study_materials" or "study notes" => "Study Notes 📝",
+        "hostel" or "hostel life" => "Hostel Essentials 🛏️",
+        "sports" => "Sports ⚽",
+        "furniture" => "Furniture 🪑",
+        "clothing" => "Clothing 👕",
+        "gaming" => "Gaming 🎮",
+        _ => $"{Model.Category} ✨"
+    };
+
+    // Condition badge class
+    string condBadgeClass = Model.Condition?.ToLowerInvariant() switch
+    {
+        "new" => "uv-cond-new",
+        "like_new" or "like new" => "uv-cond-like-new",
+        "good" => "uv-cond-good",
+        _ => "uv-cond-fair"
+    };
+
+    // Discount percentage
+    int? discountPct = null;
+    double? savingsAmount = null;
+    if (Model.OriginalPrice.HasValue && Model.OriginalPrice.Value > Model.Price)
+    {
+        discountPct = (int)Math.Round(((Model.OriginalPrice.Value - Model.Price) / Model.OriginalPrice.Value) * 100);
+        savingsAmount = Model.OriginalPrice.Value - Model.Price;
+    }
+
+    // Fallback Image
+    string heroPhoto = !string.IsNullOrWhiteSpace(Model.ImageUrl)
+        ? Model.ImageUrl
+        : (Model.Category?.ToLowerInvariant()) switch
+        {
+            "books" => "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=1000",
+            "electronics" => "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=1000",
+            _ => "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=1000"
+        };
 }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-9 col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                <a href="/Dashboard/Marketplace" class="btn btn-outline-light btn-sm" style="border-radius: 12px; background: rgba(255,255,255,0.05);">
-                    &larr; Back to Marketplace
-                </a>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
-                        STATUS: @Model.Status
-                    </span>
-                    @if (isSeller)
-                    {
-                        <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to remove this listing?');" style="display:inline;">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 10px;">
-                                <i class="bi bi-trash me-1"></i> Delete Listing
-                            </button>
-                        </form>
-                    }
+@section Styles {
+<style>
+    /* ─── Ultra-Premium Resale Details Styles (Matching ResaleListingDetail.tsx 1:1) ─── */
+    .uv-detail-page {
+        min-height: 100vh;
+        background: #060a08;
+        position: relative;
+        overflow-x: hidden;
+        padding: 1.5rem 1rem 6rem;
+        color: #fff;
+    }
+
+    .uv-detail-ambient-grid {
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+        background-size: 24px 24px;
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    .uv-detail-glow-1 {
+        position: absolute;
+        top: -80px;
+        left: -80px;
+        width: 420px;
+        height: 420px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 9999px;
+        filter: blur(90px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .uv-detail-glow-2 {
+        position: absolute;
+        top: 40%;
+        right: -80px;
+        width: 380px;
+        height: 380px;
+        background: rgba(20, 184, 166, 0.06);
+        border-radius: 9999px;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .uv-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Back Link */
+    .uv-detail-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #A7B8B0;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 6px 14px;
+        text-decoration: none;
+        margin-bottom: 24px;
+        transition: all 0.2s ease;
+    }
+    .uv-detail-back-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Main Grid */
+    .uv-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+    @@media (min-width: 992px) {
+        .uv-detail-grid {
+            grid-template-columns: 1.15fr 1fr;
+            gap: 48px;
+        }
+    }
+
+    /* Left Gallery */
+    .uv-gallery-card {
+        background: rgba(12, 20, 16, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+    }
+
+    .uv-gallery-hero {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #040806;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .uv-gallery-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+    .uv-gallery-hero:hover .uv-gallery-img {
+        transform: scale(1.02);
+    }
+
+    .uv-gallery-badges {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        display: flex;
+        gap: 8px;
+        z-index: 2;
+    }
+
+    .uv-gallery-cond {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 8px;
+        backdrop-filter: blur(8px);
+    }
+    .uv-cond-new { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .uv-cond-like-new { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .uv-cond-good { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .uv-cond-fair { background: rgba(156, 163, 175, 0.2); color: #d1d5db; border: 1px solid rgba(156, 163, 175, 0.4); }
+
+    /* Right Column: Info & Actions */
+    .uv-detail-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .uv-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .uv-status-active {
+        background: rgba(0, 230, 118, 0.15);
+        color: #00E676;
+        border: 1px solid rgba(0, 230, 118, 0.35);
+        box-shadow: 0 0 14px rgba(0, 230, 118, 0.2);
+    }
+    .uv-status-sold {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .uv-detail-title {
+        font-size: clamp(1.6rem, 2.8vw, 2.3rem);
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin: 12px 0;
+    }
+
+    .uv-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+    }
+
+    .uv-current-price {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #00E676;
+        letter-spacing: -0.02em;
+        font-family: var(--font-heading);
+    }
+
+    .uv-orig-price {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-decoration: line-through;
+    }
+
+    .uv-discount-tag {
+        font-size: 11px;
+        font-weight: 900;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .uv-neg-tag {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        background: rgba(245, 158, 11, 0.15);
+        color: #fcd34d;
+        border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .uv-savings-note {
+        font-size: 13px;
+        font-weight: 600;
+        color: #00E676;
+        margin-bottom: 16px;
+    }
+
+    /* Viral Share Bar */
+    .uv-share-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin: 16px 0 20px 0;
+        flex-wrap: wrap;
+    }
+
+    .uv-share-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .uv-share-wa {
+        background: rgba(37, 211, 102, 0.12);
+        color: #25D366;
+        border: 1px solid rgba(37, 211, 102, 0.3);
+    }
+    .uv-share-wa:hover {
+        background: rgba(37, 211, 102, 0.22);
+        color: #25D366;
+    }
+    .uv-share-copy {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .uv-share-copy:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+    .uv-share-qr {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .uv-share-qr:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    /* Quick Specs Grid */
+    .uv-specs-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(12, 20, 16, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 20px;
+    }
+
+    .uv-spec-card {
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+    }
+    .uv-spec-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .uv-spec-val {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+    }
+
+    /* Campus Handover & Safety */
+    .uv-safety-card {
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(12, 20, 16, 0.8);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        margin-bottom: 24px;
+    }
+    .uv-safety-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 800;
+        color: #34d399;
+        margin-bottom: 10px;
+    }
+    .uv-safety-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .uv-safety-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    /* Actions Bar */
+    .uv-action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: auto;
+    }
+
+    .uv-btn-primary {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #00E676 0%, #10b981 100%);
+        border: none;
+        border-radius: 14px;
+        color: #03140a;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 0 24px rgba(0, 230, 118, 0.35);
+        transition: all 0.2s ease;
+    }
+    .uv-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 30px rgba(0, 230, 118, 0.5);
+        color: #03140a;
+    }
+
+    .uv-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 14px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .uv-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+
+    .uv-btn-danger {
+        padding: 12px 18px;
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 14px;
+        color: #f87171;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .uv-btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+        color: #fca5a5;
+    }
+
+    /* Description Card */
+    .uv-desc-section {
+        margin-top: 48px;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .uv-desc-box {
+        padding: 24px;
+        border-radius: 20px;
+        background: rgba(12, 20, 16, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        color: #A7B8B0;
+        line-height: 1.7;
+        font-size: 14.5px;
+        white-space: pre-wrap;
+    }
+
+    /* Seller Profile Card */
+    .uv-seller-section {
+        margin-top: 36px;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .uv-seller-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 24px;
+        border-radius: 20px;
+        background: rgba(12, 20, 16, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        width: fit-content;
+        min-width: 320px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    .uv-seller-avatar {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #00E676 0%, #14b8a6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #03140a;
+        font-size: 22px;
+        font-weight: 900;
+        box-shadow: 0 0 16px rgba(0, 230, 118, 0.35);
+        flex-shrink: 0;
+    }
+
+    /* Modal Backdrop */
+    .uv-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 16px;
+    }
+    .uv-modal-box {
+        background: #08100b;
+        border: 1px solid rgba(0, 230, 118, 0.3);
+        border-radius: 24px;
+        max-width: 420px;
+        width: 100%;
+        padding: 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        position: relative;
+    }
+    .uv-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .uv-modal-close {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 9999px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+    .uv-modal-close:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+</style>
+}
+
+<div class="uv-detail-page">
+    <div class="uv-detail-ambient-grid"></div>
+    <div class="uv-detail-glow-1"></div>
+    <div class="uv-detail-glow-2"></div>
+
+    <div class="uv-detail-container">
+        <!-- Back Button -->
+        <a href="/Dashboard/Marketplace" class="uv-detail-back-btn">
+            <i class="bi bi-arrow-left text-success"></i>
+            <span>Back to Marketplace</span>
+        </a>
+
+        <!-- Main Grid -->
+        <div class="uv-detail-grid">
+            <!-- Left Column: Gallery Card -->
+            <div class="uv-gallery-card">
+                <div class="uv-gallery-hero">
+                    <div class="uv-gallery-badges">
+                        <span class="uv-gallery-cond @condBadgeClass">@Model.Condition</span>
+                        @if (discountPct.HasValue && discountPct > 0)
+                        {
+                            <span class="uv-gallery-cond" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.45);">
+                                @discountPct% OFF
+                            </span>
+                        }
+                    </div>
+                    <img src="@heroPhoto" alt="@Model.Title" class="uv-gallery-img" />
                 </div>
             </div>
 
-            <!-- Item Main Card -->
-            <div class="universe-card p-4 p-md-5 mb-4">
-                @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
-                {
-                    <div class="mb-4 text-center rounded-4 overflow-hidden" style="max-height: 380px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
-                        <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid w-100" style="max-height: 380px; object-fit: cover;" onerror="this.style.display='none';" />
-                    </div>
-                }
-
-                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
-                    <div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
-                                @Model.Category
-                            </span>
-                            <span class="badge bg-secondary bg-opacity-25 text-light">
-                                Condition: @Model.Condition
-                            </span>
-                        </div>
-                        <h2 class="fw-bold text-white mb-1">@Model.Title</h2>
-                        <div class="text-secondary small">
-                            <i class="bi bi-clock me-1"></i> Posted: @DateTime.Parse(Model.CreatedAt).ToLocalTime().ToString("f")
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="fs-2 fw-bold text-white">₹@Model.Price.ToString("F2")</span>
-                        @if (Model.OriginalPrice.HasValue)
-                        {
-                            <small class="text-muted text-decoration-line-through d-block">
-                                MRP: ₹@Model.OriginalPrice.Value.ToString("F2")
-                            </small>
-                            var savings = ((Model.OriginalPrice.Value - Model.Price) / Model.OriginalPrice.Value) * 100;
-                            if (savings > 0)
-                            {
-                                <span class="badge bg-danger text-white mt-1">@savings.ToString("F0")% OFF</span>
-                            }
-                        }
-                    </div>
+            <!-- Right Column: Info & Actions -->
+            <div class="uv-detail-info">
+                <!-- Status Row -->
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span class="uv-status-badge @(isAvailable ? "uv-status-active" : "uv-status-sold")">
+                        @(isAvailable ? "Available" : Model.Status)
+                    </span>
+                    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.4);">
+                        Posted @(DateTime.TryParse(Model.CreatedAt, out var dt) ? dt.ToLocalTime().ToString("MMM dd, yyyy") : "Recently")
+                    </span>
                 </div>
 
-                <!-- Description -->
-                <div class="my-4 p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10">
-                    <small class="text-muted d-block mb-1">DESCRIPTION</small>
-                    <p class="text-light mb-0" style="white-space: pre-line;">
-                        @(Model.Description ?? "No description provided by the seller.")
-                    </p>
-                </div>
+                <!-- Title -->
+                <h1 class="uv-detail-title">@Model.Title</h1>
 
-                <!-- Pickup Spot and Seller Details -->
-                <div class="row g-3 my-2">
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
-                            <small class="text-muted d-block mb-1">CAMPUS PICKUP SPOT</small>
-                            <span class="text-white fw-semibold"><i class="bi bi-geo-alt-fill me-1 text-danger"></i> @Model.PickupLocation</span>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-white border-opacity-10 h-100">
-                            <small class="text-muted d-block mb-1">STUDENT SELLER</small>
-                            <span class="text-white fw-semibold"><i class="bi bi-person-fill me-1 text-info"></i> @Model.SellerName</span>
-                            @if (!string.IsNullOrEmpty(Model.SellerPhone))
-                            {
-                                <small class="text-secondary d-block">@Model.SellerPhone</small>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Price Negotiation / Offer Section -->
-                <div class="mt-5 pt-4 border-top border-white border-opacity-10">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold text-white mb-0">💬 Price Negotiation Offers (@Model.OfferCount)</h4>
-                        @if (Model.Negotiable)
-                        {
-                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
-                                Seller Accepts Price Offers
-                            </span>
-                        }
-                    </div>
-
-                    @if (!isSeller && Model.Negotiable)
+                <!-- Price Row -->
+                <div class="uv-price-row">
+                    <span class="uv-current-price">₹@Model.Price.ToString("F0")</span>
+                    @if (Model.OriginalPrice.HasValue && Model.OriginalPrice > Model.Price)
                     {
-                        <div class="universe-card p-3 mb-4 bg-dark bg-opacity-40">
-                            <form asp-action="MakeOffer" method="post" class="row g-2 align-items-center">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="ListingId" value="@Model.Id" />
-                                <div class="col-sm-7">
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-success">₹</span>
-                                        <input type="number" name="OfferPrice" class="form-control form-control-sm" placeholder="Your Counter Offer (e.g. 500)" required />
-                                    </div>
-                                </div>
-                                <div class="col-sm-5">
-                                    <button type="submit" class="btn btn-emerald btn-sm w-100">
-                                        Submit Offer to Seller
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                        <span class="uv-orig-price">₹@Model.OriginalPrice.Value.ToString("F0")</span>
+                        <span class="uv-discount-tag">@discountPct% OFF</span>
                     }
-
-                    <!-- Offers List -->
-                    @if (Model.Offers.Count == 0)
+                    @if (Model.Negotiable)
                     {
-                        <p class="text-secondary small fst-italic">No offers submitted yet. Be the first to negotiate!</p>
+                        <span class="uv-neg-tag">⚡ Negotiable</span>
                     }
                     else
                     {
-                        <div class="list-group list-group-flush bg-transparent">
-                            @foreach (var off in Model.Offers)
-                            {
-                                <div class="list-group-item bg-transparent text-white border-secondary border-opacity-25 d-flex justify-content-between align-items-center px-0 py-2">
-                                    <div>
-                                        <span class="fw-semibold">@off.BuyerName</span>
-                                        <small class="text-muted d-block">Submitted: @DateTime.Parse(off.CreatedAt).ToLocalTime().ToString("g")</small>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="fw-bold fs-5 text-success">₹@off.OfferPrice.ToString("F2")</span>
-                                        <span class="badge bg-warning text-dark text-uppercase ms-2">@off.Status</span>
-                                    </div>
-                                </div>
-                            }
+                        <span class="uv-neg-tag" style="background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.1);">🔒 Firm Price</span>
+                    }
+                </div>
+
+                @if (savingsAmount.HasValue && savingsAmount > 0)
+                {
+                    <p class="uv-savings-note">
+                        <i class="bi bi-tag-fill me-1"></i> You save ₹@savingsAmount.Value.ToString("F0") on campus!
+                    </p>
+                }
+
+                <!-- Viral Share Bar -->
+                <div class="uv-share-bar">
+                    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.4); margin-right: 4px;">Share:</span>
+                    <button type="button" class="uv-share-btn uv-share-wa" onclick="shareWhatsApp()">
+                        <i class="bi bi-whatsapp"></i> WhatsApp
+                    </button>
+                    <button type="button" class="uv-share-btn uv-share-copy" onclick="copyLink()">
+                        <i class="bi bi-link-45deg" id="copyIcon"></i> <span id="copyTxt">Copy Link</span>
+                    </button>
+                    <button type="button" class="uv-share-btn uv-share-qr" onclick="openQrModal()">
+                        <i class="bi bi-qr-code"></i> Campus QR
+                    </button>
+                </div>
+
+                <!-- Quick Specs Grid -->
+                <div class="uv-specs-grid">
+                    <div class="uv-spec-card">
+                        <div class="uv-spec-label"><i class="bi bi-box-seam text-success"></i> Condition</div>
+                        <p class="uv-spec-val">@Model.Condition</p>
+                    </div>
+                    <div class="uv-spec-card">
+                        <div class="uv-spec-label"><i class="bi bi-tag text-success"></i> Category</div>
+                        <p class="uv-spec-val">@catLabel</p>
+                    </div>
+                    <div class="uv-spec-card">
+                        <div class="uv-spec-label"><i class="bi bi-cash-stack text-success"></i> Price Type</div>
+                        <p class="uv-spec-val">@(Model.Negotiable ? "Open to Offers" : "Firm Price")</p>
+                    </div>
+                    <div class="uv-spec-card">
+                        <div class="uv-spec-label"><i class="bi bi-geo-alt text-success"></i> Location</div>
+                        <p class="uv-spec-val">@(string.IsNullOrWhiteSpace(Model.PickupLocation) ? "Marwadi Campus" : Model.PickupLocation)</p>
+                    </div>
+                </div>
+
+                <!-- Campus Handover & Safety Card -->
+                <div class="uv-safety-card">
+                    <div class="uv-safety-title">
+                        <i class="bi bi-shield-check"></i> Campus Handover & Zero Fees
+                    </div>
+                    <div class="uv-safety-grid">
+                        <div class="uv-safety-item">
+                            <span>📍</span>
+                            <span>Meet at <strong>Library, Canteen, or Hostel</strong>.</span>
+                        </div>
+                        <div class="uv-safety-item">
+                            <span>🤝</span>
+                            <span>Physical inspection before payment.</span>
+                        </div>
+                        <div class="uv-safety-item">
+                            <span>⚡</span>
+                            <span>Direct UPI or Cash &mdash; <strong>100% Free</strong>!</span>
+                        </div>
+                        <div class="uv-safety-item">
+                            <span>🏃</span>
+                            <span>Busy? Request a campus runner for pickup!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Bar -->
+                <div class="uv-action-bar">
+                    @if (isSeller)
+                    {
+                        <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to remove this listing?');" style="width: 100%; display: flex; gap: 12px;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <a href="/Dashboard/Marketplace?filter=my" class="uv-btn-secondary" style="flex: 1;">
+                                <i class="bi bi-box-seam me-1"></i> Manage Listings
+                            </a>
+                            <button type="submit" class="uv-btn-danger">
+                                <i class="bi bi-trash-fill me-1"></i> Remove Listing
+                            </button>
+                        </form>
+                    }
+                    else if (isAvailable)
+                    {
+                        <a href="/Dashboard/Chat" class="uv-btn-primary">
+                            <i class="bi bi-chat-dots-fill"></i> Contact Student Seller
+                        </a>
+                        @if (Model.Negotiable)
+                        {
+                            <button type="button" class="uv-btn-secondary" onclick="openOfferModal()">
+                                <i class="bi bi-cash me-1"></i> Make Offer
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <div class="uv-btn-secondary" style="width: 100%; opacity: 0.6; cursor: not-allowed;">
+                            <i class="bi bi-archive me-1"></i> Listing No Longer Available
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Description Card -->
+        <div class="uv-desc-section">
+            <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 14px;">Description</h2>
+            <div class="uv-desc-box">
+                @(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided by the seller." : Model.Description)
+            </div>
+        </div>
+
+        <!-- Seller Profile Card -->
+        <div class="uv-seller-section">
+            <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 14px;">Student Seller Information</h2>
+            <div class="uv-seller-box">
+                <div class="uv-seller-avatar">
+                    @(string.IsNullOrWhiteSpace(Model.SellerName) ? "S" : Model.SellerName.Substring(0, 1).ToUpperInvariant())
+                </div>
+                <div>
+                    <h3 style="font-size: 17px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">
+                        @(string.IsNullOrWhiteSpace(Model.SellerName) ? "Campus Student" : Model.SellerName)
+                    </h3>
+                    <div style="font-size: 12px; color: #00E676; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                        <i class="bi bi-patch-check-fill"></i> Verified University Student
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.SellerPhone))
+                    {
+                        <div style="font-size: 12px; color: rgba(167, 184, 176, 0.7); margin-top: 2px;">
+                            <i class="bi bi-telephone me-1"></i> @Model.SellerPhone
                         </div>
                     }
                 </div>
@@ -159,3 +765,123 @@
         </div>
     </div>
 </div>
+
+<!-- ─── Make Offer Modal ─── -->
+<div id="offerModal" class="uv-modal-backdrop">
+    <div class="uv-modal-box">
+        <div class="uv-modal-header">
+            <h3 style="font-size: 16px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-cash-coin text-success"></i> Counter Offer
+            </h3>
+            <button type="button" class="uv-modal-close" onclick="closeOfferModal()">&times;</button>
+        </div>
+        <form asp-action="MakeOffer" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ListingId" value="@Model.Id" />
+            
+            <p style="font-size: 13px; color: rgba(167, 184, 176, 0.8); margin-bottom: 16px;">
+                Asking price is <strong>₹@Model.Price.ToString("F0")</strong>. Enter what you are willing to pay for this item:
+            </p>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 6px;">
+                    Your Offer Amount (₹)
+                </label>
+                <input type="number" 
+                       name="OfferPrice" 
+                       min="1" 
+                       max="@Model.Price" 
+                       step="10" 
+                       value="@Math.Round(Model.Price * 0.85)" 
+                       required 
+                       style="width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #fff; font-size: 16px; font-weight: 700; outline: none;" />
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 6px;">
+                    Note to Seller (Optional)
+                </label>
+                <textarea name="Message" 
+                          rows="2" 
+                          placeholder="e.g. Can meet at Central Library this afternoon!" 
+                          style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #fff; font-size: 13px; outline: none;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="uv-btn-secondary" style="flex: 1;" onclick="closeOfferModal()">Cancel</button>
+                <button type="submit" class="uv-btn-primary" style="flex: 1;">Send Offer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ─── Campus QR Modal ─── -->
+<div id="qrModal" class="uv-modal-backdrop">
+    <div class="uv-modal-box" style="text-align: center;">
+        <div class="uv-modal-header">
+            <h3 style="font-size: 15px; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="bi bi-qr-code text-success"></i> Campus QR Code
+            </h3>
+            <button type="button" class="uv-modal-close" onclick="closeQrModal()">&times;</button>
+        </div>
+        <p style="font-size: 12px; color: rgba(167, 184, 176, 0.8); margin-bottom: 16px;">
+            Show this QR code to your friend to open this listing directly on their phone!
+        </p>
+        <div style="background: #fff; padding: 12px; border-radius: 16px; display: inline-block; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+            <img id="qrImg" src="" alt="Listing QR Code" style="width: 160px; height: 160px; display: block;" />
+        </div>
+        <div style="font-size: 13px; font-weight: 700; color: #00E676;">
+            @Model.Title &middot; ₹@Model.Price.ToString("F0")
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function shareWhatsApp() {
+        const url = window.location.href;
+        const text = `Hey! Check out "${@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Title))}" for ₹${@Model.Price.ToString("F0")} on UniVerse Campus Marketplace:\n${url}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            const icon = document.getElementById('copyIcon');
+            const txt = document.getElementById('copyTxt');
+            icon.className = 'bi bi-check2 text-success';
+            txt.innerText = 'Copied!';
+            setTimeout(() => {
+                icon.className = 'bi bi-link-45deg';
+                txt.innerText = 'Copy Link';
+            }, 2000);
+            if (window.showToast) window.showToast('Listing link copied to clipboard!');
+        });
+    }
+
+    function openQrModal() {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(window.location.href)}`;
+        document.getElementById('qrImg').src = qrUrl;
+        document.getElementById('qrModal').style.display = 'flex';
+    }
+
+    function closeQrModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+
+    function openOfferModal() {
+        document.getElementById('offerModal').style.display = 'flex';
+    }
+
+    function closeOfferModal() {
+        document.getElementById('offerModal').style.display = 'none';
+    }
+
+    // Close on backdrop click
+    window.addEventListener('click', function(e) {
+        const qm = document.getElementById('qrModal');
+        const om = document.getElementById('offerModal');
+        if (e.target === qm) closeQrModal();
+        if (e.target === om) closeOfferModal();
+    });
+</script>
+}

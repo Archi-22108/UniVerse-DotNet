@@ -1,153 +1,1327 @@
 @model UniVerse.Server.Models.ViewModels.MarketplaceCreateViewModel
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Post Used Campus Item · UniVerse Resale";
+    ViewData["Title"] = "Sell an Item · UniVerse Resale";
     ViewBag.ActivePage = "marketplace";
 }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <a href="/Dashboard/Marketplace" class="btn btn-outline-light btn-sm" style="border-radius: 12px; background: rgba(255,255,255,0.05);">
-                    &larr; Back to Marketplace
-                </a>
-                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1">
-                    Free Peer-to-Peer Listing
-                </span>
+@section Styles {
+<style>
+    /* ─── Ultra-Premium Sell Form Styles (Matching SellForm.tsx 1:1) ─── */
+    .uv-sell-page {
+        min-height: 100vh;
+        background: #060a08;
+        position: relative;
+        overflow-x: hidden;
+        padding: 1.5rem 1rem 6rem;
+        color: #fff;
+        font-family: inherit;
+    }
+
+    /* Ambient Stardust & Nebula Glows */
+    .uv-sell-ambient-grid {
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+        background-size: 24px 24px;
+        pointer-events: none;
+        opacity: 0.5;
+        z-index: 0;
+    }
+
+    .uv-sell-glow-1 {
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        width: 384px;
+        height: 384px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 9999px;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .uv-sell-glow-2 {
+        position: absolute;
+        top: 30%;
+        right: -100px;
+        width: 384px;
+        height: 384px;
+        background: rgba(20, 184, 166, 0.05);
+        border-radius: 9999px;
+        filter: blur(80px);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .uv-sell-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Back + Header */
+    .uv-sell-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: none;
+        color: rgba(167, 184, 176, 0.7);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .uv-sell-back-btn:hover {
+        color: #fff;
+    }
+
+    .uv-sell-header {
+        margin-bottom: 24px;
+    }
+    .uv-sell-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 6px 0;
+    }
+    .uv-sell-title {
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: #fff;
+    }
+    .uv-sell-badge {
+        font-size: 10px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .uv-sell-sub {
+        color: rgba(167, 184, 176, 0.7);
+        font-size: 13.5px;
+        margin: 0;
+    }
+
+    /* Listing Strength Meter */
+    .uv-strength-meter {
+        margin-bottom: 24px;
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(12, 20, 16, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+    }
+    .uv-strength-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    .uv-strength-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    .uv-strength-label {
+        font-size: 12px;
+        font-weight: 800;
+        color: #fbbf24;
+    }
+    .uv-strength-pct {
+        font-size: 12px;
+        font-family: var(--font-mono, monospace);
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.6);
+    }
+    .uv-strength-track {
+        width: 100%;
+        height: 6px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+    }
+    .uv-strength-bar {
+        height: 100%;
+        border-radius: 9999px;
+        background: #fbbf24;
+        width: 15%;
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    .uv-strength-tip {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 8px 0 0 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Two-Column Layout */
+    .uv-sell-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    @@media (min-width: 992px) {
+        .uv-sell-grid {
+            grid-template-columns: 1fr 1.2fr;
+            gap: 28px;
+            align-items: start;
+        }
+    }
+
+    /* Section Card */
+    .uv-section-card {
+        background: rgba(12, 20, 16, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 24px;
+        transition: border-color 0.2s ease;
+    }
+    .uv-section-card:hover {
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    .uv-card-heading {
+        color: #fff;
+        font-size: 17px;
+        font-weight: 800;
+        margin: 0 0 4px 0;
+        letter-spacing: -0.01em;
+    }
+    .uv-card-subheading {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 13px;
+        margin: 0 0 20px 0;
+    }
+
+    /* Image Dropzone & Preview */
+    .uv-dropzone {
+        border: 2px dashed rgba(102, 255, 178, 0.25);
+        border-radius: 14px;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        background: rgba(5, 10, 7, 0.3);
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    .uv-dropzone:hover, .uv-dropzone.dragover {
+        border-color: #00E676;
+        background: rgba(0, 230, 118, 0.05);
+    }
+    .uv-dropzone-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: rgba(0, 230, 118, 0.1);
+        border: 1px solid rgba(0, 230, 118, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #00E676;
+        font-size: 22px;
+    }
+    .uv-dropzone-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        margin: 0 0 2px 0;
+    }
+    .uv-dropzone-desc {
+        color: rgba(167, 184, 176, 0.6);
+        font-size: 12px;
+        margin: 0;
+    }
+    .uv-dropzone-formats {
+        color: rgba(167, 184, 176, 0.4);
+        font-size: 11px;
+        margin: 4px 0 0 0;
+    }
+
+    .uv-photos-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .uv-photo-card {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid #00E676;
+        background: #000;
+    }
+    .uv-photo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .uv-photo-cover-tag {
+        position: absolute;
+        bottom: 6px;
+        left: 6px;
+        background: #00E676;
+        color: #050A07;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .uv-photo-remove-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    .uv-photo-remove-btn:hover {
+        background: rgba(239, 68, 68, 0.85);
+    }
+
+    /* Seller Pro Tips Card */
+    .uv-protips-card {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 16px;
+        background: rgba(12, 20, 16, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+    }
+    .uv-protips-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px 0;
+    }
+    .uv-protips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.65);
+    }
+    .uv-protips-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        line-height: 1.45;
+    }
+    .uv-protips-list strong {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Trust Banner */
+    .uv-trust-banner {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 16px;
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .uv-trust-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #34d399;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .uv-trust-title {
+        font-size: 12px;
+        font-weight: 800;
+        color: #6ee7b7;
+        margin: 0;
+    }
+    .uv-trust-sub {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 2px 0 0 0;
+    }
+
+    /* Form Fields */
+    .uv-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+    .uv-label {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .uv-required {
+        color: #f87171;
+        margin-left: 3px;
+    }
+    .uv-input {
+        width: 100%;
+        background: rgba(5, 10, 7, 0.7);
+        border: 1px solid rgba(102, 255, 178, 0.12);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 14px;
+        padding: 11px 14px;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+    .uv-input:focus {
+        border-color: rgba(0, 230, 118, 0.5);
+        box-shadow: 0 0 16px rgba(0, 230, 118, 0.15);
+    }
+    .uv-input-with-currency {
+        position: relative;
+    }
+    .uv-currency-symbol {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(167, 184, 176, 0.5);
+        font-weight: 700;
+        pointer-events: none;
+    }
+    .uv-input-currency {
+        padding-left: 32px;
+    }
+
+    /* Quick Chips */
+    .uv-chips-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    .uv-chips-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 600;
+    }
+    .uv-chip-btn {
+        padding: 3px 9px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .uv-chip-btn:hover {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #6ee7b7;
+    }
+
+    /* Category Buttons Grid */
+    .uv-cat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .uv-cat-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #090f0c;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .uv-cat-btn:hover {
+        border-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .uv-cat-btn.active {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.55);
+        color: #6ee7b7;
+        font-weight: 800;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+    }
+
+    /* Condition Buttons List */
+    .uv-cond-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .uv-cond-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #090f0c;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s ease;
+    }
+    .uv-cond-btn:hover {
+        border-color: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .uv-cond-btn.active {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+    .uv-cond-title {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #fff;
+    }
+    .uv-cond-btn.active .uv-cond-title {
+        color: #6ee7b7;
+    }
+    .uv-cond-desc {
+        display: block;
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 2px;
+    }
+
+    /* Negotiation Toggle Switch */
+    .uv-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(102, 255, 178, 0.1);
+        background: rgba(5, 10, 7, 0.5);
+        margin-bottom: 20px;
+    }
+    .uv-toggle-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 2px 0;
+    }
+    .uv-toggle-sub {
+        color: rgba(167, 184, 176, 0.5);
+        font-size: 12px;
+        margin: 0;
+    }
+    .uv-switch {
+        width: 44px;
+        height: 24px;
+        border-radius: 12px;
+        background: #00E676;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.2s ease;
+        flex-shrink: 0;
+    }
+    .uv-switch.off {
+        background: rgba(102, 255, 178, 0.1);
+    }
+    .uv-switch-knob {
+        position: absolute;
+        top: 3px;
+        left: 23px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #050A07;
+        transition: left 0.2s ease;
+    }
+    .uv-switch.off .uv-switch-knob {
+        left: 3px;
+        background: #A7B8B0;
+    }
+
+    /* Preview & Action Buttons */
+    .uv-actions-box {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 32px;
+    }
+    .uv-btn-preview-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+        padding: 11px 24px;
+        background: rgba(10, 15, 12, 0.5);
+        border: 1px solid rgba(102, 255, 178, 0.15);
+        border-radius: 14px;
+        color: #A7B8B0;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .uv-btn-preview-toggle:hover, .uv-btn-preview-toggle.active {
+        background: rgba(0, 230, 118, 0.08);
+        border-color: rgba(0, 230, 118, 0.35);
+        color: #00E676;
+    }
+
+    .uv-btn-publish {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px 32px;
+        background: linear-gradient(135deg, #00C853 0%, #00E676 100%);
+        border: none;
+        border-radius: 16px;
+        color: #050A07;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 4px 28px rgba(0, 230, 118, 0.35);
+        transition: all 0.2s ease;
+        letter-spacing: 0.01em;
+        width: 100%;
+    }
+    .uv-btn-publish:hover {
+        transform: scale(1.015);
+        box-shadow: 0 6px 36px rgba(0, 230, 118, 0.55);
+    }
+
+    .uv-disclaimer {
+        text-align: center;
+        color: rgba(167, 184, 176, 0.4);
+        font-size: 12px;
+        margin: 0;
+    }
+
+    /* Live Preview Card */
+    .uv-live-preview-card {
+        background: rgba(5, 10, 7, 0.7);
+        border: 1px solid rgba(0, 230, 118, 0.25);
+        border-radius: 18px;
+        overflow: hidden;
+        animation: fadeIn 0.25s ease;
+    }
+    .uv-live-preview-header {
+        padding: 10px 20px;
+        border-bottom: 1px solid rgba(102, 255, 178, 0.1);
+        background: rgba(0, 230, 118, 0.06);
+        color: #00E676;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .uv-live-preview-body {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        align-items: flex-start;
+    }
+    .uv-live-preview-img {
+        width: 110px;
+        height: 110px;
+        border-radius: 12px;
+        background: rgba(10, 15, 12, 0.8);
+        border: 1px solid rgba(102, 255, 178, 0.15);
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(167, 184, 176, 0.3);
+        font-size: 28px;
+    }
+    .uv-live-preview-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+}
+
+<div class="uv-sell-ambient-grid"></div>
+<div class="uv-sell-glow-1"></div>
+<div class="uv-sell-glow-2"></div>
+
+<div class="uv-sell-page">
+    <div class="uv-sell-container">
+        <!-- ── Back + Header ── -->
+        <a href="/Dashboard/Marketplace" class="uv-sell-back-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to UniVerse Resale</span>
+        </a>
+
+        <div class="uv-sell-header">
+            <div class="uv-sell-title-row">
+                <h1 class="uv-sell-title">Sell an Item</h1>
+                <span class="uv-sell-badge">Student Resale</span>
+            </div>
+            <p class="uv-sell-sub">
+                Turn things you no longer need into value for another student.
+            </p>
+        </div>
+
+        <!-- ── Listing Strength Meter ── -->
+        <div class="uv-strength-meter">
+            <div class="uv-strength-header">
+                <div>
+                    <span class="uv-strength-title">Listing Strength: </span>
+                    <span id="strengthLabel" class="uv-strength-label">Getting Started</span>
+                </div>
+                <span id="strengthPct" class="uv-strength-pct">15%</span>
+            </div>
+            <div class="uv-strength-track">
+                <div id="strengthBar" class="uv-strength-bar"></div>
+            </div>
+            <p id="strengthTip" class="uv-strength-tip">
+                <i class="bi bi-lightbulb-fill text-warning"></i>
+                <span>Add at least 1 photo and title to begin</span>
+            </p>
+        </div>
+
+        <!-- ── Main Sell Form ── -->
+        <form asp-controller="Marketplace" asp-action="Create" method="post" enctype="multipart/form-data" id="sellForm">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="Category" id="hiddenCategory" value="Books" />
+            <input type="hidden" name="Condition" id="hiddenCondition" value="Good" />
+            <input type="hidden" name="Negotiable" id="hiddenNegotiable" value="true" />
+
+            <div class="uv-sell-grid">
+                <!-- ════════════════════════════════════════════════════════════════
+                     LEFT: Photos
+                ════════════════════════════════════════════════════════════════ -->
+                <section>
+                    <div class="uv-section-card">
+                        <h2 class="uv-card-heading">Photos</h2>
+                        <p class="uv-card-subheading">Upload photos of your item — first photo is the cover.</p>
+
+                        <!-- Uploaded Photos Grid -->
+                        <div id="photosGrid" class="uv-photos-grid" style="display: none;">
+                            <div class="uv-photo-card" id="photoCard0">
+                                <img id="photoImg0" src="#" alt="Cover photo" />
+                                <span class="uv-photo-cover-tag">Cover</span>
+                                <button type="button" class="uv-photo-remove-btn" onclick="removePhoto()" title="Remove photo">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dropzone / File Input -->
+                        <label for="imageFileInput" class="uv-dropzone" id="dropzoneLabel">
+                            <div class="uv-dropzone-icon">
+                                <i class="bi bi-camera"></i>
+                            </div>
+                            <div>
+                                <p class="uv-dropzone-title" id="dropzoneTitle">Add Photos</p>
+                                <p class="uv-dropzone-desc">Click to browse or drag and drop</p>
+                                <p class="uv-dropzone-formats">JPG, PNG, WebP · max 5 MB</p>
+                            </div>
+                        </label>
+                        <input type="file"
+                               name="ImageFile"
+                               id="imageFileInput"
+                               accept="image/*,.jpg,.jpeg,.png,.webp"
+                               style="display: none;"
+                               onchange="handlePhotoUpload(this)" />
+
+                        <!-- Optional Direct Web Image URL -->
+                        <div style="margin-top: 16px;">
+                            <label class="uv-label" style="font-size: 11.5px; color: rgba(255,255,255,0.6);">
+                                Or paste direct photo link (optional)
+                            </label>
+                            <input asp-for="ImageUrl"
+                                   id="imageUrlInput"
+                                   class="uv-input"
+                                   style="font-size: 12.5px; padding: 8px 12px;"
+                                   placeholder="https://images.unsplash.com/..."
+                                   oninput="updateStrength(); updatePreview();" />
+                        </div>
+                    </div>
+
+                    <!-- Seller Pro-Tips Card -->
+                    <div class="uv-protips-card">
+                        <h3 class="uv-protips-title">
+                            <i class="bi bi-stars text-success"></i>
+                            <span>Seller Pro-Tips for Fast Sales</span>
+                        </h3>
+                        <ul class="uv-protips-list">
+                            <li>
+                                <span>☀️</span>
+                                <span><strong>Good Lighting:</strong> Photos taken in natural desk light get 80% more peer inquiries.</span>
+                            </li>
+                            <li>
+                                <span>📐</span>
+                                <span><strong>All Angles:</strong> Show book covers, page edges, or gadget screens turned on.</span>
+                            </li>
+                            <li>
+                                <span>🤝</span>
+                                <span><strong>Honesty Wins:</strong> Note any highlights or marks early to build high campus trust.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Campus Trust Banner -->
+                    <div class="uv-trust-banner">
+                        <div class="uv-trust-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <p class="uv-trust-title">Zero Fees · 100% Yours</p>
+                            <p class="uv-trust-sub">Meet at hostel gates or library reception for direct handover.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ════════════════════════════════════════════════════════════════
+                     RIGHT: Listing Details
+                ════════════════════════════════════════════════════════════════ -->
+                <section>
+                    <div class="uv-section-card">
+                        <h2 class="uv-card-heading">Listing Details</h2>
+                        <p class="uv-card-subheading">Describe what you are selling so campus peers can find it.</p>
+
+                        <!-- Title -->
+                        <div class="uv-field-group">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <label for="titleInput" class="uv-label">Title<span class="uv-required">*</span></label>
+                                <span id="titleCounter" style="font-size: 11px; color: rgba(167,184,176,0.4);">0/200</span>
+                            </div>
+                            <input asp-for="Title"
+                                   id="titleInput"
+                                   class="uv-input"
+                                   maxlength="200"
+                                   placeholder="e.g. Engineering Maths Textbook (3rd Year)"
+                                   required
+                                   oninput="updateTitleCounter(this); updateStrength(); updatePreview();" />
+
+                            <!-- Quick Title Starters -->
+                            <div class="uv-chips-row">
+                                <span class="uv-chips-label">Quick titles:</span>
+                                <button type="button" class="uv-chip-btn" onclick="applyTitle('Casio fx-991EX Calculator')">+ Casio Calculator</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTitle('Engineering Drafter & Sheet Holder')">+ Drafter Set</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTitle('Prestige Electric Kettle 1.5L')">+ Kettle 1.5L</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTitle('Hostel Study Desk Lamp')">+ Study Lamp</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTitle('Campus Mountain Bicycle with Lock')">+ Campus Cycle</button>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="uv-field-group">
+                            <label class="uv-label">Category<span class="uv-required">*</span></label>
+                            <div class="uv-cat-grid">
+                                <button type="button" class="uv-cat-btn active" data-cat="Books" onclick="selectCat('Books', this)">📚 Books</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Electronics" onclick="selectCat('Electronics', this)">💻 Electronics</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Study Notes" onclick="selectCat('Study Notes', this)">📝 Study Notes</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Hostel Life" onclick="selectCat('Hostel Life', this)">🛏️ Hostel Life</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Sports" onclick="selectCat('Sports', this)">⚽ Sports</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Furniture" onclick="selectCat('Furniture', this)">🪑 Furniture</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Clothing" onclick="selectCat('Clothing', this)">👕 Clothing</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Gaming" onclick="selectCat('Gaming', this)">🎮 Gaming</button>
+                                <button type="button" class="uv-cat-btn" data-cat="Other" onclick="selectCat('Other', this)">✨ Other</button>
+                            </div>
+                        </div>
+
+                        <!-- Condition -->
+                        <div class="uv-field-group">
+                            <label class="uv-label">Condition<span class="uv-required">*</span></label>
+                            <div class="uv-cond-list">
+                                <button type="button" class="uv-cond-btn" data-cond="Brand New" onclick="selectCond('Brand New', this)">
+                                    <div>
+                                        <span class="uv-cond-title">Brand New</span>
+                                        <span class="uv-cond-desc">Unused, packed condition</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                                </button>
+                                <button type="button" class="uv-cond-btn" data-cond="Like New" onclick="selectCond('Like New', this)">
+                                    <div>
+                                        <span class="uv-cond-title">Like New</span>
+                                        <span class="uv-cond-desc">Barely used, excellent condition</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                                </button>
+                                <button type="button" class="uv-cond-btn active" data-cond="Good" onclick="selectCond('Good', this)">
+                                    <div>
+                                        <span class="uv-cond-title">Good</span>
+                                        <span class="uv-cond-desc">Some signs of use, fully functional</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                </button>
+                                <button type="button" class="uv-cond-btn" data-cond="Fair" onclick="selectCond('Fair', this)">
+                                    <div>
+                                        <span class="uv-cond-title">Fair</span>
+                                        <span class="uv-cond-desc">Noticeable wear, works as expected</span>
+                                    </div>
+                                    <i class="bi bi-check-circle-fill text-success" style="display: none;"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Price & MRP -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+                            <div class="uv-field-group" style="margin-bottom: 0;">
+                                <label for="priceInput" class="uv-label">Selling Price (₹)<span class="uv-required">*</span></label>
+                                <div class="uv-input-with-currency">
+                                    <span class="uv-currency-symbol">₹</span>
+                                    <input asp-for="Price"
+                                           id="priceInput"
+                                           type="number"
+                                           min="0"
+                                           step="10"
+                                           class="uv-input uv-input-currency"
+                                           placeholder="0"
+                                           required
+                                           oninput="calcDiscount(); updateStrength(); updatePreview();" />
+                                </div>
+                                <div class="uv-chips-row">
+                                    <button type="button" class="uv-chip-btn" onclick="applyPrice(50)">₹50</button>
+                                    <button type="button" class="uv-chip-btn" onclick="applyPrice(100)">₹100</button>
+                                    <button type="button" class="uv-chip-btn" onclick="applyPrice(200)">₹200</button>
+                                    <button type="button" class="uv-chip-btn" onclick="applyPrice(500)">₹500</button>
+                                    <button type="button" class="uv-chip-btn" onclick="applyPrice(1000)">₹1000</button>
+                                </div>
+                            </div>
+
+                            <div class="uv-field-group" style="margin-bottom: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                    <label for="origPriceInput" class="uv-label">Original Price (₹)</label>
+                                    <span id="discountBadge" style="font-size: 11px; font-weight: 800; color: #00E676; display: none;">0% OFF</span>
+                                </div>
+                                <div class="uv-input-with-currency">
+                                    <span class="uv-currency-symbol">₹</span>
+                                    <input asp-for="OriginalPrice"
+                                           id="origPriceInput"
+                                           type="number"
+                                           min="0"
+                                           step="10"
+                                           class="uv-input uv-input-currency"
+                                           placeholder="Optional MRP"
+                                           oninput="calcDiscount(); updatePreview();" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Open to Negotiation Switch -->
+                        <div class="uv-toggle-row">
+                            <div>
+                                <p class="uv-toggle-title">Open to Negotiation</p>
+                                <p class="uv-toggle-sub">Buyers can make counter-offers on your price</p>
+                            </div>
+                            <button type="button" class="uv-switch" id="negSwitch" onclick="toggleNegotiable()" title="Toggle price negotiation">
+                                <span class="uv-switch-knob"></span>
+                            </button>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="uv-field-group">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                <label for="descInput" class="uv-label">Description — optional</label>
+                                <span id="descCounter" style="font-size: 11px; color: rgba(167,184,176,0.4);">0/5000</span>
+                            </div>
+
+                            <!-- Quick Description Templates -->
+                            <div class="uv-chips-row" style="margin-bottom: 6px; margin-top: 0;">
+                                <span class="uv-chips-label">Templates:</span>
+                                <button type="button" class="uv-chip-btn" onclick="applyTemplate('book')">📚 Book / Notes</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTemplate('gadget')">⚡ Gadget</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyTemplate('hostel')">🛏️ Hostel</button>
+                            </div>
+
+                            <textarea asp-for="Description"
+                                      id="descInput"
+                                      class="uv-input"
+                                      rows="4"
+                                      maxlength="5000"
+                                      placeholder="Describe condition, what's included, edition, reason for selling..."
+                                      oninput="updateDescCounter(this); updateStrength(); updatePreview();"></textarea>
+                        </div>
+
+                        <!-- Pickup Location -->
+                        <div class="uv-field-group" style="margin-bottom: 0;">
+                            <label for="pickupInput" class="uv-label">Campus Pickup Location<span class="uv-required">*</span></label>
+                            <input asp-for="PickupLocation"
+                                   id="pickupInput"
+                                   class="uv-input"
+                                   placeholder="e.g. Central Library Entrance, Hostel Block D, or Lab 301"
+                                   required
+                                   oninput="updateStrength(); updatePreview();" />
+
+                            <!-- Quick Campus Spots -->
+                            <div class="uv-chips-row">
+                                <span class="uv-chips-label">Quick spots:</span>
+                                <button type="button" class="uv-chip-btn" onclick="applyLoc('Central Library Entrance')">📍 Central Library</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyLoc('Hostel Block D Reception')">📍 Hostel D</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyLoc('Hostel Block B Common Room')">📍 Hostel B</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyLoc('Campus Canteen / Food Court')">📍 Canteen</button>
+                                <button type="button" class="uv-chip-btn" onclick="applyLoc('Engineering Lab 301')">📍 Lab 301</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div class="universe-card p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
-                        <i class="bi bi-tag-fill text-success fs-2"></i>
+            <!-- ════════════════════════════════════════════════════════════════
+                 BOTTOM ACTIONS & PREVIEW
+            ════════════════════════════════════════════════════════════════ -->
+            <div class="uv-actions-box">
+                <!-- Preview Toggle -->
+                <button type="button" class="uv-btn-preview-toggle" id="previewToggleBtn" onclick="togglePreview()">
+                    <i class="bi bi-eye"></i>
+                    <span id="previewBtnText">Preview Listing</span>
+                </button>
+
+                <!-- Live Card Preview -->
+                <div id="livePreviewContainer" class="uv-live-preview-card" style="display: none;">
+                    <div class="uv-live-preview-header">
+                        <i class="bi bi-eye-fill me-1"></i> Live Listing Preview
                     </div>
-                    <h2 class="fw-bold text-white mb-1">Sell an Item on Campus</h2>
-                    <p class="text-secondary small">List textbooks, electronics, cycle, or hostel essentials for fellow students</p>
+                    <div class="uv-live-preview-body">
+                        <div class="uv-live-preview-img" id="previewImgBox">
+                            <i class="bi bi-camera"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 id="prevTitle" style="color: #fff; font-size: 16px; font-weight: 800; margin: 0 0 6px 0;">Item Title</h3>
+                            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px;">
+                                <span id="prevPrice" style="color: #00E676; font-size: 19px; font-weight: 900;">₹0</span>
+                                <span id="prevOrigPrice" style="color: rgba(167,184,176,0.4); font-size: 13px; text-decoration: line-through; display: none;"></span>
+                                <span id="prevDiscount" style="background: rgba(239,68,68,0.2); color: #f87171; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px; display: none;"></span>
+                                <span id="prevNeg" style="color: rgba(167,184,176,0.6); font-size: 12px;">· Negotiable</span>
+                            </div>
+                            <div style="display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap;">
+                                <span id="prevCond" style="background: rgba(0,230,118,0.1); color: #00E676; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Good</span>
+                                <span id="prevCat" style="background: rgba(102,255,178,0.06); color: rgba(167,184,176,0.8); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(102,255,178,0.15);">Books</span>
+                            </div>
+                            <p id="prevLoc" style="color: rgba(167,184,176,0.7); font-size: 12px; margin: 0 0 4px 0;">📍 Campus</p>
+                            <p id="prevDesc" style="color: rgba(167,184,176,0.6); font-size: 12px; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></p>
+                        </div>
+                    </div>
                 </div>
 
-                <form asp-controller="Marketplace" asp-action="Create" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
+                <!-- Submit Button -->
+                <button type="submit" class="uv-btn-publish" id="submitBtn">
+                    <i class="bi bi-check2-circle" style="font-size: 20px;"></i>
+                    <span>Publish Listing to UniVerse Resale</span>
+                </button>
 
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
-
-                    <!-- Title -->
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label text-secondary small fw-semibold">Item Title</label>
-                        <input asp-for="Title" class="form-control" placeholder="e.g. Introduction to Algorithms (CLRS 4th Ed.)" required />
-                        <span asp-validation-for="Title" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Category & Condition -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Category" class="form-label text-secondary small fw-semibold">Category</label>
-                            <select asp-for="Category" class="form-select">
-                                <option value="Books">Books</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Study Notes">Study Notes</option>
-                                <option value="Hostel Life">Hostel Life</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Furniture">Furniture</option>
-                                <option value="Clothing">Clothing</option>
-                                <option value="Gaming">Gaming</option>
-                                <option value="Other" selected>Other / Equipment</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="Condition" class="form-label text-secondary small fw-semibold">Condition</label>
-                            <select asp-for="Condition" class="form-select">
-                                <option value="Brand New">Brand New</option>
-                                <option value="Like New">Like New</option>
-                                <option value="Good" selected>Good Condition</option>
-                                <option value="Fair">Fair / Usable</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Pricing -->
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Price" class="form-label text-secondary small fw-semibold">Selling Price (₹)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary border-opacity-25 text-success fw-bold">₹</span>
-                                <input asp-for="Price" class="form-control" type="number" step="10" placeholder="500" required />
-                            </div>
-                            <span asp-validation-for="Price" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="OriginalPrice" class="form-label text-secondary small fw-semibold">Original Price / MRP (₹)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary border-opacity-25 text-secondary">₹</span>
-                                <input asp-for="OriginalPrice" class="form-control" type="number" step="10" placeholder="Optional MRP (e.g. 1200)" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Negotiable Toggle -->
-                    <div class="form-check mb-3">
-                        <input asp-for="Negotiable" class="form-check-input bg-dark border-secondary" type="checkbox" id="negCheck" />
-                        <label class="form-check-label text-light small" for="negCheck">
-                            Allow Price Negotiation / Counter Offers from buyers
-                        </label>
-                    </div>
-
-                    <!-- Pickup Spot -->
-                    <div class="mb-3">
-                        <label asp-for="PickupLocation" class="form-label text-secondary small fw-semibold">Campus Meetup Location</label>
-                        <input asp-for="PickupLocation" class="form-control" placeholder="e.g. Central Library Entrance, Hostel D Reception, or Lab 301" required />
-                        <span asp-validation-for="PickupLocation" class="text-danger small"></span>
-                    </div>
-
-                    <!-- Item Photo Upload (From Camera or Gallery) -->
-                    <div class="mb-3">
-                        <label asp-for="ImageFile" class="form-label text-secondary small fw-semibold">Item Photo (From Device / Camera)</label>
-                        <input asp-for="ImageFile" type="file" accept="image/*" class="form-control" id="itemPhotoInput" onchange="previewItemPhoto(this)" />
-                        <small class="text-secondary d-block mt-1">Upload a photo of your actual item for students to see.</small>
-                        <div id="photoPreviewContainer" class="mt-2 text-center rounded-3 p-2 bg-dark bg-opacity-40 border border-secondary border-opacity-25" style="display: none; max-height: 220px; overflow: hidden;">
-                            <img id="photoPreview" src="#" alt="Selected Photo" style="max-height: 200px; border-radius: 8px; object-fit: contain;" />
-                        </div>
-                    </div>
-
-                    <!-- Fallback / Optional Web Image URL -->
-                    <div class="mb-3">
-                        <label asp-for="ImageUrl" class="form-label text-secondary small fw-semibold">Or Photo URL (Optional)</label>
-                        <input asp-for="ImageUrl" class="form-control" placeholder="https://... (Optional if not uploading file)" />
-                    </div>
-
-                    <!-- Description -->
-                    <div class="mb-4">
-                        <label asp-for="Description" class="form-label text-secondary small fw-semibold">Item Details & Condition Notes</label>
-                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Highlight edition, included accessories, battery health, or reason for selling..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-emerald w-100 py-2 fs-6 mb-2">
-                        Post Listing on Campus Marketplace
-                    </button>
-                    <a href="/Dashboard/Marketplace" class="btn btn-glass w-100 py-2 text-decoration-none text-center">
-                        Cancel
-                    </a>
-                </form>
+                <p class="uv-disclaimer">
+                    By publishing, you confirm this item belongs to you and complies with Marwadi University community guidelines.
+                </p>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
 <script>
-    function previewItemPhoto(input) {
-        const container = document.getElementById('photoPreviewContainer');
-        const img = document.getElementById('photoPreview');
+    let hasPhoto = false;
+    let selectedCat = "Books";
+    let selectedCond = "Good";
+    let isNeg = true;
+
+    // ── Photo Upload & Live Preview ──
+    function handlePhotoUpload(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = function(e) {
-                img.src = e.target.result;
-                container.style.display = 'block';
+            reader.onload = function (e) {
+                document.getElementById('photoImg0').src = e.target.result;
+                document.getElementById('photosGrid').style.display = 'grid';
+                document.getElementById('dropzoneLabel').style.display = 'none';
+                hasPhoto = true;
+                updateStrength();
+                updatePreview();
             };
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            container.style.display = 'none';
+            reader.readAsDataURL(file);
         }
     }
+
+    function removePhoto() {
+        const input = document.getElementById('imageFileInput');
+        input.value = "";
+        document.getElementById('photoImg0').src = "#";
+        document.getElementById('photosGrid').style.display = 'none';
+        document.getElementById('dropzoneLabel').style.display = 'flex';
+        hasPhoto = false;
+        updateStrength();
+        updatePreview();
+    }
+
+    // Drag over styling
+    const dropzone = document.getElementById('dropzoneLabel');
+    if (dropzone) {
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('dragover'); });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const input = document.getElementById('imageFileInput');
+                input.files = e.dataTransfer.files;
+                handlePhotoUpload(input);
+            }
+        });
+    }
+
+    // ── Quick Chips Helpers ──
+    function applyTitle(val) {
+        const input = document.getElementById('titleInput');
+        input.value = val;
+        updateTitleCounter(input);
+        updateStrength();
+        updatePreview();
+    }
+
+    function updateTitleCounter(input) {
+        document.getElementById('titleCounter').innerText = `${input.value.length}/200`;
+    }
+
+    function applyPrice(val) {
+        const input = document.getElementById('priceInput');
+        input.value = val;
+        calcDiscount();
+        updateStrength();
+        updatePreview();
+    }
+
+    function applyLoc(val) {
+        const input = document.getElementById('pickupInput');
+        input.value = val;
+        updateStrength();
+        updatePreview();
+    }
+
+    function applyTemplate(type) {
+        const descInput = document.getElementById('descInput');
+        if (type === 'book') {
+            descInput.value = "Used for 1 semester only. All pages clean and intact, minimal pencil notes. Formula sheet included. Ready for immediate hostel handover.";
+        } else if (type === 'gadget') {
+            descInput.value = "100% fully functional and tested. Comes with original cable. Battery health is great. Reason for selling: Upgraded to newer version.";
+        } else if (type === 'hostel') {
+            descInput.value = "Gently used in hostel room, thoroughly cleaned and in great shape. Available for immediate pickup at hostel reception.";
+        }
+        updateDescCounter(descInput);
+        updateStrength();
+        updatePreview();
+    }
+
+    function updateDescCounter(input) {
+        document.getElementById('descCounter').innerText = `${input.value.length}/5000`;
+    }
+
+    // ── Category & Condition Selection ──
+    function selectCat(catName, btn) {
+        selectedCat = catName;
+        document.getElementById('hiddenCategory').value = catName;
+        document.querySelectorAll('.uv-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateStrength();
+        updatePreview();
+    }
+
+    function selectCond(condName, btn) {
+        selectedCond = condName;
+        document.getElementById('hiddenCondition').value = condName;
+        document.querySelectorAll('.uv-cond-btn').forEach(b => {
+            b.classList.remove('active');
+            const check = b.querySelector('.bi-check-circle-fill');
+            if (check) check.style.display = 'none';
+        });
+        btn.classList.add('active');
+        const check = btn.querySelector('.bi-check-circle-fill');
+        if (check) check.style.display = 'block';
+        updateStrength();
+        updatePreview();
+    }
+
+    // ── Negotiation Toggle ──
+    function toggleNegotiable() {
+        isNeg = !isNeg;
+        document.getElementById('hiddenNegotiable').value = isNeg ? "true" : "false";
+        const sw = document.getElementById('negSwitch');
+        if (isNeg) {
+            sw.classList.remove('off');
+        } else {
+            sw.classList.add('off');
+        }
+        updatePreview();
+    }
+
+    // ── Discount Calculation ──
+    function calcDiscount() {
+        const price = parseFloat(document.getElementById('priceInput').value) || 0;
+        const orig = parseFloat(document.getElementById('origPriceInput').value) || 0;
+        const badge = document.getElementById('discountBadge');
+
+        if (orig > price && price > 0) {
+            const pct = Math.round(((orig - price) / orig) * 100);
+            badge.innerText = `${pct}% OFF`;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // ── Listing Strength Calculator ──
+    function updateStrength() {
+        let score = 0;
+        const title = (document.getElementById('titleInput').value || "").trim();
+        const price = parseFloat(document.getElementById('priceInput').value) || 0;
+        const desc = (document.getElementById('descInput').value || "").trim();
+        const loc = (document.getElementById('pickupInput').value || "").trim();
+        const webUrl = (document.getElementById('imageUrlInput').value || "").trim();
+
+        if (hasPhoto || webUrl.length > 5) score += 30;
+        if (title.length >= 6) score += 20;
+        if (selectedCat) score += 10;
+        if (selectedCond) score += 10;
+        if (price > 0) score += 15;
+        if (desc.length >= 15) score += 10;
+        if (loc.length >= 3) score += 5;
+
+        score = Math.min(100, Math.max(15, score));
+
+        const bar = document.getElementById('strengthBar');
+        const pctEl = document.getElementById('strengthPct');
+        const labelEl = document.getElementById('strengthLabel');
+        const tipEl = document.getElementById('strengthTip');
+
+        bar.style.width = `${score}%`;
+        pctEl.innerText = `${score}%`;
+
+        if (score >= 80) {
+            labelEl.innerText = "Excellent Listing";
+            labelEl.style.color = "#34d399";
+            bar.style.backgroundColor = "#10b981";
+            tipEl.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i><span>Your listing looks complete and ready to publish!</span>';
+        } else if (score >= 50) {
+            labelEl.innerText = "Good Progress";
+            labelEl.style.color = "#60a5fa";
+            bar.style.backgroundColor = "#3b82f6";
+            tipEl.innerHTML = '<i class="bi bi-lightbulb-fill text-info"></i><span>Add a detailed description or meetup spot to attract more buyers.</span>';
+        } else {
+            labelEl.innerText = "Getting Started";
+            labelEl.style.color = "#fbbf24";
+            bar.style.backgroundColor = "#f59e0b";
+            tipEl.innerHTML = '<i class="bi bi-lightbulb-fill text-warning"></i><span>Add at least 1 photo and title to begin.</span>';
+        }
+    }
+
+    // ── Live Preview ──
+    let isPreviewOpen = false;
+    function togglePreview() {
+        isPreviewOpen = !isPreviewOpen;
+        const container = document.getElementById('livePreviewContainer');
+        const btn = document.getElementById('previewToggleBtn');
+        const txt = document.getElementById('previewBtnText');
+
+        if (isPreviewOpen) {
+            container.style.display = 'block';
+            btn.classList.add('active');
+            txt.innerText = 'Hide Preview';
+            updatePreview();
+        } else {
+            container.style.display = 'none';
+            btn.classList.remove('active');
+            txt.innerText = 'Preview Listing';
+        }
+    }
+
+    function updatePreview() {
+        if (!isPreviewOpen) return;
+
+        const title = (document.getElementById('titleInput').value || "").trim();
+        const price = parseFloat(document.getElementById('priceInput').value) || 0;
+        const orig = parseFloat(document.getElementById('origPriceInput').value) || 0;
+        const desc = (document.getElementById('descInput').value || "").trim();
+        const loc = (document.getElementById('pickupInput').value || "").trim();
+        const webUrl = (document.getElementById('imageUrlInput').value || "").trim();
+
+        document.getElementById('prevTitle').innerText = title || "Item Title";
+        document.getElementById('prevPrice').innerText = price > 0 ? `₹${price.toFixed(0)}` : "₹0";
+
+        const origEl = document.getElementById('prevOrigPrice');
+        const discEl = document.getElementById('prevDiscount');
+        if (orig > price && price > 0) {
+            origEl.innerText = `₹${orig.toFixed(0)}`;
+            origEl.style.display = 'inline';
+            discEl.innerText = `${Math.round(((orig - price) / orig) * 100)}% off`;
+            discEl.style.display = 'inline';
+        } else {
+            origEl.style.display = 'none';
+            discEl.style.display = 'none';
+        }
+
+        document.getElementById('prevNeg').innerText = isNeg ? "· Negotiable" : "";
+        document.getElementById('prevCond').innerText = selectedCond;
+        document.getElementById('prevCat').innerText = selectedCat;
+        document.getElementById('prevLoc').innerText = loc ? `📍 ${loc}` : "📍 Marwadi Campus";
+        document.getElementById('prevDesc').innerText = desc || "No description provided.";
+
+        const imgBox = document.getElementById('previewImgBox');
+        if (hasPhoto) {
+            const imgSrc = document.getElementById('photoImg0').src;
+            imgBox.innerHTML = `<img src="${imgSrc}" alt="Preview" />`;
+        } else if (webUrl.length > 5) {
+            imgBox.innerHTML = `<img src="${webUrl}" alt="Preview" />`;
+        } else {
+            imgBox.innerHTML = `<i class="bi bi-camera"></i>`;
+        }
+    }
+
+    // Initial load
+    updateStrength();
 </script>
 }
