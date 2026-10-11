@@ -50,6 +50,126 @@
             z-index: 1;
         }
 
+        /* ─── Top Floating Header Bar ─── */
+        .auth-top-bar {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .auth-top-bar > * {
+            pointer-events: auto;
+        }
+
+        .btn-back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 20px;
+            border-radius: 9999px;
+            background: rgba(6, 12, 18, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-back-home i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+            color: #34d399;
+        }
+
+        .btn-back-home:hover {
+            color: #ffffff;
+            background: rgba(10, 24, 17, 0.96);
+            border-color: rgba(52, 211, 153, 0.6);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+            transform: translateX(-3px);
+            text-decoration: none;
+        }
+
+        .btn-back-home:hover i {
+            transform: translateX(-3px);
+        }
+
+        .btn-home-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 9999px;
+            background: rgba(6, 12, 18, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-home-icon i {
+            color: #34d399;
+            font-size: 14px;
+        }
+
+        .btn-home-icon:hover {
+            color: #ffffff;
+            background: rgba(10, 24, 17, 0.96);
+            border-color: rgba(52, 211, 153, 0.6);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+            text-decoration: none;
+        }
+
+        .link-return-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+
+        .link-return-home:hover {
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(52, 211, 153, 0.4);
+            transform: translateX(-2px);
+            text-decoration: none;
+        }
+
+        @@media (max-width: 720px) {
+            .auth-top-bar {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+            .auth-top-bar .gateway-pill {
+                display: none;
+            }
+        }
+
         /* ─── Top Gateway Status Pill ─── */
         .gateway-pill {
             position: relative;
@@ -769,14 +889,27 @@
     <!-- Tech Spotlight Interactive Canvas Background -->
     <canvas id="spotlightCanvas"></canvas>
 
-    <!-- Top University Gateway Status Pill -->
-    <div class="gateway-pill">
-        <span class="radar-dot-wrap">
-            <span class="radar-ping"></span>
-            <span class="radar-core"></span>
-        </span>
-        <span class="gateway-text">Marwadi University &bull; Secure Gateway</span>
-    </div>
+    <!-- Top Floating Header Bar with Back to Home & Gateway Status -->
+    <header class="auth-top-bar">
+        <a href="/" class="btn-back-home" title="Return to UniVerse Home Page">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Home</span>
+        </a>
+
+        <!-- Top University Gateway Status Pill -->
+        <div class="gateway-pill" style="margin-bottom: 0;">
+            <span class="radar-dot-wrap">
+                <span class="radar-ping"></span>
+                <span class="radar-core"></span>
+            </span>
+            <span class="gateway-text">Marwadi University &bull; Secure Gateway</span>
+        </div>
+
+        <a href="/" class="btn-home-icon" title="UniVerse Home Page">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+    </header>
 
     <!-- Main Tech Spotlight Glass Card Wrapper -->
     <div class="login-card-wrapper">
@@ -919,9 +1052,15 @@
                     <span>Continue with Google</span>
                 </button>
 
-                <!-- Create Account Link -->
+                <!-- Create Account Link & Return to Home -->
                 <div class="create-account-box">
-                    Don't have an account? <a href="/Account/Register">Create student account &rarr;</a>
+                    <div>Don't have an account? <a href="/Account/Register">Create student account &rarr;</a></div>
+                    <div>
+                        <a href="/" class="link-return-home" title="Explore UniVerse Campus Home Page">
+                            <i class="bi bi-arrow-left-circle-fill"></i>
+                            <span>Return to Campus Home Page</span>
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>

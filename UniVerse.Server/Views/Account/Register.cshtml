@@ -860,6 +860,18 @@
 </head>
 <body>
 
+    <!-- Top Floating Header Bar with Back to Home -->
+    <header style="position: fixed; top: 18px; left: 20px; right: 20px; z-index: 100; display: flex; align-items: center; justify-content: space-between; pointer-events: none;">
+        <a href="/" style="pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 9999px; background: rgba(6, 12, 18, 0.88); border: 1px solid rgba(255, 255, 255, 0.16); color: #e2e8f0; font-size: 13px; font-weight: 600; text-decoration: none; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45); transition: all 0.25s ease;" title="Return to UniVerse Home Page">
+            <i class="bi bi-arrow-left" style="color: #00d2ff; font-size: 14px;"></i>
+            <span>Back to Home</span>
+        </a>
+        <a href="/" style="pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 9999px; background: rgba(6, 12, 18, 0.88); border: 1px solid rgba(255, 255, 255, 0.16); color: #e2e8f0; font-size: 13px; font-weight: 600; text-decoration: none; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45); transition: all 0.25s ease;" title="UniVerse Home Page">
+            <i class="bi bi-house-door-fill" style="color: #00d2ff; font-size: 14px;"></i>
+            <span>Home</span>
+        </a>
+    </header>
+
     <!-- 3D WebGL Gargantua Black Hole Canvas Background -->
     <div id="blackHoleContainer"></div>
     <div class="cinematic-vignette"></div>
@@ -1184,6 +1196,14 @@
             <span>YOUR DATA IS PRIVATE</span>
             <span>•</span>
             <span>TRUSTED BY STUDENTS</span>
+        </div>
+
+        <!-- Return to Campus Home Link -->
+        <div style="text-align: center; margin-top: 12px;">
+            <a href="/" style="display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.7); text-decoration: none; padding: 7px 18px; border-radius: 9999px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px); transition: all 0.2s ease;">
+                <i class="bi bi-arrow-left-circle-fill" style="color: #00d2ff;"></i>
+                <span>Return to Campus Home Page</span>
+            </a>
         </div>
     </div>
 
