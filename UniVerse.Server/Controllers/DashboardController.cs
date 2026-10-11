@@ -292,43 +292,11 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction(nameof(Runner));
         }
 
-        // ─── 4. Wallet ────────────────────────────────────────────────────────
+        // ─── 4. Wallet (Removed as requested) ──────────────────────────────────
         [HttpGet]
-        public async Task<IActionResult> Wallet()
+        public IActionResult Wallet()
         {
-            var user = await GetCurrentUserAsync();
-            var allRequests = await _deliveryRepo.GetRequestsAsync();
-
-            var transactions = new List<WalletTransactionItem>
-            {
-                new() { Type = "deposit", Amount = 150.0, Description = "UPI Instant Top-Up (GPay)", CreatedAt = DateTime.Now.AddHours(-2), Status = "completed" },
-                new() { Type = "earning", Amount = 40.0, Description = "Runner Tip: Crispy Samosa & Chai", CreatedAt = DateTime.Now.AddHours(-6), Status = "completed" },
-                new() { Type = "payment", Amount = 30.0, Description = "Delivery Fee for Hostel D Dropoff", CreatedAt = DateTime.Now.AddDays(-1), Status = "completed" },
-                new() { Type = "earning", Amount = 50.0, Description = "Runner Tip: Engineering Drawing Sheets", CreatedAt = DateTime.Now.AddDays(-2), Status = "completed" },
-                new() { Type = "deposit", Amount = 100.0, Description = "Campus Wallet Welcome Bonus", CreatedAt = DateTime.Now.AddDays(-5), Status = "completed" }
-            };
-
-            ViewBag.ActivePage = "wallet";
-            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
-
-            var vm = new WalletPageViewModel
-            {
-                CurrentUser = user,
-                Balance = user.RewardBalance,
-                Transactions = transactions
-            };
-
-            return View(vm);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> TopUpWallet(double amount)
-        {
-            if (amount <= 0) amount = 100;
-            var user = await GetCurrentUserAsync();
-            await _userRepo.AddRewardBalanceAsync(user.Id, amount);
-            TempData["SuccessMessage"] = $"₹{amount:F0} added to your UniVerse Wallet!";
-            return RedirectToAction(nameof(Wallet));
+            return RedirectToAction(nameof(Index));
         }
 
         // ─── 5. Marketplace ───────────────────────────────────────────────────
