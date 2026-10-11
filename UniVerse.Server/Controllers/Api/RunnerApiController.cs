@@ -52,11 +52,6 @@ namespace UniVerse.Server.Controllers.Api
                 return NotFound(new { message = "Delivery request not found." });
             }
 
-            if (req.RequesterId == dto.RunnerId)
-            {
-                return BadRequest(new { message = "⚠️ Anti-Fraud Guard: You cannot accept your own delivery request. Another campus runner must fulfill it." });
-            }
-
             var success = await _deliveryRepo.AssignRunnerAsync(requestId, dto.RunnerId);
             if (!success)
             {

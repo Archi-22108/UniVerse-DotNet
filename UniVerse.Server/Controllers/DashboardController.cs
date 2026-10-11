@@ -186,14 +186,13 @@ namespace UniVerse.Server.Controllers
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
-            // Anti-Fraud Guard: User must NEVER see their own requests on their runner radar feed!
-            // Only orders created by other peers on campus can be fulfilled.
-            var pending = allRequests.Where(r => r.Status == "pending" && r.RequesterId != user.Id).ToList();
+            // Campus Radar: Show all active pending campus requests (latest first)
+            var pending = allRequests.Where(r => r.Status == "pending").OrderByDescending(r => r.CreatedAt).ToList();
             var activeDeliveries = allRequests.Where(r => (r.Status == "accepted" || r.Status == "picked_up" || r.Status == "in_transit") && r.RunnerId == user.Id).ToList();
             var completedDeliveries = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).ToList();
 
             ViewBag.ActivePage = "runner";
-            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+            ViewBag.ActiveRequestsCount = allRequests.Count(r => r.RequesterId == user.Id && r.Status != "delivered" && r.Status != "cancelled");
 
             var vm = new RunnerPageViewModel
             {
@@ -213,8 +212,7 @@ namespace UniVerse.Server.Controllers
         {
             var user = await GetCurrentUserAsync();
             var pending = await _deliveryRepo.GetRequestsAsync("pending");
-            var othersPending = pending.Where(r => r.RequesterId != user.Id).ToList();
-            return Json(new { pendingCount = othersPending.Count });
+            return Json(new { pendingCount = pending.Count });
         }
 
         [HttpPost]
@@ -228,18 +226,13 @@ namespace UniVerse.Server.Controllers
                 return RedirectToAction(nameof(Runner));
             }
 
-            // Anti-Fraud Guard: User cannot accept their own delivery request!
-            if (target.RequesterId == user.Id)
-            {
-                TempData["ErrorMessage"] = "⚠️ Anti-Fraud Guard: You cannot accept your own delivery request. Another campus runner will fulfill it.";
-                return RedirectToAction(nameof(Runner));
-            }
-
             bool assigned = await _deliveryRepo.AssignRunnerAsync(id, user.Id);
             if (assigned)
             {
                 await _deliveryRepo.UpdateStatusAsync(id, "in_transit");
-                TempData["SuccessMessage"] = "Delivery accepted! Head to pickup point.";
+                TempData["SuccessMessage"] = target.RequesterId == user.Id
+                    ? "Order accepted! (Demo: Self-delivery testing). Head to pickup point and enter student PIN to complete."
+                    : "Delivery accepted! Head to pickup point.";
             }
             else
             {
