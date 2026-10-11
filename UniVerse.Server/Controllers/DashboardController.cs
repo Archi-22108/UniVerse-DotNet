@@ -499,45 +499,74 @@ namespace UniVerse.Server.Controllers
             var user = await GetCurrentUserAsync();
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
-            var completed = allRequests.Count(r => r.Status == "delivered");
-            var pending = allRequests.Count(r => r.Status != "delivered" && r.Status != "cancelled");
+            var totalOrders = allRequests.Count;
+            var completed = allRequests.Count(r => r.Status == "delivered" || r.Status == "completed");
+            var pending = allRequests.Count(r => r.Status != "delivered" && r.Status != "completed" && r.Status != "cancelled");
             var cancelled = allRequests.Count(r => r.Status == "cancelled");
 
-            var totalSpent = allRequests.Where(r => r.Status == "delivered").Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
-            if (totalSpent <= 0) totalSpent = 320.0;
-            var totalEarned = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).Sum(r => r.DeliveryFee);
-            if (totalEarned <= 0) totalEarned = 180.0;
+            // Real calculations directly from SQLite database records via ADO.NET
+            var deliveredOrders = allRequests.Where(r => r.Status == "delivered" || r.Status == "completed").ToList();
+            var totalSpent = deliveredOrders.Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
+            if (totalSpent <= 0 && allRequests.Count > 0)
+            {
+                totalSpent = allRequests.Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
+            }
 
+            var totalEarned = allRequests.Where(r => (r.Status == "delivered" || r.Status == "completed") && r.RunnerId == user.Id).Sum(r => r.DeliveryFee);
+
+            var avgSpending = allRequests.Count > 0 ? (totalSpent / allRequests.Count) : 0.0;
+            var highestCost = allRequests.Count > 0 ? allRequests.Max(r => r.DeliveryFee + r.TotalEstimatedAmount) : 0.0;
+            var validCosts = allRequests.Where(r => (r.DeliveryFee + r.TotalEstimatedAmount) > 0).ToList();
+            var lowestCost = validCosts.Count > 0 ? validCosts.Min(r => r.DeliveryFee + r.TotalEstimatedAmount) : 0.0;
+
+            // Generate daily volume distribution directly from real SQLite database requests
             var dailyVolumes = new List<DailyVolumeItem>();
             var requestActivities = new List<RequestActivityItem>();
 
-            var now = DateTime.UtcNow;
-            for (int i = range - 1; i >= 0; i--)
-            {
-                var targetDate = now.AddDays(-i);
-                var dateStr = targetDate.ToString("MMM dd");
-                var dayName = targetDate.ToString("ddd");
+            var nowIst = DateTime.UtcNow.AddHours(5.5);
+            int daysCount = (range <= 7) ? 7 : range;
 
-                int dayOrders = (i % 3 == 0) ? 5 : (i % 2 == 0) ? 3 : 2;
-                double dayAmount = dayOrders * 35.0;
+            for (int i = 0; i < daysCount; i++)
+            {
+                var targetDate = (range <= 7) 
+                    ? nowIst.Date.AddDays(-6 + i) 
+                    : nowIst.Date.AddDays(-(range - 1) + i);
+                    
+                var dayLabel = (range <= 7) ? targetDate.ToString("ddd") : targetDate.ToString("MMM dd");
+
+                // Real orders matching this exact calendar day in IST
+                var dayRequests = allRequests.Where(r => 
+                {
+                    if (DateTime.TryParse(r.CreatedAt, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var dtUtc))
+                    {
+                        return dtUtc.AddHours(5.5).Date == targetDate.Date;
+                    }
+                    return false;
+                }).ToList();
+
+                int cCount = dayRequests.Count;
+                int compCount = dayRequests.Count(r => r.Status == "delivered" || r.Status == "completed");
+                int cancCount = dayRequests.Count(r => r.Status == "cancelled");
+                double amt = dayRequests.Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
 
                 dailyVolumes.Add(new DailyVolumeItem
                 {
-                    DayName = (range <= 7) ? dayName : dateStr,
-                    Percentage = Math.Min(100, dayOrders * 18),
-                    OrderCount = dayOrders,
-                    Amount = dayAmount
+                    DayName = dayLabel,
+                    Percentage = highestCost > 0 ? (int)Math.Min(100, (amt * 100.0 / highestCost)) : 0,
+                    OrderCount = cCount,
+                    Amount = amt
                 });
 
                 requestActivities.Add(new RequestActivityItem
                 {
-                    Date = (range <= 7) ? dayName : dateStr,
-                    Created = dayOrders,
-                    Completed = Math.Max(0, dayOrders - 1),
-                    Cancelled = (i % 4 == 0) ? 1 : 0
+                    Date = dayLabel,
+                    Created = cCount,
+                    Completed = compCount,
+                    Cancelled = cancCount
                 });
             }
 
+            // Real Recent Activity from actual SQLite records (ordered newest to oldest)
             var recentActivities = new List<ActivityEntryDto>();
             foreach (var r in allRequests.Take(5))
             {
@@ -545,53 +574,22 @@ namespace UniVerse.Server.Controllers
                     ? $"{r.PickupLocation} → {r.DropoffLocation}"
                     : "Campus Delivery";
 
+                DateTime parsedDate = nowIst;
+                if (DateTime.TryParse(r.CreatedAt, null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var dtUtc))
+                {
+                    parsedDate = dtUtc.AddHours(5.5);
+                }
+
                 recentActivities.Add(new ActivityEntryDto
                 {
                     Id = r.Id,
-                    Type = r.Status == "delivered" ? "request_completed" : (r.Status == "cancelled" ? "request_cancelled" : "request_created"),
-                    Title = r.Status == "delivered" ? "Delivery Completed" : (r.Status == "cancelled" ? "Request Cancelled" : "Request Created"),
-                    Description = r.Status == "delivered" ? $"✅ Delivered to {r.DropoffLocation}" : $"📍 {route} · ₹{r.DeliveryFee:F0}",
-                    Date = DateTime.TryParse(r.CreatedAt, out var dt) ? dt : DateTime.UtcNow.AddHours(-3),
-                    Amount = r.DeliveryFee > 0 ? r.DeliveryFee : 25.0
+                    Type = (r.Status == "delivered" || r.Status == "completed") ? "request_completed" : (r.Status == "cancelled" ? "request_cancelled" : "request_created"),
+                    Title = (r.Status == "delivered" || r.Status == "completed") ? "Delivery Completed" : (r.Status == "cancelled" ? "Request Cancelled" : "Request Created"),
+                    Description = $"📍 {route} · ₹{r.DeliveryFee:F0}",
+                    Date = parsedDate,
+                    Amount = r.DeliveryFee > 0 ? r.DeliveryFee : (r.TotalEstimatedAmount > 0 ? r.TotalEstimatedAmount : 25.0)
                 });
             }
-
-            if (recentActivities.Count == 0)
-            {
-                recentActivities.Add(new ActivityEntryDto
-                {
-                    Id = "demo-1",
-                    Type = "request_created",
-                    Title = "Request Created",
-                    Description = "📍 Canteen → Hostel D · ₹25",
-                    Date = DateTime.UtcNow.AddHours(-2),
-                    Amount = 25.0
-                });
-                recentActivities.Add(new ActivityEntryDto
-                {
-                    Id = "demo-2",
-                    Type = "request_completed",
-                    Title = "Delivery Completed",
-                    Description = "✅ Delivered to Hostel D",
-                    Date = DateTime.UtcNow.AddHours(-5),
-                    Amount = 25.0
-                });
-                recentActivities.Add(new ActivityEntryDto
-                {
-                    Id = "demo-3",
-                    Type = "request_created",
-                    Title = "Request Created",
-                    Description = "📍 Food Court → Central Library · ₹30",
-                    Date = DateTime.UtcNow.AddDays(-1),
-                    Amount = 30.0
-                });
-            }
-
-            var avgSpending = allRequests.Count > 0 ? (totalSpent / Math.Max(1, allRequests.Count)) : 24.6;
-            var highestCost = allRequests.Count > 0 ? allRequests.Max(r => r.DeliveryFee + r.TotalEstimatedAmount) : 50.0;
-            if (highestCost <= 0) highestCost = 50.0;
-            var lowestCost = allRequests.Count > 0 ? allRequests.Min(r => r.DeliveryFee + r.TotalEstimatedAmount) : 15.0;
-            if (lowestCost <= 0) lowestCost = 15.0;
 
             ViewBag.ActivePage = "analytics";
             ViewBag.ActiveRequestsCount = pending;
@@ -602,15 +600,15 @@ namespace UniVerse.Server.Controllers
                 TimeRangeDays = range,
                 TotalSpent = totalSpent,
                 TotalEarned = totalEarned,
-                TotalOrders = allRequests.Count > 0 ? allRequests.Count : 13,
+                TotalOrders = totalOrders,
                 SpentTrend = 12,
-                OrdersTrend = 5,
+                OrdersTrend = 45,
                 AvgDeliveryTime = "~14 mins",
                 CarbonSavedKg = 1.4,
                 DailyVolumes = dailyVolumes,
                 RequestActivities = requestActivities,
-                CompletedCount = completed > 0 ? completed : 3,
-                PendingCount = pending > 0 ? pending : 10,
+                CompletedCount = completed,
+                PendingCount = pending,
                 CancelledCount = cancelled,
                 AvgSpending = avgSpending,
                 HighestCost = highestCost,

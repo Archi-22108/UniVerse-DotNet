@@ -6,13 +6,13 @@
 
     var role = Model.CurrentUser?.Role?.ToLower() == "runner" ? "runner" : "student";
     var totalRequests = Model.TotalOrders;
-    var completedCount = Model.CompletedCount > 0 ? Model.CompletedCount : 3;
-    var pendingCount = Model.PendingCount > 0 ? Model.PendingCount : 10;
+    var completedCount = Model.CompletedCount;
+    var pendingCount = Model.PendingCount;
     var cancelledCount = Model.CancelledCount;
 
-    double activePct = totalRequests > 0 ? (pendingCount * 100.0 / totalRequests) : 70.0;
-    double completedPct = totalRequests > 0 ? (completedCount * 100.0 / totalRequests) : 25.0;
-    double cancelledPct = totalRequests > 0 ? (cancelledCount * 100.0 / totalRequests) : 5.0;
+    double activePct = totalRequests > 0 ? (pendingCount * 100.0 / totalRequests) : 0.0;
+    double completedPct = totalRequests > 0 ? (completedCount * 100.0 / totalRequests) : 0.0;
+    double cancelledPct = totalRequests > 0 ? (cancelledCount * 100.0 / totalRequests) : 0.0;
 
     // Calculate SVG Area Chart Path
     var vols = Model.DailyVolumes;
@@ -449,20 +449,20 @@
         font-size: 12.5px;
     }
 
-    /* Analytics Summary Bar (5 Metrics) */
+    /* Analytics Summary Bar (2-Column Grid Matching Reference UI) */
     .summary-metrics-bar {
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 18px;
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 1px;
         background: rgba(255, 255, 255, 0.08);
         overflow: hidden;
         margin-bottom: 24px;
     }
 
-    @@media (max-width: 900px) {
-        .summary-metrics-bar { grid-template-columns: repeat(2, 1fr); }
+    @@media (max-width: 640px) {
+        .summary-metrics-bar { grid-template-columns: 1fr; }
     }
 
     .metric-cell {
@@ -600,7 +600,7 @@
                     <div>
                         <div class="stat-card-title">@(role == "student" ? $"Requests Made ({Model.TimeRangeDays}d)" : $"Deliveries Completed ({Model.TimeRangeDays}d)")</div>
                         <div class="stat-card-value">@Model.TotalOrders Orders</div>
-                        <div class="stat-card-desc">@(role == "student" ? "Total delivery requests posted" : "Successful deliveries")</div>
+                        <div class="stat-card-desc">@(role == "student" ? "Total delivery requests placed" : "Successful deliveries")</div>
                     </div>
                     <div class="stat-card-icon-box">
                         <i class="bi bi-box-seam"></i>
@@ -756,22 +756,22 @@
                             <!-- Background Ring -->
                             <circle cx="80" cy="80" r="60" fill="transparent" stroke="rgba(255,255,255,0.06)" stroke-width="18" />
                             
-                            <!-- Completed Slice (Blue) -->
-                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#3b82f6" stroke-width="18"
-                                    stroke-dasharray="@((completedPct * 3.77).ToString("F1")) 377"
-                                    stroke-dashoffset="0"
-                                    transform="rotate(-90 80 80)" stroke-linecap="round" />
-
                             <!-- Active Slice (Green) -->
                             <circle cx="80" cy="80" r="60" fill="transparent" stroke="#22c55e" stroke-width="18"
                                     stroke-dasharray="@((activePct * 3.77).ToString("F1")) 377"
-                                    stroke-dashoffset="@((-completedPct * 3.77).ToString("F1"))"
+                                    stroke-dashoffset="0"
+                                    transform="rotate(-90 80 80)" stroke-linecap="round" />
+
+                            <!-- Completed Slice (Blue) -->
+                            <circle cx="80" cy="80" r="60" fill="transparent" stroke="#3b82f6" stroke-width="18"
+                                    stroke-dasharray="@((completedPct * 3.77).ToString("F1")) 377"
+                                    stroke-dashoffset="@((-activePct * 3.77).ToString("F1"))"
                                     transform="rotate(-90 80 80)" stroke-linecap="round" />
 
                             <!-- Cancelled Slice (Red) -->
                             <circle cx="80" cy="80" r="60" fill="transparent" stroke="#ef4444" stroke-width="18"
                                     stroke-dasharray="@((cancelledPct * 3.77).ToString("F1")) 377"
-                                    stroke-dashoffset="@((-(completedPct + activePct) * 3.77).ToString("F1"))"
+                                    stroke-dashoffset="@((-(activePct + completedPct) * 3.77).ToString("F1"))"
                                     transform="rotate(-90 80 80)" stroke-linecap="round" />
                         </svg>
 
@@ -868,6 +868,9 @@
                     <div class="metric-value">@Model.CancelledCount</div>
                 </div>
             </div>
+
+            <!-- Empty slot for balanced 2-column grid layout -->
+            <div class="metric-cell" style="background: rgba(12, 20, 16, 0.95);"></div>
 
         </div>
 
