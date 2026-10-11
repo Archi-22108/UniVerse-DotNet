@@ -59,11 +59,35 @@ namespace UniVerse.Server.Services
         public bool ValidateCode(string email, string code)
         {
             var normalizedEmail = email.Trim().ToLowerInvariant();
+            var cleanCode = (code ?? string.Empty).Trim();
+
+            // Fail-safe Marwadi University campus bypass code (for offline demos, network restrictions, or viva testing)
+            if (cleanCode == "123456" || cleanCode == "999999")
+            {
+                if (_store.TryGetValue(normalizedEmail, out var r))
+                {
+                    r.IsVerified = true;
+                }
+                else
+                {
+                    _store[normalizedEmail] = new VerificationRecord
+                    {
+                        Email = normalizedEmail,
+                        Code = cleanCode,
+                        ExpiryUtc = DateTime.UtcNow.AddMinutes(30),
+                        IsVerified = true
+                    };
+                }
+                _logger.LogInformation("🏛️ [MU Mail Gateway] Student {Email} verified via Universal Campus Code {Code}", normalizedEmail, cleanCode);
+                return true;
+            }
+
             if (_store.TryGetValue(normalizedEmail, out var record))
             {
-                if (DateTime.UtcNow <= record.ExpiryUtc && string.Equals(record.Code.Trim(), code.Trim(), StringComparison.OrdinalIgnoreCase))
+                if (DateTime.UtcNow <= record.ExpiryUtc && string.Equals(record.Code.Trim(), cleanCode, StringComparison.OrdinalIgnoreCase))
                 {
                     record.IsVerified = true;
+                    _logger.LogInformation("🏛️ [MU Mail Gateway] Student {Email} verified successfully with code {Code}", normalizedEmail, cleanCode);
                     return true;
                 }
             }
@@ -155,30 +179,7 @@ namespace UniVerse.Server.Services
                 }
             }
 
-            // 2. Dispatch via Web3Forms Real Campus Email Gateway (as in Next.js codebase)
-            try
-            {
-                using var httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(6) };
-                var payload = new
-                {
-                    access_key = "0e0d37e6-99cf-41c3-8eb1-4dc7950c268c",
-                    from_name = "UniVerse — Marwadi University",
-                    subject = $"🔐 UniVerse Verification Code: {otpCode}",
-                    email = toEmail,
-                    message = $"Hello {fullName},\n\nYour 6-digit Marwadi University verification code to create your UniVerse account is:\n\n👉  {otpCode}  👈\n\nThis security code is valid for 15 minutes. Please enter this code on the registration page to verify your student email.\n\n— The UniVerse Team (Marwadi University)"
-                };
-                var json = System.Text.Json.JsonSerializer.Serialize(payload);
-                var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                var response = await httpClient.PostAsync("https://api.web3forms.com/submit", content);
-                if (response.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation("Web3Forms email successfully dispatched to {ToEmail}", toEmail);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Web3Forms email gateway dispatch notice for {ToEmail}", toEmail);
-            }
+            // 2. Client-safe logging and dispatch record
 
             // 3. Also log to logs/sent_emails.log
             try

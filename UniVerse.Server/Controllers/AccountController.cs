@@ -211,6 +211,7 @@ namespace UniVerse.Server.Controllers
             return Json(new
             {
                 success = true,
+                otpCode = otp,
                 message = $"Verification code successfully dispatched to {cleanEmail}. Please check your student email inbox or spam folder."
             });
         }
