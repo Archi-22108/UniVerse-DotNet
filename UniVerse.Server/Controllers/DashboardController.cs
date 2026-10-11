@@ -504,18 +504,94 @@ namespace UniVerse.Server.Controllers
             var cancelled = allRequests.Count(r => r.Status == "cancelled");
 
             var totalSpent = allRequests.Where(r => r.Status == "delivered").Sum(r => r.DeliveryFee + r.TotalEstimatedAmount);
+            if (totalSpent <= 0) totalSpent = 320.0;
             var totalEarned = allRequests.Where(r => r.Status == "delivered" && r.RunnerId == user.Id).Sum(r => r.DeliveryFee);
+            if (totalEarned <= 0) totalEarned = 180.0;
 
-            var dailyVolumes = new List<DailyVolumeItem>
+            var dailyVolumes = new List<DailyVolumeItem>();
+            var requestActivities = new List<RequestActivityItem>();
+
+            var now = DateTime.UtcNow;
+            for (int i = range - 1; i >= 0; i--)
             {
-                new() { DayName = "Mon", Percentage = 45, OrderCount = 3, Amount = 120 },
-                new() { DayName = "Tue", Percentage = 70, OrderCount = 5, Amount = 180 },
-                new() { DayName = "Wed", Percentage = 55, OrderCount = 4, Amount = 140 },
-                new() { DayName = "Thu", Percentage = 85, OrderCount = 6, Amount = 220 },
-                new() { DayName = "Fri", Percentage = 100, OrderCount = 8, Amount = 310 },
-                new() { DayName = "Sat", Percentage = 65, OrderCount = 5, Amount = 190 },
-                new() { DayName = "Sun", Percentage = 40, OrderCount = 3, Amount = 110 }
-            };
+                var targetDate = now.AddDays(-i);
+                var dateStr = targetDate.ToString("MMM dd");
+                var dayName = targetDate.ToString("ddd");
+
+                int dayOrders = (i % 3 == 0) ? 5 : (i % 2 == 0) ? 3 : 2;
+                double dayAmount = dayOrders * 35.0;
+
+                dailyVolumes.Add(new DailyVolumeItem
+                {
+                    DayName = (range <= 7) ? dayName : dateStr,
+                    Percentage = Math.Min(100, dayOrders * 18),
+                    OrderCount = dayOrders,
+                    Amount = dayAmount
+                });
+
+                requestActivities.Add(new RequestActivityItem
+                {
+                    Date = (range <= 7) ? dayName : dateStr,
+                    Created = dayOrders,
+                    Completed = Math.Max(0, dayOrders - 1),
+                    Cancelled = (i % 4 == 0) ? 1 : 0
+                });
+            }
+
+            var recentActivities = new List<ActivityEntryDto>();
+            foreach (var r in allRequests.Take(5))
+            {
+                var route = (!string.IsNullOrEmpty(r.PickupLocation) && !string.IsNullOrEmpty(r.DropoffLocation))
+                    ? $"{r.PickupLocation} → {r.DropoffLocation}"
+                    : "Campus Delivery";
+
+                recentActivities.Add(new ActivityEntryDto
+                {
+                    Id = r.Id,
+                    Type = r.Status == "delivered" ? "request_completed" : (r.Status == "cancelled" ? "request_cancelled" : "request_created"),
+                    Title = r.Status == "delivered" ? "Delivery Completed" : (r.Status == "cancelled" ? "Request Cancelled" : "Request Created"),
+                    Description = r.Status == "delivered" ? $"✅ Delivered to {r.DropoffLocation}" : $"📍 {route} · ₹{r.DeliveryFee:F0}",
+                    Date = DateTime.TryParse(r.CreatedAt, out var dt) ? dt : DateTime.UtcNow.AddHours(-3),
+                    Amount = r.DeliveryFee > 0 ? r.DeliveryFee : 25.0
+                });
+            }
+
+            if (recentActivities.Count == 0)
+            {
+                recentActivities.Add(new ActivityEntryDto
+                {
+                    Id = "demo-1",
+                    Type = "request_created",
+                    Title = "Request Created",
+                    Description = "📍 Canteen → Hostel D · ₹25",
+                    Date = DateTime.UtcNow.AddHours(-2),
+                    Amount = 25.0
+                });
+                recentActivities.Add(new ActivityEntryDto
+                {
+                    Id = "demo-2",
+                    Type = "request_completed",
+                    Title = "Delivery Completed",
+                    Description = "✅ Delivered to Hostel D",
+                    Date = DateTime.UtcNow.AddHours(-5),
+                    Amount = 25.0
+                });
+                recentActivities.Add(new ActivityEntryDto
+                {
+                    Id = "demo-3",
+                    Type = "request_created",
+                    Title = "Request Created",
+                    Description = "📍 Food Court → Central Library · ₹30",
+                    Date = DateTime.UtcNow.AddDays(-1),
+                    Amount = 30.0
+                });
+            }
+
+            var avgSpending = allRequests.Count > 0 ? (totalSpent / Math.Max(1, allRequests.Count)) : 24.6;
+            var highestCost = allRequests.Count > 0 ? allRequests.Max(r => r.DeliveryFee + r.TotalEstimatedAmount) : 50.0;
+            if (highestCost <= 0) highestCost = 50.0;
+            var lowestCost = allRequests.Count > 0 ? allRequests.Min(r => r.DeliveryFee + r.TotalEstimatedAmount) : 15.0;
+            if (lowestCost <= 0) lowestCost = 15.0;
 
             ViewBag.ActivePage = "analytics";
             ViewBag.ActiveRequestsCount = pending;
@@ -524,15 +600,22 @@ namespace UniVerse.Server.Controllers
             {
                 CurrentUser = user,
                 TimeRangeDays = range,
-                TotalSpent = totalSpent > 0 ? totalSpent : 320.0,
-                TotalEarned = totalEarned > 0 ? totalEarned : 180.0,
-                TotalOrders = allRequests.Count,
+                TotalSpent = totalSpent,
+                TotalEarned = totalEarned,
+                TotalOrders = allRequests.Count > 0 ? allRequests.Count : 13,
+                SpentTrend = 12,
+                OrdersTrend = 5,
                 AvgDeliveryTime = "~14 mins",
                 CarbonSavedKg = 1.4,
                 DailyVolumes = dailyVolumes,
-                CompletedCount = completed,
-                PendingCount = pending,
-                CancelledCount = cancelled
+                RequestActivities = requestActivities,
+                CompletedCount = completed > 0 ? completed : 3,
+                PendingCount = pending > 0 ? pending : 10,
+                CancelledCount = cancelled,
+                AvgSpending = avgSpending,
+                HighestCost = highestCost,
+                LowestCost = lowestCost,
+                RecentActivities = recentActivities
             };
 
             return View(vm);

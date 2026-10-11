@@ -267,6 +267,24 @@ namespace UniVerse.Server.Models.ViewModels
     }
 
     // ─── Analytics Page ViewModel ─────────────────────────────────────────────
+    public class ActivityEntryDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Type { get; set; } = "request_created"; // request_created, request_completed, request_cancelled, payment, earning
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public double? Amount { get; set; }
+    }
+
+    public class RequestActivityItem
+    {
+        public string Date { get; set; } = string.Empty;
+        public int Created { get; set; }
+        public int Completed { get; set; }
+        public int Cancelled { get; set; }
+    }
+
     public class DailyVolumeItem
     {
         public string DayName { get; set; } = string.Empty;
@@ -282,12 +300,19 @@ namespace UniVerse.Server.Models.ViewModels
         public double TotalSpent { get; set; }
         public double TotalEarned { get; set; }
         public int TotalOrders { get; set; }
+        public int SpentTrend { get; set; } = 12;
+        public int OrdersTrend { get; set; } = 5;
         public string AvgDeliveryTime { get; set; } = "~14 mins";
-        public double CarbonSavedKg { get; set; } = 1.2;
+        public double CarbonSavedKg { get; set; } = 1.4;
         public List<DailyVolumeItem> DailyVolumes { get; set; } = new();
+        public List<RequestActivityItem> RequestActivities { get; set; } = new();
         public int CompletedCount { get; set; }
         public int PendingCount { get; set; }
         public int CancelledCount { get; set; }
+        public double AvgSpending { get; set; }
+        public double HighestCost { get; set; }
+        public double LowestCost { get; set; }
+        public List<ActivityEntryDto> RecentActivities { get; set; } = new();
     }
 
     // ─── Profile & Settings ViewModels ─────────────────────────────────────────
