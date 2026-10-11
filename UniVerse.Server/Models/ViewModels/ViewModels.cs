@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace UniVerse.Server.Models.ViewModels
 {
@@ -147,6 +148,9 @@ namespace UniVerse.Server.Models.ViewModels
 
         [Display(Name = "Image URL (Optional)")]
         public string? ImageUrl { get; set; }
+
+        [Display(Name = "Item Photo (From Device)")]
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class MakeOfferViewModel

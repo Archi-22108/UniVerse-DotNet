@@ -13,9 +13,21 @@
                 <a href="/Dashboard/Marketplace" class="btn btn-outline-light btn-sm" style="border-radius: 12px; background: rgba(255,255,255,0.05);">
                     &larr; Back to Marketplace
                 </a>
-                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
-                    STATUS: @Model.Status
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 text-uppercase px-3 py-1">
+                        STATUS: @Model.Status
+                    </span>
+                    @if (isSeller)
+                    {
+                        <form asp-action="Delete" method="post" onsubmit="return confirm('Are you sure you want to remove this listing?');" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 10px;">
+                                <i class="bi bi-trash me-1"></i> Delete Listing
+                            </button>
+                        </form>
+                    }
+                </div>
             </div>
 
             <!-- Item Main Card -->

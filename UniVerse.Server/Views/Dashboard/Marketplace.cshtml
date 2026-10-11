@@ -875,20 +875,35 @@
         <!-- Empty State (Matching ResaleEmptyState) -->
         <div style="text-align: center; padding: 64px 24px; background: rgba(10, 15, 12, 0.7); border: 1px dashed rgba(16, 185, 129, 0.25); border-radius: 24px; margin-top: 16px;">
             <div style="width: 68px; height: 68px; border-radius: 20px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 30px; margin: 0 auto 16px auto;">
-                <i class="bi bi-search"></i>
+                <i class="bi bi-tag"></i>
             </div>
-            <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 6px;">No listings found matching your search</h3>
-            <p style="color: rgba(167, 184, 176, 0.7); font-size: 13.5px; max-width: 480px; margin: 0 auto 20px auto; line-height: 1.5;">
-                Try searching for another keyword, adjusting price filters, or be the first to list this item!
-            </p>
-            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <a href="/Dashboard/Marketplace" class="uv-resale-btn-secondary">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
-                </a>
-                <a href="/Marketplace/Create" class="uv-resale-btn-sell">
-                    <i class="bi bi-plus-lg"></i> Post Free Listing
-                </a>
-            </div>
+            @if (hasActiveFilters)
+            {
+                <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 6px;">No listings found matching your search</h3>
+                <p style="color: rgba(167, 184, 176, 0.7); font-size: 13.5px; max-width: 480px; margin: 0 auto 20px auto; line-height: 1.5;">
+                    Try adjusting your filters, searching for another keyword, or be the first to list an item in this category!
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <a href="/Dashboard/Marketplace" class="uv-resale-btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+                    </a>
+                    <a href="/Marketplace/Create" class="uv-resale-btn-sell">
+                        <i class="bi bi-plus-lg"></i> Post Free Listing
+                    </a>
+                </div>
+            }
+            else
+            {
+                <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 6px;">No student items listed yet</h3>
+                <p style="color: rgba(167, 184, 176, 0.7); font-size: 13.5px; max-width: 480px; margin: 0 auto 20px auto; line-height: 1.5;">
+                    Be the first student to post books, electronics, hostel essentials, or cycle for sale on campus!
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <a href="/Marketplace/Create" class="uv-resale-btn-sell">
+                        <i class="bi bi-plus-lg"></i> Sell an Item Now
+                    </a>
+                </div>
+            }
         </div>
     }
     else

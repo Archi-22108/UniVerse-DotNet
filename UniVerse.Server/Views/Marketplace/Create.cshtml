@@ -26,7 +26,7 @@
                     <p class="text-secondary small">List textbooks, electronics, cycle, or hostel essentials for fellow students</p>
                 </div>
 
-                <form asp-controller="Marketplace" asp-action="Create" method="post">
+                <form asp-controller="Marketplace" asp-action="Create" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
 
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
@@ -99,10 +99,20 @@
                         <span asp-validation-for="PickupLocation" class="text-danger small"></span>
                     </div>
 
-                    <!-- Image URL -->
+                    <!-- Item Photo Upload (From Camera or Gallery) -->
                     <div class="mb-3">
-                        <label asp-for="ImageUrl" class="form-label text-secondary small fw-semibold">Image URL (Optional)</label>
-                        <input asp-for="ImageUrl" class="form-control" placeholder="https://images.unsplash.com/... (Direct link to image)" />
+                        <label asp-for="ImageFile" class="form-label text-secondary small fw-semibold">Item Photo (From Device / Camera)</label>
+                        <input asp-for="ImageFile" type="file" accept="image/*" class="form-control" id="itemPhotoInput" onchange="previewItemPhoto(this)" />
+                        <small class="text-secondary d-block mt-1">Upload a photo of your actual item for students to see.</small>
+                        <div id="photoPreviewContainer" class="mt-2 text-center rounded-3 p-2 bg-dark bg-opacity-40 border border-secondary border-opacity-25" style="display: none; max-height: 220px; overflow: hidden;">
+                            <img id="photoPreview" src="#" alt="Selected Photo" style="max-height: 200px; border-radius: 8px; object-fit: contain;" />
+                        </div>
+                    </div>
+
+                    <!-- Fallback / Optional Web Image URL -->
+                    <div class="mb-3">
+                        <label asp-for="ImageUrl" class="form-label text-secondary small fw-semibold">Or Photo URL (Optional)</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://... (Optional if not uploading file)" />
                     </div>
 
                     <!-- Description -->
@@ -122,3 +132,22 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    function previewItemPhoto(input) {
+        const container = document.getElementById('photoPreviewContainer');
+        const img = document.getElementById('photoPreview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                container.style.display = 'block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+</script>
+}

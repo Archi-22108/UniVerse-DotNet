@@ -50,8 +50,8 @@ namespace UniVerse.Server.Data
                 // 3. Ensure Realistic 7-Day Campus Order Distribution for Live Analytics
                 await EnsureRealisticRequestDatesAsync();
 
-                // 4. Ensure Comprehensive Real Campus Marketplace Catalog Across All Categories
-                await EnsureCompleteMarketplaceSeedAsync();
+                // 4. Ensure Marketplace is 100% Clean for Real Student Postings
+                await CleanDummyMarketplaceSeedAsync();
             }
             catch (Exception ex)
             {
@@ -160,347 +160,44 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
             }
         }
 
-        private async Task EnsureCompleteMarketplaceSeedAsync()
+        private async Task CleanDummyMarketplaceSeedAsync()
         {
             try
             {
-                var student1Id = "11111111-1111-1111-1111-111111111111"; // Aarav Patel
-                var runner1Id = "22222222-2222-2222-2222-222222222222";  // Rohit Sharma
-                var student2Id = "33333333-3333-3333-3333-333333333333"; // Priya Deshmukh
-
-                var now = DateTime.UtcNow.ToString("o");
-
-                var items = new[]
+                var seedIds = new[]
                 {
-                    // 1. Books
-                    new {
-                        Id = "d1111111-1111-1111-1111-111111111111",
-                        SellerId = student2Id,
-                        Title = "Introduction to Algorithms (CLRS 4th Ed.)",
-                        Desc = "Official 4th Edition textbook used for Semester 3 & 4 DSA. No pencil markings or torn pages. Hardcover in pristine condition.",
-                        Cat = "Books",
-                        Cond = "Like New",
-                        Price = 650.0,
-                        Orig = (double?)1250.0,
-                        Neg = 1,
-                        Loc = "Central Library Entrance or Hostel B Ground Floor",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600"
-                    },
-                    new {
-                        Id = "d4444444-4444-4444-4444-444444444444",
-                        SellerId = student1Id,
-                        Title = "Database System Concepts (Silberschatz 7th Ed.)",
-                        Desc = "Standard textbook for CSE DBMS theory & lab exams. Contains helpful margin sticky notes with relational algebra and B+ tree diagrams.",
-                        Cat = "Books",
-                        Cond = "Good",
-                        Price = 420.0,
-                        Orig = (double?)895.0,
-                        Neg = 1,
-                        Loc = "Hostel D Reception",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600"
-                    },
-
-                    // 2. Electronics
-                    new {
-                        Id = "d2222222-2222-2222-2222-222222222222",
-                        SellerId = runner1Id,
-                        Title = "Arduino Mega 2560 R3 + 37 Sensor Modules IoT Lab Kit",
-                        Desc = "Complete embedded systems project kit with jumper wires, breadboards, ultrasonic sensor, DHT11, and servo. Ideal for 3rd year Capstone and Microcontroller lab.",
-                        Cat = "Electronics",
-                        Cond = "Good",
-                        Price = 1200.0,
-                        Orig = (double?)2400.0,
-                        Neg = 1,
-                        Loc = "Mechanical & Robotics Block Lab 301",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=600"
-                    },
-                    new {
-                        Id = "d5555555-5555-5555-5555-555555555555",
-                        SellerId = student1Id,
-                        Title = "Logitech MX Master 2S Wireless Ergonomic Mouse",
-                        Desc = "Rechargeable multi-device Bluetooth mouse with hyper-fast scroll wheel and gesture button. 60-day battery life, includes original Unifying dongle.",
-                        Cat = "Electronics",
-                        Cond = "Like New",
-                        Price = 2450.0,
-                        Orig = (double?)4995.0,
-                        Neg = 0,
-                        Loc = "Hostel D, Room 304",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600"
-                    },
-
-                    // 3. Study Notes
-                    new {
-                        Id = "d6666666-6666-6666-6666-666666666666",
-                        SellerId = student2Id,
-                        Title = "GATE CSE Handwritten Master Notes & Formula Compendium",
-                        Desc = "Comprehensive color-coded summary sheets for OS, Compiler Design, TOC, and Computer Networks. Scored 64.3 in GATE 2026 mock exams.",
-                        Cat = "Study Notes",
-                        Cond = "Good",
-                        Price = 350.0,
-                        Orig = (double?)750.0,
-                        Neg = 1,
-                        Loc = "Hostel B Common Room",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1517842645767-c639042777db?w=600"
-                    },
-                    new {
-                        Id = "d7777777-7777-7777-7777-777777777777",
-                        SellerId = runner1Id,
-                        Title = "Engineering Mathematics III & IV Spiral Bound Solved Papers",
-                        Desc = "Last 5 years solved university exam question papers with step-by-step Fourier series, Laplace transforms, and probability distributions.",
-                        Cat = "Study Notes",
-                        Cond = "Like New",
-                        Price = 200.0,
-                        Orig = (double?)450.0,
-                        Neg = 0,
-                        Loc = "Central Library Entrance",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600"
-                    },
-
-                    // 4. Hostel Life
-                    new {
-                        Id = "d8888888-8888-8888-8888-888888888888",
-                        SellerId = student1Id,
-                        Title = "Prestige 1.5L Stainless Steel Electric Kettle",
-                        Desc = "Essential hostel appliance for late-night Maggi, coffee, and green tea during end-semester exams. Automatic cutoff, sanitized and clean.",
-                        Cat = "Hostel Life",
-                        Cond = "Good",
-                        Price = 550.0,
-                        Orig = (double?)1195.0,
-                        Neg = 1,
-                        Loc = "Hostel D Ground Floor Gate",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1594213114663-ddbe3f2a8335?w=600"
-                    },
-                    new {
-                        Id = "d9999999-9999-9999-9999-999999999999",
-                        SellerId = student2Id,
-                        Title = "Wipro 9W Smart LED Desk Lamp with 3 Color Modes",
-                        Desc = "Adjustable gooseneck study lamp with Warm/Daylight/Cool white modes and step-less dimming touch sensor. Perfect for roommate-friendly late night study.",
-                        Cat = "Hostel Life",
-                        Cond = "Like New",
-                        Price = 450.0,
-                        Orig = (double?)999.0,
-                        Neg = 0,
-                        Loc = "Hostel B, Room 108",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600"
-                    },
-
-                    // 5. Sports
-                    new {
-                        Id = "daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-                        SellerId = runner1Id,
-                        Title = "Yonex Muscle Power 29 Light Badminton Racket + Case",
-                        Desc = "Full graphite racquet strung at 24 lbs with BG65 gut. Re-gripped with anti-slip absorbent towel grip last week. Includes padded head cover.",
-                        Cat = "Sports",
-                        Cond = "Good",
-                        Price = 850.0,
-                        Orig = (double?)1850.0,
-                        Neg = 1,
-                        Loc = "Campus Sports Complex / Badminton Court",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600"
-                    },
-                    new {
-                        Id = "dbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-                        SellerId = student1Id,
-                        Title = "Nivia Storm Official Size 5 Campus Football",
-                        Desc = "All-weather TPU rubber molded football, great grip on turf and grass. Used only 3 matches in inter-hostel tournament.",
-                        Cat = "Sports",
-                        Cond = "Good",
-                        Price = 350.0,
-                        Orig = (double?)720.0,
-                        Neg = 0,
-                        Loc = "Main University Football Ground",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600"
-                    },
-
-                    // 6. Furniture
-                    new {
-                        Id = "dccccccc-cccc-cccc-cccc-cccccccccccc",
-                        SellerId = runner1Id,
-                        Title = "Ergonomic High-Back Mesh Study Chair with Lumbar Support",
-                        Desc = "Breathable mesh back with pneumatic seat height adjustment and smooth 360-degree caster wheels. Selling because shifting to single room with built-in chair.",
-                        Cat = "Furniture",
-                        Cond = "Good",
-                        Price = 1800.0,
-                        Orig = (double?)4200.0,
-                        Neg = 1,
-                        Loc = "Hostel D, Room 212",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1580481077195-c22ae22b27cf?w=600"
-                    },
-                    new {
-                        Id = "dddddddd-dddd-dddd-dddd-dddddddddddd",
-                        SellerId = student2Id,
-                        Title = "Foldable Bed Table / Laptop Desk with Cup Holder & Tablet Slot",
-                        Desc = "Engineered wood foldable lap desk with non-slip curved legs. Fits up to 15.6 inch laptops plus diary and phone.",
-                        Cat = "Furniture",
-                        Cond = "Like New",
-                        Price = 320.0,
-                        Orig = (double?)699.0,
-                        Neg = 0,
-                        Loc = "Hostel B Reception",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=600"
-                    },
-
-                    // 7. Clothing
-                    new {
-                        Id = "deeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
-                        SellerId = student1Id,
-                        Title = "Marwadi University Tech Fest 'HackMU' Official Bomber Jacket (Size M)",
-                        Desc = "Limited edition navy blue organizer windbreaker jacket with embroidered logo and thermal fleece lining. Worn only during 2-day hackathon.",
-                        Cat = "Clothing",
-                        Cond = "Like New",
-                        Price = 600.0,
-                        Orig = (double?)1500.0,
-                        Neg = 1,
-                        Loc = "Student Activity Center (SAC)",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600"
-                    },
-                    new {
-                        Id = "dfffffff-ffff-ffff-ffff-ffffffffffff",
-                        SellerId = student2Id,
-                        Title = "Decathlon Quechua 20L Campus Backpack (Water-Resistant)",
-                        Desc = "Lightweight dual-compartment backpack with dedicated 14-inch padded laptop sleeve and dual side water bottle mesh pockets.",
-                        Cat = "Clothing",
-                        Cond = "Good",
-                        Price = 400.0,
-                        Orig = (double?)899.0,
-                        Neg = 0,
-                        Loc = "Hostel B Gate",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600"
-                    },
-
-                    // 8. Gaming
-                    new {
-                        Id = "e1111111-1111-1111-1111-111111111111",
-                        SellerId = runner1Id,
-                        Title = "Cosmic Byte Stellaris Wireless Gamepad / Controller",
-                        Desc = "Dual vibration feedback wireless gamepad with 2.4GHz USB nano receiver. Compatible with PC, Steam, and Android. Hall effect magnetic triggers.",
-                        Cat = "Gaming",
-                        Cond = "Like New",
-                        Price = 950.0,
-                        Orig = (double?)2199.0,
-                        Neg = 1,
-                        Loc = "Hostel D Common Room",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=600"
-                    },
-                    new {
-                        Id = "e2222222-2222-2222-2222-222222222222",
-                        SellerId = student1Id,
-                        Title = "Razer DeathAdder Essential Gaming Mouse (White Edition)",
-                        Desc = "6,400 DPI optical sensor with 5 programmable Hyperesponse buttons and mechanical switches rated for 10 million clicks.",
-                        Cat = "Gaming",
-                        Cond = "Good",
-                        Price = 850.0,
-                        Orig = (double?)1699.0,
-                        Neg = 0,
-                        Loc = "Hostel D, Room 304",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600"
-                    },
-
-                    // 9. Other
-                    new {
-                        Id = "d3333333-3333-3333-3333-333333333333",
-                        SellerId = runner1Id,
-                        Title = "Omega Engineering Mini Drafter & Imperial Drawing Board",
-                        Desc = "Complete first-year mechanical engineering drawing kit. Sturdy clamping mechanism with 360-degree protractor arm, drawing clips, and carry bag.",
-                        Cat = "Other",
-                        Cond = "Good",
-                        Price = 450.0,
-                        Orig = (double?)850.0,
-                        Neg = 1,
-                        Loc = "Hostel D Reception",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600"
-                    },
-                    new {
-                        Id = "e3333333-3333-3333-3333-333333333333",
-                        SellerId = student2Id,
-                        Title = "Casio fx-991EX ClassWiz Scientific Calculator (Non-Programmable)",
-                        Desc = "High-resolution natural textbook display with 552 functions, matrix, vector, and equation solver. Allowed in university semester exams.",
-                        Cat = "Other",
-                        Cond = "Like New",
-                        Price = 750.0,
-                        Orig = (double?)1495.0,
-                        Neg = 1,
-                        Loc = "Electrical Engineering Building Ground Floor",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=600"
-                    },
-                    new {
-                        Id = "e4444444-4444-4444-4444-444444444444",
-                        SellerId = student1Id,
-                        Title = "Hercules Roadeo Hardtail 21-Speed Campus Mountain Bicycle",
-                        Desc = "Shimano Tourney 21-speed geared cycle with front suspension fork and dual disc brakes. Includes sturdy numbered cable lock, bell, and mudguards.",
-                        Cat = "Other",
-                        Cond = "Good",
-                        Price = 3200.0,
-                        Orig = (double?)7800.0,
-                        Neg = 1,
-                        Loc = "Main Campus Cycle Stand near Hostel D",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600"
-                    }
+                    "d1111111-1111-1111-1111-111111111111",
+                    "d2222222-2222-2222-2222-222222222222",
+                    "d3333333-3333-3333-3333-333333333333",
+                    "d4444444-4444-4444-4444-444444444444",
+                    "d5555555-5555-5555-5555-555555555555",
+                    "d6666666-6666-6666-6666-666666666666",
+                    "d7777777-7777-7777-7777-777777777777",
+                    "d8888888-8888-8888-8888-888888888888",
+                    "d9999999-9999-9999-9999-999999999999",
+                    "daaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    "dbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                    "dccccccc-cccc-cccc-cccc-cccccccccccc",
+                    "dddddddd-dddd-dddd-dddd-dddddddddddd",
+                    "deeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+                    "dfffffff-ffff-ffff-ffff-ffffffffffff",
+                    "e1111111-1111-1111-1111-111111111111",
+                    "e2222222-2222-2222-2222-222222222222",
+                    "e3333333-3333-3333-3333-333333333333",
+                    "e4444444-4444-4444-4444-444444444444"
                 };
 
-                const string upsertListingSql = @"
-INSERT INTO marketplace_listings (id, seller_id, title, description, category, condition, price, original_price, negotiable, pickup_location, status, image_url, created_at, updated_at)
-VALUES (@id, @seller_id, @title, @description, @category, @condition, @price, @original_price, @negotiable, @pickup_location, @status, @image_url, @created_at, @updated_at)
-ON CONFLICT(id) DO UPDATE SET
-    seller_id = excluded.seller_id,
-    title = excluded.title,
-    description = excluded.description,
-    category = excluded.category,
-    condition = excluded.condition,
-    price = excluded.price,
-    original_price = excluded.original_price,
-    negotiable = excluded.negotiable,
-    pickup_location = excluded.pickup_location,
-    status = excluded.status,
-    image_url = excluded.image_url;";
-
-                await _dbHelper.ExecuteTransactionAsync(async (conn, trans) =>
+                foreach (var id in seedIds)
                 {
-                    foreach (var itm in items)
-                    {
-                        await using var cmd = new SqliteCommand(upsertListingSql, conn, trans);
-                        cmd.Parameters.AddWithValue("@id", itm.Id);
-                        cmd.Parameters.AddWithValue("@seller_id", itm.SellerId);
-                        cmd.Parameters.AddWithValue("@title", itm.Title);
-                        cmd.Parameters.AddWithValue("@description", itm.Desc);
-                        cmd.Parameters.AddWithValue("@category", itm.Cat);
-                        cmd.Parameters.AddWithValue("@condition", itm.Cond);
-                        cmd.Parameters.AddWithValue("@price", itm.Price);
-                        cmd.Parameters.AddWithValue("@original_price", (object?)itm.Orig ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@negotiable", itm.Neg);
-                        cmd.Parameters.AddWithValue("@pickup_location", itm.Loc);
-                        cmd.Parameters.AddWithValue("@status", itm.Status);
-                        cmd.Parameters.AddWithValue("@image_url", itm.Img);
-                        cmd.Parameters.AddWithValue("@created_at", now);
-                        cmd.Parameters.AddWithValue("@updated_at", now);
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-                });
+                    await _dbHelper.ExecuteNonQueryAsync("DELETE FROM marketplace_offers WHERE listing_id = @id;", AdoNetDbHelper.CreateParameter("@id", id));
+                    await _dbHelper.ExecuteNonQueryAsync("DELETE FROM marketplace_listings WHERE id = @id;", AdoNetDbHelper.CreateParameter("@id", id));
+                }
 
-                _logger.LogInformation("Comprehensive campus marketplace seed verified with 19 items across all categories.");
+                _logger.LogInformation("Dummy marketplace seed data cleared. Marketplace is clean and ready for student listings.");
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Notice: EnsureCompleteMarketplaceSeedAsync completed with info.");
+                _logger.LogWarning(ex, "Notice: CleanDummyMarketplaceSeedAsync completed.");
             }
         }
 
@@ -627,10 +324,6 @@ CREATE INDEX IF NOT EXISTS idx_offers_listing ON marketplace_offers(listing_id);
             var request2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
             var request3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc";
 
-            var listing1Id = "d1111111-1111-1111-1111-111111111111";
-            var listing2Id = "d2222222-2222-2222-2222-222222222222";
-            var listing3Id = "d3333333-3333-3333-3333-333333333333";
-
             await _dbHelper.ExecuteTransactionAsync(async (conn, trans) =>
             {
                 // 1. Seed Users (Students, Runners, Admin)
@@ -719,93 +412,6 @@ VALUES (@id, @request_id, @name, @quantity, @notes, @estimated_price);";
                     cmd.Parameters.AddWithValue("@quantity", itm.Qty);
                     cmd.Parameters.AddWithValue("@notes", itm.Notes);
                     cmd.Parameters.AddWithValue("@estimated_price", itm.Price);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                // 4. Seed Marketplace Listings
-                string insertListingSql = @"
-INSERT INTO marketplace_listings (id, seller_id, title, description, category, condition, price, original_price, negotiable, pickup_location, status, image_url, created_at, updated_at)
-VALUES (@id, @seller_id, @title, @description, @category, @condition, @price, @original_price, @negotiable, @pickup_location, @status, @image_url, @created_at, @updated_at);";
-
-                var listings = new[]
-                {
-                    new {
-                        Id = listing1Id,
-                        SellerId = student2Id,
-                        Title = "Introduction to Algorithms (CLRS 4th Ed.)",
-                        Desc = "Official 4th Edition textbook used for Semester 3 & 4 DSA. No pencil markings or torn pages. Free bookmark included.",
-                        Cat = "Books",
-                        Cond = "Like New",
-                        Price = 650.0,
-                        Orig = (double?)1250.0,
-                        Neg = 1,
-                        Loc = "Central Library Entrance or Hostel B Ground Floor",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600"
-                    },
-                    new {
-                        Id = listing2Id,
-                        SellerId = runner1Id,
-                        Title = "Arduino Mega 2560 R3 + 37 Sensor Modules IoT Lab Kit",
-                        Desc = "Complete embedded systems project kit with jumper wires, breadboards, ultrasonic sensors, relay modules, and LCD shield. 100% tested.",
-                        Cat = "Electronics",
-                        Cond = "Good",
-                        Price = 1200.0,
-                        Orig = (double?)2400.0,
-                        Neg = 1,
-                        Loc = "Mechanical & Robotics Block Lab 301",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1553406830-ef2513450d76?w=600"
-                    },
-                    new {
-                        Id = listing3Id,
-                        SellerId = student1Id,
-                        Title = "Omega Engineering Mini Drafter & Imperial Drawing Board",
-                        Desc = "Complete first-year mechanical drawing kit. Sturdy clamping mechanism with 360-degree protractor arm and dust cover.",
-                        Cat = "Lab Equipment",
-                        Cond = "Good",
-                        Price = 450.0,
-                        Orig = (double?)850.0,
-                        Neg = 0,
-                        Loc = "Hostel D Reception",
-                        Status = "active",
-                        Img = "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600"
-                    }
-                };
-
-                foreach (var l in listings)
-                {
-                    await using var cmd = new SqliteCommand(insertListingSql, conn, trans);
-                    cmd.Parameters.AddWithValue("@id", l.Id);
-                    cmd.Parameters.AddWithValue("@seller_id", l.SellerId);
-                    cmd.Parameters.AddWithValue("@title", l.Title);
-                    cmd.Parameters.AddWithValue("@description", l.Desc);
-                    cmd.Parameters.AddWithValue("@category", l.Cat);
-                    cmd.Parameters.AddWithValue("@condition", l.Cond);
-                    cmd.Parameters.AddWithValue("@price", l.Price);
-                    cmd.Parameters.AddWithValue("@original_price", (object?)l.Orig ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@negotiable", l.Neg);
-                    cmd.Parameters.AddWithValue("@pickup_location", l.Loc);
-                    cmd.Parameters.AddWithValue("@status", l.Status);
-                    cmd.Parameters.AddWithValue("@image_url", l.Img);
-                    cmd.Parameters.AddWithValue("@created_at", now);
-                    cmd.Parameters.AddWithValue("@updated_at", now);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                // 5. Seed Marketplace Offers
-                string insertOfferSql = @"
-INSERT INTO marketplace_offers (id, listing_id, buyer_id, offer_price, status, created_at)
-VALUES (@id, @listing_id, @buyer_id, @offer_price, @status, @created_at);";
-
-                await using (var cmd = new SqliteCommand(insertOfferSql, conn, trans))
-                {
-                    cmd.Parameters.AddWithValue("@id", Guid.NewGuid().ToString());
-                    cmd.Parameters.AddWithValue("@listing_id", listing1Id);
-                    cmd.Parameters.AddWithValue("@buyer_id", student1Id);
-                    cmd.Parameters.AddWithValue("@offer_price", 550.0);
-                    cmd.Parameters.AddWithValue("@status", "pending");
-                    cmd.Parameters.AddWithValue("@created_at", now);
                     await cmd.ExecuteNonQueryAsync();
                 }
             });

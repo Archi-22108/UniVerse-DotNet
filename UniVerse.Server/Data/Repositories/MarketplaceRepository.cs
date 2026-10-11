@@ -101,6 +101,15 @@ VALUES (@id, @seller_id, @title, @description, @category, @condition, @price, @o
             return id;
         }
 
+        public async Task<bool> DeleteListingAsync(string id, string sellerId)
+        {
+            const string sql = "DELETE FROM marketplace_listings WHERE id = @id AND seller_id = @sellerId;";
+            int rows = await _db.ExecuteNonQueryAsync(sql,
+                AdoNetDbHelper.CreateParameter("@id", id),
+                AdoNetDbHelper.CreateParameter("@sellerId", sellerId));
+            return rows > 0;
+        }
+
         public async Task<string> CreateOfferAsync(MarketplaceOffer offer)
         {
             var id = Guid.NewGuid().ToString();
