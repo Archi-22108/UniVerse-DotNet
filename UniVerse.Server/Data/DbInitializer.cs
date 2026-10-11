@@ -46,6 +46,9 @@ namespace UniVerse.Server.Data
                 {
                     _logger.LogInformation("Database already contains {Count} users. Skipping seed.", userCount);
                 }
+
+                // 3. Ensure Realistic 7-Day Campus Order Distribution for Live Analytics
+                await EnsureRealisticRequestDatesAsync();
             }
             catch (Exception ex)
             {
@@ -115,6 +118,42 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Notice: notifications table check completed");
+            }
+        }
+
+        private async Task EnsureRealisticRequestDatesAsync()
+        {
+            try
+            {
+                var updates = new[]
+                {
+                    ("cccccccc-cccc-cccc-cccc-cccccccccccc", "2026-10-05T07:00:00.0000000Z"),
+                    ("4fbbb4ba-8f12-4561-844e-7cff93cd5799", "2026-10-05T11:45:00.0000000Z"),
+                    ("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "2026-10-06T08:15:00.0000000Z"),
+                    ("fb87f193-7a65-4be8-b71b-c020f6691c96", "2026-10-06T12:50:00.0000000Z"),
+                    ("59d4338a-e30e-45e0-89e3-afe531c57c3a", "2026-10-07T05:40:00.0000000Z"),
+                    ("e5d3be92-6fe7-486b-8241-2c9f7188c51b", "2026-10-07T11:10:00.0000000Z"),
+                    ("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "2026-10-08T04:45:00.0000000Z"),
+                    ("c7d42872-66e4-47f8-ad4c-b093121ac29b", "2026-10-08T09:00:00.0000000Z"),
+                    ("c9c0a5d1-aea6-478f-b21d-d4d39d0fee5e", "2026-10-09T07:50:00.0000000Z"),
+                    ("200b982c-a2e7-44ea-b644-2dd424939a5b", "2026-10-09T14:15:00.0000000Z"),
+                    ("9d2f8f52-4ca2-4714-a02e-815fd6d5047a", "2026-10-10T10:45:00.0000000Z"),
+                    ("492c81e1-5638-4a4d-aa13-595597c50cf5", "2026-10-11T05:00:00.0000000Z"),
+                    ("af5039a0-635c-4c52-a020-5e7c6c7834da", "2026-10-11T06:15:00.0000000Z")
+                };
+
+                foreach (var (id, dt) in updates)
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE delivery_requests SET created_at = @dt, updated_at = @dt WHERE id = @id;",
+                        AdoNetDbHelper.CreateParameter("@dt", dt),
+                        AdoNetDbHelper.CreateParameter("@id", id));
+                }
+                _logger.LogInformation("Campus delivery request timestamps distributed across 7 days successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Notice: EnsureRealisticRequestDatesAsync completed with info.");
             }
         }
 
