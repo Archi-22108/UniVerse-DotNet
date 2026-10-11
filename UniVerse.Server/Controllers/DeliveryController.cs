@@ -26,6 +26,10 @@ namespace UniVerse.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(string? status)
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Requests", "Dashboard");
+            }
             var requests = await _deliveryRepo.GetRequestsAsync(status);
             ViewBag.CurrentStatus = status ?? "all";
             return View(requests);
