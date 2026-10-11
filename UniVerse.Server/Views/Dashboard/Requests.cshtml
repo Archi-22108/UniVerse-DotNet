@@ -16,6 +16,71 @@
         margin-bottom: 28px;
     }
 
+    .uv-bell-btn {
+        position: relative;
+        background: rgba(10, 15, 12, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        text-decoration: none !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .uv-bell-btn:hover {
+        border-color: rgba(0, 230, 118, 0.45);
+        color: #00E676;
+        background: rgba(0, 230, 118, 0.12);
+        box-shadow: 0 0 16px rgba(0, 230, 118, 0.25);
+        transform: rotate(90deg);
+    }
+
+    .btn-new-request {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #00E676 0%, #10B981 100%);
+        color: #03140a !important;
+        font-weight: 800;
+        font-size: 13.5px;
+        padding: 10px 22px;
+        border-radius: 12px;
+        text-decoration: none !important;
+        border: 1px solid rgba(0, 230, 118, 0.5);
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.35);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        letter-spacing: -0.01em;
+    }
+
+    .btn-new-request:visited {
+        color: #03140a !important;
+        text-decoration: none !important;
+    }
+
+    .btn-new-request:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 0 28px rgba(0, 230, 118, 0.55);
+        color: #03140a !important;
+        text-decoration: none !important;
+        background: linear-gradient(135deg, #26ff8f 0%, #34d399 100%);
+    }
+
+    .btn-new-request:active {
+        transform: scale(0.97);
+    }
+
+    .btn-new-request i {
+        stroke-width: 1.5;
+        font-size: 14px;
+    }
+
     .uv-hud-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
