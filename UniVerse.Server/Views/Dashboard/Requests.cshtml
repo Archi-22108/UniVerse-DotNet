@@ -220,6 +220,115 @@
         flex-wrap: wrap;
         gap: 12px;
     }
+
+    /* ─── Ultra-Premium Action Buttons ─── */
+    .uv-action-btns {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .uv-btn-cancel-order {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #fca5a5;
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    }
+
+    .uv-btn-cancel-order:hover {
+        background: rgba(239, 68, 68, 0.22);
+        border-color: rgba(239, 68, 68, 0.6);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+
+    .uv-btn-cancel-order:active {
+        transform: scale(0.97);
+    }
+
+    .uv-btn-track-live {
+        background: linear-gradient(135deg, #00E676 0%, #10B981 100%);
+        border: 1px solid rgba(0, 230, 118, 0.5);
+        color: #03140a !important;
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 8px 18px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        text-decoration: none !important;
+        box-shadow: 0 0 18px rgba(0, 230, 118, 0.35);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        letter-spacing: 0.01em;
+    }
+
+    .uv-btn-track-live:visited {
+        color: #03140a !important;
+        text-decoration: none !important;
+    }
+
+    .uv-btn-track-live:hover {
+        background: linear-gradient(135deg, #26ff8f 0%, #34d399 100%);
+        color: #03140a !important;
+        transform: translateY(-1.5px);
+        box-shadow: 0 0 26px rgba(0, 230, 118, 0.55);
+        text-decoration: none !important;
+    }
+
+    .uv-btn-track-live:active {
+        transform: scale(0.97);
+    }
+
+    .uv-btn-track-live i {
+        font-size: 13px;
+        transition: transform 0.2s ease;
+    }
+
+    .uv-btn-track-live:hover .bi-arrow-right {
+        transform: translateX(3px);
+    }
+
+    .uv-btn-view-details {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #ffffff !important;
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .uv-btn-view-details:visited {
+        color: #ffffff !important;
+        text-decoration: none !important;
+    }
+
+    .uv-btn-view-details:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        text-decoration: none !important;
+    }
 </style>
 }
 
@@ -498,21 +607,34 @@
                         </span>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="uv-action-btns">
                         @if (isPending)
                         {
-                            <form method="post" action="/Dashboard/CancelRequest" onsubmit="return confirm('Are you sure you want to cancel this delivery request?');">
+                            <form method="post" action="/Dashboard/CancelRequest" onsubmit="return confirm('Are you sure you want to cancel this delivery request?');" style="margin: 0;">
                                 <input type="hidden" name="id" value="@req.Id" />
-                                <button type="submit" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px; cursor: pointer;">
-                                    Cancel Order
+                                <button type="submit" class="uv-btn-cancel-order">
+                                    <i class="bi bi-x-circle"></i>
+                                    <span>Cancel Order</span>
                                 </button>
                             </form>
                         }
 
-                        <a href="/Delivery/Details/@req.Id" class="btn-track-live" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 6px 14px; border-radius: 10px;">
-                            <span>Track Order</span>
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
+                        @if (isPending || isInTransit)
+                        {
+                            <a href="/Delivery/Details/@req.Id" class="uv-btn-track-live">
+                                <i class="bi bi-broadcast"></i>
+                                <span>Track Order</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/Delivery/Details/@req.Id" class="uv-btn-view-details">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span>View Details</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
