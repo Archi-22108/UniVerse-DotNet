@@ -178,7 +178,7 @@ namespace UniVerse.Server.Controllers
 
             var requestId = await _deliveryRepo.CreateRequestAsync(newRequest, items);
 
-            // Automatically create notification for the student
+            // 1. Automatically create notification for the student requester
             await _notifRepo.CreateAsync(new Notification
             {
                 UserId = userId,
@@ -187,6 +187,27 @@ namespace UniVerse.Server.Controllers
                 Type = "status_broadcasted",
                 ReferenceId = requestId
             });
+
+            // 2. Broadcast live notification to other campus students & peer runners
+            try
+            {
+                var allUsers = await _userRepo.GetAllUsersAsync();
+                foreach (var otherUser in allUsers)
+                {
+                    if (otherUser.Id != userId)
+                    {
+                        await _notifRepo.CreateAsync(new Notification
+                        {
+                            UserId = otherUser.Id,
+                            Title = "🚀 New Delivery Order Available",
+                            Message = $"Pickup from {pickup} to {dropoff}. Earn ₹{finalReward:F2} runner tip!",
+                            Type = "delivery_broadcast",
+                            ReferenceId = requestId
+                        });
+                    }
+                }
+            }
+            catch { }
 
             TempData["SuccessMessage"] = "Delivery request successfully posted to campus runners!";
             return RedirectToAction("Details", new { id = requestId });

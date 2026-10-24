@@ -378,5 +378,37 @@ namespace UniVerse.Server.Controllers
 
             return RedirectToAction("Index");
         }
+
+        // ─── 6. CSV Reporting Endpoints ──────────────────────────────────────────
+
+        [HttpGet("ExportStudentsCsv")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> ExportStudentsCsv()
+        {
+            var students = await _userRepo.GetAllUsersAsync();
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Student Name,Enrollment Number,Email,Hostel,Room,Role,Runner Status,Reward Balance (INR)");
+            foreach (var s in students)
+            {
+                sb.AppendLine($"\"{s.FullName}\",\"{s.EnrollmentNumber}\",\"{s.Email}\",\"{s.HostelName}\",\"{s.RoomNumber}\",\"{s.Role}\",\"{(s.IsActiveRunner ? "ACTIVE" : "OFFLINE")}\",\"{s.RewardBalance:F2}\"");
+            }
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", $"UniVerse_Students_{DateTime.UtcNow:yyyyMMdd}.csv");
+        }
+
+        [HttpGet("ExportDeliveriesCsv")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> ExportDeliveriesCsv()
+        {
+            var deliveries = await _deliveryRepo.GetRequestsAsync();
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Order ID,Requester,Pickup Location,Dropoff Location,Status,Delivery Fee (INR),Created At");
+            foreach (var d in deliveries)
+            {
+                sb.AppendLine($"\"{d.Id}\",\"{d.RequesterName}\",\"{d.PickupLocation}\",\"{d.DropoffLocation}\",\"{d.Status}\",\"{d.DeliveryFee:F2}\",\"{d.CreatedAt}\"");
+            }
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", $"UniVerse_Deliveries_{DateTime.UtcNow:yyyyMMdd}.csv");
+        }
     }
 }
