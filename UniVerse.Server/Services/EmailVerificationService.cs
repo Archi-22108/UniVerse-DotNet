@@ -61,27 +61,6 @@ namespace UniVerse.Server.Services
             var normalizedEmail = email.Trim().ToLowerInvariant();
             var cleanCode = (code ?? string.Empty).Trim();
 
-            // Fail-safe Marwadi University campus bypass code (for offline demos, network restrictions, or viva testing)
-            if (cleanCode == "123456" || cleanCode == "999999")
-            {
-                if (_store.TryGetValue(normalizedEmail, out var r))
-                {
-                    r.IsVerified = true;
-                }
-                else
-                {
-                    _store[normalizedEmail] = new VerificationRecord
-                    {
-                        Email = normalizedEmail,
-                        Code = cleanCode,
-                        ExpiryUtc = DateTime.UtcNow.AddMinutes(30),
-                        IsVerified = true
-                    };
-                }
-                _logger.LogInformation("🏛️ [MU Mail Gateway] Student {Email} verified via Universal Campus Code {Code}", normalizedEmail, cleanCode);
-                return true;
-            }
-
             if (_store.TryGetValue(normalizedEmail, out var record))
             {
                 if (DateTime.UtcNow <= record.ExpiryUtc && string.Equals(record.Code.Trim(), cleanCode, StringComparison.OrdinalIgnoreCase))
