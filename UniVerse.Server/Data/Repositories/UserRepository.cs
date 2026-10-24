@@ -135,6 +135,7 @@ WHERE id = @id;";
             const string sql = @"
 UPDATE users
 SET email = @email,
+    password_hash = @password_hash,
     full_name = @full_name,
     hostel_name = @hostel_name,
     room_number = @room_number,
@@ -150,6 +151,7 @@ WHERE id = @id;";
             {
                 AdoNetDbHelper.CreateParameter("@id", user.Id),
                 AdoNetDbHelper.CreateParameter("@email", user.Email.Trim().ToLowerInvariant()),
+                AdoNetDbHelper.CreateParameter("@password_hash", user.PasswordHash),
                 AdoNetDbHelper.CreateParameter("@full_name", user.FullName.Trim()),
                 AdoNetDbHelper.CreateParameter("@hostel_name", user.HostelName?.Trim()),
                 AdoNetDbHelper.CreateParameter("@room_number", user.RoomNumber?.Trim()),
