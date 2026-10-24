@@ -82,6 +82,11 @@ namespace UniVerse.Server.Controllers
                 return Redirect(model.ReturnUrl);
             }
 
+            if (user.Role == "admin")
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+
             return RedirectToAction("Index", "Dashboard");
         }
 
@@ -165,12 +170,14 @@ namespace UniVerse.Server.Controllers
 
             await SignInUserAsync(user, true);
 
+            var targetRedirect = user.Role == "admin" ? "/Admin" : "/Dashboard";
+
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || HttpMethods.IsPost(Request.Method))
             {
-                return Json(new { success = true, redirectUrl = "/Dashboard" });
+                return Json(new { success = true, redirectUrl = targetRedirect });
             }
 
-            return RedirectToAction("Index", "Dashboard");
+            return user.Role == "admin" ? RedirectToAction("Index", "Admin") : RedirectToAction("Index", "Dashboard");
         }
 
         [HttpPost]
