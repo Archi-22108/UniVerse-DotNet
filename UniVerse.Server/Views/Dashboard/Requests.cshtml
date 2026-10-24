@@ -394,10 +394,62 @@
         transform: translateY(-1px);
         text-decoration: none !important;
     }
+
+    /* Mobile & Tablet Responsive Enhancements */
+    @@media (max-width: 768px) {
+        .uv-req-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .uv-req-header > div:last-child {
+            display: flex;
+            width: 100%;
+        }
+        .btn-new-request {
+            flex: 1;
+            justify-content: center;
+        }
+        .uv-filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 12px;
+        }
+        .uv-tabs-wrap {
+            width: 100%;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .uv-tabs-wrap::-webkit-scrollbar {
+            display: none;
+        }
+        .uv-search-box {
+            min-width: 100%;
+            max-width: 100%;
+        }
+        .uv-req-foot {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .uv-action-btns {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+        }
+        .uv-btn-cancel-order, .uv-btn-track-live, .uv-btn-view-details {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+        }
+    }
 </style>
 }
 
-<div style="max-w: 1200px; margin: 0 auto;">
+<div style="max-width: 1200px; margin: 0 auto;">
     <!-- Page Header -->
     <div class="uv-req-header">
         <div>

@@ -303,16 +303,60 @@
         transition: all 0.2s;
     }
 
-    .btn-accept-order:hover {
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
-        transform: scale(1.02);
+    /* Responsive HUD & Route Grids for Mobile/Tablet/iPad/Desktop */
+    .uv-runner-hud-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    @@media (max-width: 1024px) {
+        .uv-runner-hud-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .uv-runner-hud-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+    }
+
+    .uv-order-route-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    @@media (max-width: 580px) {
+        .uv-order-route-grid {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .uv-runner-top-header {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 14px !important;
+        }
+        .uv-tactile-duty-btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 }
 
 <div style="max-width: 1200px; margin: 0 auto;">
     <!-- Top Header with Ultra-Tactile Duty Switcher -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+    <div class="uv-runner-top-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
         <div>
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span class="uv-live-dot"></span>
@@ -368,8 +412,8 @@
         </div>
     </div>
 
-    <!-- Top Stats HUD -->
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
+    <!-- Top Stats HUD (Universal Responsive Grid) -->
+    <div class="uv-runner-hud-grid">
         <div class="uv-hud-card">
             <div>
                 <span style="font-family: var(--font-mono); font-size: 10.5px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Available Orders</span>
@@ -422,7 +466,7 @@
                         </span>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: rgba(255, 255, 255, 0.03); padding: 14px; border-radius: 14px; margin-bottom: 14px;">
+                    <div class="uv-order-route-grid" style="background: rgba(255, 255, 255, 0.03); padding: 14px; border-radius: 14px; margin-bottom: 14px;">
                         <div>
                             <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">PICKUP</span>
                             <div style="font-weight: 700; color: #fff;">@active.PickupLocation</div>
@@ -571,7 +615,7 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                    <div class="uv-order-route-grid">
                         <div>
                             <span style="font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.4);">PICKUP POINT</span>
                             <div style="font-weight: 700; color: #fff; font-size: 13.5px;">@order.PickupLocation</div>

@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>@ViewData["Title"] — UniVerse Campus Super-App</title>
     
     <!-- Bootstrap 5 CSS -->
@@ -26,6 +26,11 @@
             --text-muted: #94a3b8;
         }
 
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
         body {
             background-color: var(--bg-base);
             color: var(--text-main);
@@ -37,6 +42,7 @@
                 radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
                 radial-gradient(circle at 95% 40%, rgba(20, 184, 166, 0.08) 0%, transparent 35%);
             background-attachment: fixed;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         h1, h2, h3, h4, h5, h6, .brand-font {

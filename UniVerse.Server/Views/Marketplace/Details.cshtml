@@ -497,9 +497,9 @@
         border-radius: 20px;
         background: rgba(12, 20, 16, 0.8);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(12px);
-        width: fit-content;
-        min-width: 320px;
+        width: 100%;
+        max-width: 480px;
+        min-width: 0;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     }
     .uv-seller-avatar {
@@ -562,6 +562,21 @@
     }
     .uv-modal-close:hover {
         background: rgba(255, 255, 255, 0.15);
+    }
+
+    @@media (max-width: 540px) {
+        .uv-action-bar {
+            flex-direction: column;
+        }
+        .uv-btn-primary, .uv-btn-secondary {
+            width: 100%;
+        }
+        .uv-specs-grid {
+            grid-template-columns: 1fr;
+        }
+        .uv-share-bar {
+            flex-wrap: wrap;
+        }
     }
 </style>
 }

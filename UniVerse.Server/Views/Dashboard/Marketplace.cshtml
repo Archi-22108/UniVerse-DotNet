@@ -376,6 +376,13 @@
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
     }
+    @@media (max-width: 560px) {
+        .uv-advanced-filters-panel {
+            grid-template-columns: 1fr;
+            padding: 16px;
+            gap: 12px;
+        }
+    }
     .uv-filter-group {
         display: flex;
         flex-direction: column;
@@ -406,8 +413,15 @@
     /* ─── Premium Resale Listing Card (Matching ResaleListingCard.tsx) ─── */
     .uv-resale-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 22px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    @@media (max-width: 520px) {
+        .uv-resale-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
     }
 
     .uv-resale-card {
@@ -704,6 +718,44 @@
         background: rgba(0, 230, 118, 0.25);
         color: #fff;
         transform: scale(1.05);
+    }
+
+    /* Mobile & Tablet Responsive Enhancements */
+    @@media (max-width: 768px) {
+        .uv-resale-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .uv-resale-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.3fr;
+            gap: 8px;
+            width: 100%;
+        }
+        .uv-resale-btn-secondary, .uv-resale-btn-sell {
+            justify-content: center;
+            padding: 9px 10px;
+            font-size: 12px;
+        }
+        .uv-resale-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .uv-sort-wrapper {
+            margin-left: 0;
+            width: 100%;
+        }
+        .uv-sort-select {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 440px) {
+        .uv-resale-actions {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 }

@@ -11,7 +11,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>@ViewData["Title"]</title>
 
     <!-- Google Fonts: Plus Jakarta Sans & Inter -->
@@ -920,6 +920,51 @@
             gap: 6px;
             color: #10B981;
             font-weight: 500;
+        }
+
+        /* Mobile & Tablet Specific Responsive Enhancements */
+        @@media (max-width: 640px) {
+            .uv-navbar {
+                padding: 10px 14px;
+            }
+            .uv-hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .uv-btn-primary, .uv-btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+            .uv-status-strip {
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+                border-radius: var(--radius-lg);
+                padding: 14px 18px;
+            }
+            .uv-stat-sep {
+                display: none;
+            }
+            .uv-stat-box {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @@media (max-width: 480px) {
+            .uv-hero-heading {
+                font-size: 2.3rem;
+            }
+            .uv-brand-text {
+                font-size: 18px;
+            }
+            .uv-nav-ctas {
+                gap: 6px;
+            }
+            .uv-nav-login, .uv-nav-signup {
+                padding: 7px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>

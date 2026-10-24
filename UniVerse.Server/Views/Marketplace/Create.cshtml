@@ -689,6 +689,28 @@
         height: 100%;
         object-fit: cover;
     }
+
+    /* Mobile Responsive Optimizations */
+    @@media (max-width: 580px) {
+        .uv-cat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .uv-photos-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .uv-section-card {
+            padding: 16px;
+            border-radius: 16px;
+        }
+        .uv-live-preview-body {
+            flex-direction: column;
+            gap: 12px;
+        }
+        .uv-live-preview-img {
+            width: 100%;
+            height: 180px;
+        }
+    }
 </style>
 }
 

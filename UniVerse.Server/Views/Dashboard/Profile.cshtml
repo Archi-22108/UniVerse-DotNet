@@ -115,6 +115,19 @@
         color: #00E676;
     }
 
+    .uv-profile-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @@media (max-width: 580px) {
+        .uv-profile-2col {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+    }
+
     .uv-input-field {
         width: 100%;
         background: rgba(255, 255, 255, 0.03);
@@ -346,7 +359,7 @@
             </div>
 
             <!-- Department & Semester Row -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="uv-profile-2col">
                 <!-- Department / Branch -->
                 <div>
                     <label class="uv-label">Department / Branch</label>
@@ -395,7 +408,7 @@
             </div>
 
             <!-- Hostel Building & Room Number -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="uv-profile-2col">
                 <div>
                     <label class="uv-label">Hostel Building</label>
                     <div style="position: relative;">

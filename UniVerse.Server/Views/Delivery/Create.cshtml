@@ -9,7 +9,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>Create Request • UniVerse Campus Delivery Network</title>
 
     <!-- Google Fonts: Outfit & Plus Jakarta Sans (Exact match to universe/src/lib/fonts.ts) -->
@@ -1113,7 +1113,7 @@
             font-weight: 700;
         }
 
-        /* ── Mobile Responsive Overrides ── */
+        /* ── Mobile & Tablet Responsive Overrides ── */
         @@media (max-width: 768px) {
             .categories-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -1122,10 +1122,76 @@
                 grid-template-columns: repeat(2, 1fr);
             }
             .hostel-tiles-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
             .options-two-grid {
                 grid-template-columns: 1fr;
+            }
+            .request-form-card {
+                padding: 20px 16px;
+                border-radius: 20px;
+            }
+            .stepper-container {
+                margin-bottom: 24px;
+            }
+        }
+
+        @@media (max-width: 520px) {
+            .request-top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .runners-pulse-badge {
+                align-self: flex-start;
+            }
+            .categories-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .category-tile {
+                height: 78px;
+            }
+            .vending-header-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .vending-search-wrap {
+                width: 100%;
+            }
+            .custom-item-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .price-badge-input {
+                width: 100%;
+            }
+            .stepper-quantity-wrap {
+                justify-content: center;
+            }
+            .btn-add-primary {
+                justify-content: center;
+            }
+            .hostel-tiles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @@media (max-width: 380px) {
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            .step-label {
+                font-size: 10px;
+            }
+            .step-circle {
+                width: 34px;
+                height: 34px;
+                font-size: 13px;
             }
         }
     </style>

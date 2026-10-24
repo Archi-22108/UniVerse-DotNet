@@ -21,7 +21,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>@(ViewData["Title"] ?? "UniVerse") · Campus Super-App</title>
     
     <!-- Google Fonts -->
@@ -283,7 +283,7 @@
             color: #f87171;
         }
 
-        /* ─── Main Content Area ─── */
+        /* ─── Main Content Area & Universal Viewport Adaptability ─── */
         .uv-main-content {
             flex: 1;
             margin-left: 240px;
@@ -291,31 +291,199 @@
             position: relative;
             z-index: 10;
             padding: 24px 32px 64px;
+            width: calc(100% - 240px);
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: margin-left 0.25s ease, padding 0.25s ease;
         }
 
+        /* Large Displays & MacBooks (1025px - 1440px) */
+        @@media (min-width: 1025px) and (max-width: 1440px) {
+            .uv-main-content {
+                padding: 22px 28px 60px;
+            }
+        }
+
+        /* Tablets & iPads (768px - 1024px) */
         @@media (max-width: 1024px) {
-            .uv-sidebar { display: none; }
-            .uv-main-content { margin-left: 0; padding: 16px 16px 48px; }
+            .uv-sidebar { display: none !important; }
+            .uv-main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 18px 20px calc(80px + env(safe-area-inset-bottom, 0px));
+            }
         }
 
-        /* ─── Mobile Header (<1024px) ─── */
+        /* Mobile Phones & Phablets (< 768px) */
+        @@media (max-width: 768px) {
+            .uv-main-content {
+                padding: 14px 14px calc(84px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+
+        /* Small Phones (iPhone SE, Galaxy Mini < 420px) */
+        @@media (max-width: 420px) {
+            .uv-main-content {
+                padding: 10px 10px calc(88px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+
+        /* ─── Mobile Header (≤1024px) ─── */
         .uv-mobile-header {
             display: none;
             position: sticky;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(5, 10, 7, 0.95);
-            backdrop-filter: blur(16px);
+            background: rgba(4, 9, 6, 0.94);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 1px solid var(--border-green);
-            padding: 12px 16px;
+            padding: 10px 16px;
             align-items: center;
             justify-content: space-between;
             z-index: 40;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         @@media (max-width: 1024px) {
             .uv-mobile-header { display: flex; }
+        }
+
+        /* ─── Mobile Bottom Navigation Bar (≤1024px) ─── */
+        .uv-mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(62px + env(safe-area-inset-bottom, 0px));
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            background: rgba(4, 9, 6, 0.94);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-top: 1px solid rgba(16, 185, 129, 0.22);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 85;
+            align-items: center;
+            justify-content: space-around;
+            padding-left: 6px;
+            padding-right: 6px;
+            box-sizing: border-box;
+        }
+
+        @@media (max-width: 1024px) {
+            .uv-mobile-bottom-nav {
+                display: flex;
+            }
+        }
+
+        .uv-bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: #A7B8B0;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 8px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            user-select: none;
+            min-width: 50px;
+        }
+
+        .uv-bottom-nav-item i {
+            font-size: 18px;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .uv-bottom-nav-item:hover, .uv-bottom-nav-item.active {
+            color: #00E676;
+        }
+
+        .uv-bottom-nav-item.active i {
+            transform: translateY(-1px) scale(1.1);
+            color: #00E676;
+            text-shadow: 0 0 12px rgba(0, 230, 118, 0.6);
+        }
+
+        .uv-bottom-nav-item.active::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            width: 16px;
+            height: 2px;
+            border-radius: 9999px;
+            background: #00E676;
+            box-shadow: 0 0 8px #00E676;
+        }
+
+        /* Floating Center Plus Action Button */
+        .uv-bottom-create-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+            top: -10px;
+        }
+
+        .uv-bottom-create-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00E676 0%, #10B981 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #03140a;
+            font-size: 19px;
+            box-shadow: 0 0 18px rgba(0, 230, 118, 0.55), 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 3px solid #050A07;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .uv-bottom-create-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 26px rgba(0, 230, 118, 0.8);
+        }
+
+        .uv-bottom-create-lbl {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #34d399;
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        .uv-bottom-nav-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .uv-bottom-badge {
+            position: absolute;
+            top: -4px;
+            right: -8px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 1px 4.5px;
+            border-radius: 9999px;
+            line-height: 1;
+            border: 1px solid #050A07;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
         }
 
         /* Mobile Drawer */
@@ -323,8 +491,9 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
+            background: rgba(0, 0, 0, 0.78);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 99;
         }
 
@@ -333,8 +502,8 @@
             top: 0;
             left: 0;
             bottom: 0;
-            width: 280px;
-            background: #060c08;
+            width: min(300px, 86vw);
+            background: #050a07;
             border-right: 1px solid var(--border-green);
             z-index: 100;
             transform: translateX(-100%);
@@ -343,6 +512,7 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
         }
 
         .uv-drawer.open { transform: translateX(0); }
@@ -351,13 +521,14 @@
         /* Toast Container */
         .uv-toast {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+            right: 16px;
+            max-width: calc(100vw - 32px);
             z-index: 9999;
             background: rgba(10, 20, 15, 0.95);
             border: 1px solid var(--accent-green);
             color: #ffffff;
-            padding: 14px 20px;
+            padding: 12px 18px;
             border-radius: 14px;
             box-shadow: 0 10px 30px rgba(0, 230, 118, 0.25);
             backdrop-filter: blur(12px);
@@ -367,6 +538,13 @@
             font-size: 13.5px;
             font-weight: 600;
             animation: slideInToast 0.3s ease;
+        }
+
+        @@media (min-width: 1025px) {
+            .uv-toast {
+                bottom: 24px;
+                right: 24px;
+            }
         }
 
         @@keyframes slideInToast {
@@ -592,8 +770,45 @@
                 </button>
             </div>
         }
-        @RenderBody()
     </main>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         4. MOBILE BOTTOM NAVIGATION BAR (≤1024px Touch Dock)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    <nav class="uv-mobile-bottom-nav">
+        <a href="/Dashboard" class="uv-bottom-nav-item @(activePage == "dashboard" ? "active" : "")">
+            <i class="bi bi-grid-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="/Dashboard/Requests" class="uv-bottom-nav-item @(activePage == "requests" ? "active" : "")">
+            <div class="uv-bottom-nav-icon-wrap">
+                <i class="bi bi-file-earmark-text"></i>
+                @if (liveCount > 0)
+                {
+                    <span class="uv-bottom-badge">@liveCount</span>
+                }
+            </div>
+            <span>Requests</span>
+        </a>
+        <a href="/Delivery/Create" class="uv-bottom-create-item" title="Create New Delivery Request">
+            <div class="uv-bottom-create-btn">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+            <span class="uv-bottom-create-lbl">New</span>
+        </a>
+        <a href="/Dashboard/Runner" class="uv-bottom-nav-item @(activePage == "runner" ? "active" : "")">
+            <i class="bi bi-bicycle"></i>
+            <span>Runner</span>
+        </a>
+        <a href="/Dashboard/Marketplace" class="uv-bottom-nav-item @(activePage == "marketplace" ? "active" : "")">
+            <i class="bi bi-bag"></i>
+            <span>Market</span>
+        </a>
+        <button type="button" class="uv-bottom-nav-item" id="mobileBottomDrawerBtn">
+            <i class="bi bi-list"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
 
     <!-- Global Toast Notification -->
     <div id="uvGlobalToast" class="uv-toast">
@@ -820,7 +1035,9 @@
             }
         }
 
+        const bottomMenuBtn = document.getElementById('mobileBottomDrawerBtn');
         if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer(true));
+        if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', () => toggleDrawer(true));
         if (closeBtn) closeBtn.addEventListener('click', () => toggleDrawer(false));
         if (backdrop) backdrop.addEventListener('click', () => toggleDrawer(false));
 
