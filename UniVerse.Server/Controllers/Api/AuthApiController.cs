@@ -17,6 +17,8 @@ namespace UniVerse.Server.Controllers.Api
         private readonly IUserRepository _userRepo;
         private readonly ILogger<AuthApiController> _logger;
 
+        private const string UniversityDomain = "@marwadiuniversity.ac.in";
+
         public AuthApiController(IUserRepository userRepo, ILogger<AuthApiController> logger)
         {
             _userRepo = userRepo;
@@ -32,6 +34,15 @@ namespace UniVerse.Server.Controllers.Api
             }
 
             var cleanEmail = request.Email.Trim().ToLowerInvariant();
+            if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new AuthResponseDto 
+                { 
+                    Success = false, 
+                    Message = "Access Denied: Only @marwadiuniversity.ac.in emails are permitted. External domains and personal Gmail cannot be registered." 
+                });
+            }
+
             var existing = await _userRepo.GetByEmailAsync(cleanEmail);
             if (existing != null)
             {
@@ -78,7 +89,17 @@ namespace UniVerse.Server.Controllers.Api
                 return BadRequest(new AuthResponseDto { Success = false, Message = "Invalid login payload." });
             }
 
-            var user = await _userRepo.GetByEmailAsync(request.Email);
+            var cleanEmail = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
+            if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                return Unauthorized(new AuthResponseDto 
+                { 
+                    Success = false, 
+                    Message = "Access Denied: Only @marwadiuniversity.ac.in emails are permitted." 
+                });
+            }
+
+            var user = await _userRepo.GetByEmailAsync(cleanEmail);
             if (user == null)
             {
                 return Unauthorized(new AuthResponseDto { Success = false, Message = "Invalid email or password." });
