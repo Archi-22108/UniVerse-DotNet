@@ -46,8 +46,8 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddSingleton<UniVerse.Server.Services.IEmailVerificationService, UniVerse.Server.Services.EmailVerificationService>();
 builder.Services.AddSingleton<UniVerse.Server.Services.ICampusEmailService, UniVerse.Server.Services.CampusEmailService>();
 
-// Cookie-Based Authentication & Session (No Node.js/External Auth)
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+// Cookie & Google OAuth Authentication
+var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
@@ -56,6 +56,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
         options.SlidingExpiration = true;
     });
+
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"]
+    ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+    ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authBuilder.AddGoogle(options =>
+    {
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.SaveTokens = true;
+    });
+}
 
 builder.Services.AddSession(options =>
 {

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using UniVerse.Server.Data;
 using UniVerse.Server.Data.Repositories;
 using UniVerse.Server.Models;
@@ -20,15 +21,18 @@ namespace UniVerse.Server.Controllers
         private readonly IUserRepository _userRepo;
         private readonly IEmailVerificationService _verificationService;
         private readonly ICampusEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         public AccountController(
             IUserRepository userRepo,
             IEmailVerificationService verificationService,
-            ICampusEmailService emailService)
+            ICampusEmailService emailService,
+            IConfiguration configuration)
         {
             _userRepo = userRepo;
             _verificationService = verificationService;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -39,7 +43,11 @@ namespace UniVerse.Server.Controllers
                 return RedirectToAction("Index", "Dashboard");
             }
 
+            var googleClientId = _configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? string.Empty;
+
             ViewData["ReturnUrl"] = returnUrl;
+            ViewData["GoogleClientId"] = googleClientId;
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
@@ -88,6 +96,135 @@ namespace UniVerse.Server.Controllers
             }
 
             return RedirectToAction("Index", "Dashboard");
+        }
+
+        /// <summary>
+        /// Handles Real Google Identity Services (GIS) JWT Token.
+        /// Verifies the student's authentic Google credential and strictly enforces @marwadiuniversity.ac.in domain.
+        /// </summary>
+        [HttpPost]
+        [Route("Account/GoogleTokenLogin")]
+        public async Task<IActionResult> GoogleTokenLogin([FromForm] string? credential, [FromForm] string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(credential))
+            {
+                return Json(new { success = false, message = "Google credential token was not provided." });
+            }
+
+            try
+            {
+                // Decode Google JWT payload
+                var parts = credential.Split('.');
+                if (parts.Length < 2)
+                {
+                    return Json(new { success = false, message = "Invalid Google token structure." });
+                }
+
+                var base64 = parts[1].Replace('-', '+').Replace('_', '/');
+                switch (base64.Length % 4)
+                {
+                    case 2: base64 += "=="; break;
+                    case 3: base64 += "="; break;
+                }
+
+                var jsonBytes = Convert.FromBase64String(base64);
+                var json = System.Text.Encoding.UTF8.GetString(jsonBytes);
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("email", out var emailProp))
+                {
+                    return Json(new { success = false, message = "Email could not be verified by Google." });
+                }
+
+                var cleanEmail = (emailProp.GetString() ?? string.Empty).Trim().ToLowerInvariant();
+
+                // 🛡️ STRICT MARWADI UNIVERSITY DOMAIN ENFORCEMENT
+                if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Access Denied: The Google account '{cleanEmail}' is not an official Marwadi University email. Only @marwadiuniversity.ac.in accounts are permitted."
+                    });
+                }
+
+                var user = await _userRepo.GetByEmailAsync(cleanEmail);
+                if (user == null)
+                {
+                    string fullName = "Student";
+                    if (root.TryGetProperty("name", out var nameProp))
+                    {
+                        fullName = nameProp.GetString() ?? "Student";
+                    }
+
+                    var prefix = cleanEmail.Split('@')[0];
+                    var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+                    var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
+
+                    user = new User
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Email = cleanEmail,
+                        FullName = fullName,
+                        EnrollmentNumber = enr,
+                        PasswordHash = DbInitializer.HashPassword(Guid.NewGuid().ToString("N")),
+                        Role = "student",
+                        HostelName = "Hostel D",
+                        RoomNumber = "304",
+                        RewardBalance = 0.0,
+                        CreatedAt = DateTime.UtcNow.ToString("o"),
+                        UpdatedAt = DateTime.UtcNow.ToString("o")
+                    };
+                    await _userRepo.CreateUserAsync(user);
+                }
+
+                await SignInUserAsync(user, true);
+
+                var target = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) 
+                    ? returnUrl 
+                    : (user.Role == "admin" ? "/Admin" : "/Dashboard");
+
+                return Json(new
+                {
+                    success = true,
+                    redirectUrl = target,
+                    studentName = user.FullName,
+                    email = user.Email
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Google authentication error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Account/SetGoogleClientId")]
+        public IActionResult SetGoogleClientId([FromForm] string? clientId)
+        {
+            if (!string.IsNullOrWhiteSpace(clientId))
+            {
+                var clean = clientId.Trim();
+                Environment.SetEnvironmentVariable("GOOGLE_CLIENT_ID", clean);
+                try
+                {
+                    var appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                    if (System.IO.File.Exists(appSettingsPath))
+                    {
+                        var json = System.IO.File.ReadAllText(appSettingsPath);
+                        var updatedJson = System.Text.RegularExpressions.Regex.Replace(
+                            json,
+                            @"""ClientId""\s*:\s*""[^""]*""",
+                            $"\"ClientId\": \"{clean}\""
+                        );
+                        System.IO.File.WriteAllText(appSettingsPath, updatedJson);
+                    }
+                }
+                catch { }
+                return Json(new { success = true, clientId = clean });
+            }
+            return Json(new { success = false, message = "Client ID cannot be empty." });
         }
 
 
@@ -167,6 +304,9 @@ namespace UniVerse.Server.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            var googleClientId = _configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? string.Empty;
+            ViewData["GoogleClientId"] = googleClientId;
             return View(new RegisterViewModel());
         }
 

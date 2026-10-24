@@ -18,6 +18,9 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
+    <!-- Official Google Identity Services Script -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -682,6 +685,100 @@
             gap: 4px;
             margin-top: 4px;
         }
+
+        /* ─── Google SSO Divider & Button ─── */
+        .divider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0 14px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .divider-text {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: #64748b;
+            text-transform: uppercase;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .google-auth-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .google-sso-btn {
+            width: 100%;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .google-sso-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(66, 133, 244, 0.6);
+            box-shadow: 0 0 24px rgba(66, 133, 244, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .google-domain-chip {
+            font-size: 9.5px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(52, 211, 153, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            color: #34d399;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+        }
+
+        /* ─── Modal Styles ─── */
+        .universe-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .universe-modal-backdrop.show {
+            display: flex;
+        }
+
+        .universe-modal-box {
+            width: 100%;
+            max-width: 480px;
+            background: #090e18;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 35px rgba(52, 211, 153, 0.2);
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -833,6 +930,29 @@
                     <span>Sign In to UniVerse</span>
                     <i class="bi bi-arrow-right"></i>
                 </button>
+
+                <!-- Divider -->
+                <div class="divider-row">
+                    <span class="divider-line"></span>
+                    <span class="divider-text">OR CONTINUE WITH</span>
+                    <span class="divider-line"></span>
+                </div>
+
+                <!-- Authentic Google Sign-In Button -->
+                <div class="google-auth-wrapper">
+                    <button type="button" id="googleSsoBtn" class="google-sso-btn" title="Sign in with official Marwadi University Google Account">
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                        <span class="google-domain-chip">@@marwadiuniversity.ac.in</span>
+                    </button>
+                    <!-- Fallback / Official GSI button container -->
+                    <div id="googleOfficialBtnWrap" style="display: none; margin-top: 8px;"></div>
+                </div>
 
                 <!-- Create Account Link & Return to Home -->
                 <div class="create-account-box">
@@ -1208,6 +1328,198 @@
             clientErrorBox.style.display = "block";
         }
 
+        // ─── Real Google Identity Services (GIS) Integration ───
+        const googleSsoBtn = document.getElementById("googleSsoBtn");
+        const googleOfficialBtnWrap = document.getElementById("googleOfficialBtnWrap");
+        const googleConfigModal = document.getElementById("googleConfigModal");
+        const btnSaveGoogleClientId = document.getElementById("btnSaveGoogleClientId");
+        const btnCloseGoogleModal = document.getElementById("btnCloseGoogleModal");
+        const inputGoogleClientId = document.getElementById("inputGoogleClientId");
+
+        const serverGoogleClientId = "@(ViewData["GoogleClientId"] ?? "")";
+        let activeGoogleClientId = serverGoogleClientId || localStorage.getItem("universe_google_client_id") || "";
+
+        function openGoogleModal() {
+            if (inputGoogleClientId && activeGoogleClientId) {
+                inputGoogleClientId.value = activeGoogleClientId;
+            }
+            if (googleConfigModal) googleConfigModal.classList.add("show");
+        }
+
+        function closeGoogleModal() {
+            if (googleConfigModal) googleConfigModal.classList.remove("show");
+        }
+
+        if (btnCloseGoogleModal) {
+            btnCloseGoogleModal.addEventListener("click", closeGoogleModal);
+        }
+
+        if (btnSaveGoogleClientId) {
+            btnSaveGoogleClientId.addEventListener("click", () => {
+                const val = (inputGoogleClientId.value || "").trim();
+                if (!val) {
+                    alert("Please enter a valid Google OAuth Client ID.");
+                    return;
+                }
+                localStorage.setItem("universe_google_client_id", val);
+                activeGoogleClientId = val;
+
+                // Sync with server
+                const fd = new FormData();
+                fd.append("clientId", val);
+                fetch("/Account/SetGoogleClientId", { method: "POST", body: fd })
+                    .catch(() => {});
+
+                closeGoogleModal();
+                initAndTriggerGoogleAuth();
+            });
+        }
+
+        function handleGoogleTokenResponse(response) {
+            if (!response || !response.credential) {
+                showError("Google sign-in did not return a valid credential token.");
+                return;
+            }
+
+            // Quick client-side domain pre-check
+            try {
+                const payloadBase64 = response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(payloadBase64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                const payload = JSON.parse(jsonPayload);
+                const email = (payload.email || '').toLowerCase();
+
+                if (!email.endsWith('@@marwadiuniversity.ac.in')) {
+                    showError("Access Denied: The Google account '" + email + "' is not an official Marwadi University email. Only @@marwadiuniversity.ac.in accounts are permitted.");
+                    return;
+                }
+            } catch (e) { }
+
+            // Submit token to backend for server-side verification and session creation
+            showError("Verifying Marwadi University Google Account...");
+            clientErrorBox.style.color = "#34d399";
+            clientErrorBox.style.background = "rgba(52, 211, 153, 0.15)";
+            clientErrorBox.style.borderColor = "rgba(52, 211, 153, 0.4)";
+
+            const formData = new FormData();
+            formData.append("credential", response.credential);
+            formData.append("returnUrl", document.querySelector("input[name='ReturnUrl']")?.value || "");
+
+            fetch("/Account/GoogleTokenLogin", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    clientErrorBox.innerText = "✓ Welcome " + (data.studentName || "") + "! Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl || "/Dashboard";
+                    }, 500);
+                } else {
+                    clientErrorBox.style.color = "#fca5a5";
+                    clientErrorBox.style.background = "rgba(239, 68, 68, 0.15)";
+                    clientErrorBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                    showError(data.message || "Google authentication failed.");
+                }
+            })
+            .catch(err => {
+                clientErrorBox.style.color = "#fca5a5";
+                clientErrorBox.style.background = "rgba(239, 68, 68, 0.15)";
+                clientErrorBox.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                showError("Server error verifying Google token: " + err.message);
+            });
+        }
+
+        function initGoogleServices() {
+            if (!activeGoogleClientId) return false;
+            if (window.google && google.accounts && google.accounts.id) {
+                try {
+                    google.accounts.id.initialize({
+                        client_id: activeGoogleClientId,
+                        callback: handleGoogleTokenResponse,
+                        auto_select: false,
+                        hd: "marwadiuniversity.ac.in"
+                    });
+                    return true;
+                } catch (e) {
+                    console.error("GIS init error:", e);
+                }
+            }
+            return false;
+        }
+
+        function initAndTriggerGoogleAuth() {
+            if (!activeGoogleClientId) {
+                openGoogleModal();
+                return;
+            }
+
+            if (window.google && google.accounts && google.accounts.id) {
+                initGoogleServices();
+                googleOfficialBtnWrap.style.display = "block";
+                googleOfficialBtnWrap.innerHTML = "";
+                google.accounts.id.renderButton(googleOfficialBtnWrap, {
+                    theme: "outline",
+                    size: "large",
+                    text: "continue_with",
+                    shape: "rectangular",
+                    width: googleSsoBtn.offsetWidth || 320
+                });
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        const renderedBtn = googleOfficialBtnWrap.querySelector("div[role='button']");
+                        if (renderedBtn) renderedBtn.click();
+                    }
+                });
+            } else {
+                alert("Google Identity Services script is loading. Please check your internet connection.");
+            }
+        }
+
+        if (googleSsoBtn) {
+            googleSsoBtn.addEventListener("click", () => {
+                initAndTriggerGoogleAuth();
+            });
+        }
+
+        // Auto initialize on load if client ID is configured
+        window.addEventListener("load", () => {
+            if (activeGoogleClientId && window.google && google.accounts && google.accounts.id) {
+                initGoogleServices();
+            }
+        });
+
     </script>
+
+    <!-- Google OAuth Client ID Configuration Modal -->
+    <div id="googleConfigModal" class="universe-modal-backdrop">
+        <div class="universe-modal-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span style="font-size: 15px; font-weight: 700; color: #ffffff;">Google Workspace Setup</span>
+                </div>
+                <button type="button" id="btnCloseGoogleModal" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">
+                To enable <strong>real Google Sign-In</strong> with Google's authentic authentication popup, enter your Google Cloud OAuth 2.0 Client ID below.
+                <br /><br />
+                <span style="color: #34d399;">🔒 Strict University Policy:</span> Once configured, only students possessing genuine <strong style="color: #38bdf8;">@@marwadiuniversity.ac.in</strong> email accounts will be permitted entry.
+            </p>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 11px; font-family: 'Space Mono', monospace; color: #6ee7b7; margin-bottom: 6px;">GOOGLE OAUTH CLIENT ID</label>
+                <input type="text" id="inputGoogleClientId" placeholder="e.g. 123456789-xyz.apps.googleusercontent.com" style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 13px; font-family: 'Space Mono', monospace; outline: none;" />
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('googleConfigModal').classList.remove('show');" style="padding: 9px 16px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e2e8f0; font-size: 12.5px; cursor: pointer;">Cancel</button>
+                <button type="button" id="btnSaveGoogleClientId" style="padding: 9px 20px; border-radius: 8px; background: #10b981; border: none; color: #000; font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: 0 0 15px rgba(16,185,129,0.4);">Save & Activate</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
