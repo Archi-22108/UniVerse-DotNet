@@ -90,95 +90,6 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
 
-        [HttpGet]
-        [Route("Account/GoogleSignIn")]
-        public IActionResult GoogleSignIn(string? email, string? returnUrl)
-        {
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                return RedirectToAction("Index", "Dashboard");
-            }
-            ViewData["PrefillEmail"] = email;
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
-        }
-
-        [HttpGet]
-        [Route("Account/CheckAuth")]
-        public IActionResult CheckAuth()
-        {
-            return Json(new { isAuthenticated = User.Identity?.IsAuthenticated == true });
-        }
-
-        [HttpPost]
-        [HttpGet]
-        [Route("Account/GoogleLogin")]
-        public async Task<IActionResult> GoogleLogin([FromForm] string? googleEmail, [FromForm] string? fullName, [FromQuery] string? email)
-        {
-            var rawEmail = !string.IsNullOrWhiteSpace(googleEmail) ? googleEmail : email;
-            var cleanEmail = (rawEmail ?? string.Empty).Trim().ToLowerInvariant();
-
-            // Auto-append domain if student entered just username/enrollment
-            if (!string.IsNullOrWhiteSpace(cleanEmail) && !cleanEmail.Contains('@'))
-            {
-                cleanEmail += UniversityDomain;
-            }
-
-            // Strict Marwadi University Domain Enforcement for Google SSO
-            if (string.IsNullOrWhiteSpace(cleanEmail) || !cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
-            {
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || HttpMethods.IsPost(Request.Method))
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Access Denied: Only official @marwadiuniversity.ac.in Google Workspace accounts are permitted by university policy."
-                    });
-                }
-                return RedirectToAction("Login", new { error = "Only @marwadiuniversity.ac.in emails are allowed." });
-            }
-
-            var user = await _userRepo.GetByEmailAsync(cleanEmail);
-            if (user == null)
-            {
-                // Auto-provision authenticated Marwadi University student account
-                var rawName = !string.IsNullOrWhiteSpace(fullName)
-                    ? fullName.Trim()
-                    : cleanEmail.Split('@')[0].Replace(".", " ");
-                var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(rawName);
-
-                var prefix = cleanEmail.Split('@')[0];
-                var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
-                var enr = digitMatch.Success ? digitMatch.Value : string.Empty;
-
-                user = new User
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Email = cleanEmail,
-                    FullName = formattedName,
-                    EnrollmentNumber = !string.IsNullOrEmpty(enr) ? enr : "92100" + new Random().Next(10000, 99999),
-                    PasswordHash = DbInitializer.HashPassword("GoogleAuth123!"),
-                    Role = "student",
-                    HostelName = "Hostel D",
-                    RoomNumber = "304",
-                    RewardBalance = 0.0,
-                    CreatedAt = DateTime.UtcNow.ToString("o"),
-                    UpdatedAt = DateTime.UtcNow.ToString("o")
-                };
-                await _userRepo.CreateUserAsync(user);
-            }
-
-            await SignInUserAsync(user, true);
-
-            var targetRedirect = user.Role == "admin" ? "/Admin" : "/Dashboard";
-
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || HttpMethods.IsPost(Request.Method))
-            {
-                return Json(new { success = true, redirectUrl = targetRedirect });
-            }
-
-            return user.Role == "admin" ? RedirectToAction("Index", "Admin") : RedirectToAction("Index", "Dashboard");
-        }
 
         [HttpPost]
         [Route("Account/SendVerificationCode")]
@@ -252,43 +163,6 @@ namespace UniVerse.Server.Controllers
             });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> QuickLogin(string email)
-        {
-            var cleanEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
-            if (cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
-            {
-                var user = await _userRepo.GetByEmailAsync(cleanEmail);
-                if (user == null)
-                {
-                    var prefix = cleanEmail.Split('@')[0];
-                    var rawName = prefix.Replace(".", " ");
-                    var formattedName = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(rawName);
-                    var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
-                    var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
-
-                    user = new User
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Email = cleanEmail,
-                        FullName = formattedName,
-                        EnrollmentNumber = enr,
-                        PasswordHash = DbInitializer.HashPassword("Student123!"),
-                        Role = "student",
-                        HostelName = "Hostel D",
-                        RoomNumber = "304",
-                        RewardBalance = 50.0,
-                        CreatedAt = DateTime.UtcNow.ToString("o"),
-                        UpdatedAt = DateTime.UtcNow.ToString("o")
-                    };
-                    await _userRepo.CreateUserAsync(user);
-                }
-
-                await SignInUserAsync(user, true);
-                return RedirectToAction("Index", "Dashboard");
-            }
-            return RedirectToAction("Login");
-        }
 
         [HttpGet]
         public IActionResult Register()
