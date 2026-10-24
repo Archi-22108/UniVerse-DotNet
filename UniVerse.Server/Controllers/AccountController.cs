@@ -40,12 +40,7 @@ namespace UniVerse.Server.Controllers
             }
 
             ViewData["ReturnUrl"] = returnUrl;
-            return View(new LoginViewModel
-            {
-                Email = "student@marwadiuniversity.ac.in",
-                Password = "Student@123",
-                ReturnUrl = returnUrl
-            });
+            return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]

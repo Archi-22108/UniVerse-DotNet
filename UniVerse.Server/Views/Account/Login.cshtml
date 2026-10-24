@@ -972,16 +972,6 @@
                 <!-- Client Errors -->
                 <div id="clientErrorBox" class="alert-error-box" style="display: none;"></div>
 
-                <!-- Quick Demo Account Chips for Student & Runner -->
-                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 14px;">
-                    <button type="button" class="btn-demo-pill" id="demoStudentBtn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;">
-                        <i class="bi bi-mortarboard-fill me-1"></i> Student Demo
-                    </button>
-                    <button type="button" class="btn-demo-pill" id="demoRunnerBtn" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;">
-                        <i class="bi bi-lightning-charge-fill me-1"></i> Runner Demo
-                    </button>
-                </div>
-
                 <!-- 1. Student Email -->
                 <div class="tech-field-wrap">
                     <div class="tech-field-header">
@@ -1544,46 +1534,6 @@
             }
         });
 
-        // ─── Enforce Student Credentials & Block Browser Admin Auto-Fill ───
-        function enforceStudentCredentials() {
-            if (emailInput) {
-                const cur = (emailInput.value || "").trim().toLowerCase();
-                if (!cur || cur.startsWith("admin@@")) {
-                    emailInput.value = "student@@marwadiuniversity.ac.in";
-                    if (passInput) passInput.value = "Student@123";
-                    if (emailVerifiedCheck) emailVerifiedCheck.style.display = "flex";
-                    if (clearEmailBtn) clearEmailBtn.style.display = "flex";
-                }
-            }
-        }
-
-        const demoStudentBtn = document.getElementById("demoStudentBtn");
-        const demoRunnerBtn = document.getElementById("demoRunnerBtn");
-
-        if (demoStudentBtn) {
-            demoStudentBtn.addEventListener("click", () => {
-                emailInput.value = "student@@marwadiuniversity.ac.in";
-                passInput.value = "Student@123";
-                emailVerifiedCheck.style.display = "flex";
-                clearEmailBtn.style.display = "flex";
-                autocompleteChip.style.display = "none";
-            });
-        }
-
-        if (demoRunnerBtn) {
-            demoRunnerBtn.addEventListener("click", () => {
-                emailInput.value = "runner@@marwadiuniversity.ac.in";
-                passInput.value = "Password123!";
-                emailVerifiedCheck.style.display = "flex";
-                clearEmailBtn.style.display = "flex";
-                autocompleteChip.style.display = "none";
-            });
-        }
-
-        enforceStudentCredentials();
-        window.addEventListener("DOMContentLoaded", enforceStudentCredentials);
-        setTimeout(enforceStudentCredentials, 150);
-        setTimeout(enforceStudentCredentials, 450);
     </script>
 </body>
 </html>
