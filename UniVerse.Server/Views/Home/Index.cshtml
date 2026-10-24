@@ -1075,12 +1075,12 @@
         </ul>
 
         <div class="uv-nav-ctas">
-            <a href="/Dashboard" class="uv-nav-signup">
-                <span>Dashboard</span>
-                <i class="bi bi-arrow-right"></i>
-            </a>
             @if (isAuthenticated)
             {
+                <a href="/Dashboard" class="uv-nav-signup">
+                    <span>Dashboard</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
                 <a href="/Account/Logout" class="uv-nav-login">
                     Sign out
                 </a>
@@ -1088,7 +1088,11 @@
             else
             {
                 <a href="/Account/Login" class="uv-nav-login">
-                    Sign out
+                    Sign in
+                </a>
+                <a href="/Account/Register" class="uv-nav-signup">
+                    <span>Get Started</span>
+                    <i class="bi bi-arrow-right"></i>
                 </a>
             }
         </div>
@@ -1565,10 +1569,20 @@
 
             <!-- CTA Buttons -->
             <div class="uv-hero-actions">
-                <a href="/Dashboard" class="uv-btn-primary">
-                    <span>Get Started</span>
-                    <i class="bi bi-arrow-right"></i>
-                </a>
+                @if (isAuthenticated)
+                {
+                    <a href="/Dashboard" class="uv-btn-primary">
+                        <span>Go to Dashboard</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="/Account/Login" class="uv-btn-primary">
+                        <span>Get Started</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                }
                 <a href="#how-it-works" class="uv-btn-secondary">
                     <span>How It Works</span>
                 </a>
