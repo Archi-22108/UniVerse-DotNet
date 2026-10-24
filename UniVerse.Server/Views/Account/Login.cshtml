@@ -247,18 +247,18 @@
             z-index: -1;
         }
 
-        /* Main Card */
+        /* Main Card - Ultra Transparent Glassmorphism */
         .tech-card {
             position: relative;
             z-index: 10;
             width: 100%;
-            border-radius: 20px;
-            padding: 32px 28px;
-            background: linear-gradient(180deg, rgba(8, 14, 28, 0.75) 0%, rgba(4, 7, 16, 0.88) 100%);
+            border-radius: 24px;
+            padding: 34px 28px;
+            background: rgba(6, 15, 20, 0.42);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(28px) saturate(140%);
-            -webkit-backdrop-filter: blur(28px) saturate(140%);
-            box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.85), inset 0 1px 1px rgba(255, 255, 255, 0.2);
             overflow: hidden;
         }
 
@@ -420,16 +420,18 @@
             align-items: center;
             width: 100%;
             border-radius: 12px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.2s ease;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: all 0.25s ease;
             overflow: hidden;
         }
 
         .tech-input-box.focused {
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(16, 185, 129, 0.08);
             border-color: #10b981;
-            box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.08);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.05);
         }
 
         .tech-left-icon {
@@ -449,14 +451,27 @@
 
         .tech-input {
             width: 100%;
-            background: transparent;
+            background: transparent !important;
             border: none;
             outline: none;
-            color: #ffffff;
+            color: #ffffff !important;
             font-size: 13.5px;
             padding: 14px 50px 14px 42px;
             font-family: 'Inter', sans-serif;
             caret-color: #34d399;
+        }
+
+        /* Chrome/Edge Autofill Override - Prevents harsh white box & keeps it transparent */
+        .tech-input:-webkit-autofill,
+        .tech-input:-webkit-autofill:hover,
+        .tech-input:-webkit-autofill:focus,
+        .tech-input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px rgba(8, 18, 22, 0.6) inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            box-shadow: 0 0 0 1000px rgba(8, 18, 22, 0.6) inset !important;
+            color: #ffffff !important;
+            background-color: transparent !important;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
         .tech-input::placeholder {
