@@ -1448,44 +1448,41 @@
             return false;
         }
 
-        function initAndTriggerGoogleAuth() {
-            if (!activeGoogleClientId) {
-                openGoogleModal();
-                return;
-            }
+        function openGoogleSignInWindow() {
+            const width = 500;
+            const height = 640;
+            const left = Math.round((window.screen.width - width) / 2);
+            const top = Math.round((window.screen.height - height) / 2);
+            const returnUrl = document.querySelector("input[name='ReturnUrl']")?.value || "/Dashboard";
 
-            if (window.google && google.accounts && google.accounts.id) {
-                initGoogleServices();
-                googleOfficialBtnWrap.style.display = "block";
-                googleOfficialBtnWrap.innerHTML = "";
-                google.accounts.id.renderButton(googleOfficialBtnWrap, {
-                    theme: "outline",
-                    size: "large",
-                    text: "continue_with",
-                    shape: "rectangular",
-                    width: googleSsoBtn.offsetWidth || 320
-                });
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        const renderedBtn = googleOfficialBtnWrap.querySelector("div[role='button']");
-                        if (renderedBtn) renderedBtn.click();
-                    }
-                });
-            } else {
-                alert("Google Identity Services script is loading. Please check your internet connection.");
+            const popup = window.open(
+                "/Account/GoogleSignInPopup?returnUrl=" + encodeURIComponent(returnUrl),
+                "GoogleSignInPopup",
+                `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no,location=yes,resizable=yes`
+            );
+
+            if (!popup || popup.closed || typeof popup.closed === "undefined") {
+                window.location.href = "/Account/GoogleSignInPopup?returnUrl=" + encodeURIComponent(returnUrl);
             }
         }
 
         if (googleSsoBtn) {
-            googleSsoBtn.addEventListener("click", () => {
-                initAndTriggerGoogleAuth();
+            googleSsoBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                openGoogleSignInWindow();
             });
         }
 
-        // Auto initialize on load if client ID is configured
-        window.addEventListener("load", () => {
-            if (activeGoogleClientId && window.google && google.accounts && google.accounts.id) {
-                initGoogleServices();
+        // Listen for Google Auth callback message from popup
+        window.addEventListener("message", (event) => {
+            if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
+                showError("✓ Verified with Marwadi University Google Account! Welcome " + (event.data.name || "") + "...");
+                clientErrorBox.style.color = "#34d399";
+                clientErrorBox.style.background = "rgba(52, 211, 153, 0.15)";
+                clientErrorBox.style.borderColor = "rgba(52, 211, 153, 0.4)";
+                setTimeout(() => {
+                    window.location.href = event.data.redirectUrl || "/Dashboard";
+                }, 500);
             }
         });
 

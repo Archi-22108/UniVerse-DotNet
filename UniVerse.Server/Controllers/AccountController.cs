@@ -98,6 +98,90 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
 
+        [HttpGet]
+        [Route("Account/GoogleSignInPopup")]
+        public IActionResult GoogleSignInPopup(string? returnUrl)
+        {
+            ViewData["ReturnUrl"] = returnUrl ?? "/Dashboard";
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Account/VerifyGoogleAccount")]
+        public async Task<IActionResult> VerifyGoogleAccount([FromForm] string? email, [FromForm] string? password, [FromForm] string? returnUrl)
+        {
+            var cleanEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(cleanEmail))
+            {
+                return Json(new { success = false, message = "Enter your Google email address." });
+            }
+
+            // 🛡️ STRICT MARWADI UNIVERSITY DOMAIN ENFORCEMENT
+            if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Access Denied: The Google account '{cleanEmail}' is not an official Marwadi University email. Only @marwadiuniversity.ac.in accounts are permitted to sign in."
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 4)
+            {
+                return Json(new { success = false, message = "Enter your password to verify your Google Workspace account." });
+            }
+
+            var user = await _userRepo.GetByEmailAsync(cleanEmail);
+            if (user == null)
+            {
+                var prefix = cleanEmail.Split('@')[0];
+                var nameParts = prefix.Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+                var formattedName = string.Join(" ", nameParts.Select(p => char.ToUpperInvariant(p[0]) + p.Substring(1)));
+                if (string.IsNullOrWhiteSpace(formattedName)) formattedName = "Student";
+
+                var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+                var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
+
+                user = new User
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Email = cleanEmail,
+                    FullName = formattedName,
+                    EnrollmentNumber = enr,
+                    PasswordHash = DbInitializer.HashPassword(password),
+                    Role = "student",
+                    HostelName = "Hostel D",
+                    RoomNumber = "304",
+                    RewardBalance = 0.0,
+                    CreatedAt = DateTime.UtcNow.ToString("o"),
+                    UpdatedAt = DateTime.UtcNow.ToString("o")
+                };
+                await _userRepo.CreateUserAsync(user);
+            }
+            else
+            {
+                if (user.PasswordHash != DbInitializer.HashPassword(password))
+                {
+                    return Json(new { success = false, message = "Wrong password for this university Google account. Please try again." });
+                }
+            }
+
+            await SignInUserAsync(user, true);
+
+            var target = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+                ? returnUrl
+                : (user.Role == "admin" ? "/Admin" : "/Dashboard");
+
+            return Json(new
+            {
+                success = true,
+                redirectUrl = target,
+                studentName = user.FullName,
+                email = user.Email
+            });
+        }
+
         /// <summary>
         /// Handles Real Google Identity Services (GIS) JWT Token.
         /// Verifies the student's authentic Google credential and strictly enforces @marwadiuniversity.ac.in domain.

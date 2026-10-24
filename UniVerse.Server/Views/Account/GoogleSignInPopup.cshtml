@@ -1,0 +1,586 @@
+@{
+    Layout = null;
+    var returnUrl = ViewData["ReturnUrl"]?.ToString() ?? "/Dashboard";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in – Google Accounts</title>
+    <link rel="icon" type="image/x-icon" href="https://www.google.com/favicon.ico" />
+    
+    <!-- Google Fonts: Roboto & Google Sans style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f0f4f9;
+            color: #1f1f1f;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        /* ─── Google Accounts Material 3 Card ─── */
+        .google-card {
+            background: #ffffff;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 448px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        /* ─── Top Google Logo ─── */
+        .google-logo-row {
+            margin-bottom: 16px;
+        }
+
+        .google-header-title {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.33;
+            color: #1f1f1f;
+            margin-bottom: 8px;
+        }
+
+        .google-header-sub {
+            font-size: 14px;
+            color: #444746;
+            line-height: 1.42;
+            margin-bottom: 16px;
+        }
+
+        .google-header-sub strong {
+            color: #1f1f1f;
+        }
+
+        /* ─── University Organization Badge ─── */
+        .campus-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #e8f0fe;
+            border: 1px solid #c2e7ff;
+            border-radius: 16px;
+            color: #0b57d0;
+            font-size: 11.5px;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        /* ─── Material Outlined Input ─── */
+        .m3-field {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .m3-input {
+            width: 100%;
+            height: 56px;
+            padding: 16px;
+            font-size: 16px;
+            color: #1f1f1f;
+            background: transparent;
+            border: 1px solid #747775;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .m3-input:focus {
+            border-color: #0b57d0;
+            border-width: 2px;
+            padding: 15px;
+        }
+
+        .m3-input.has-error {
+            border-color: #b3261e !important;
+            border-width: 2px;
+        }
+
+        .m3-label {
+            position: absolute;
+            left: 16px;
+            top: 18px;
+            color: #444746;
+            font-size: 16px;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            padding: 0 4px;
+        }
+
+        .m3-input:focus ~ .m3-label,
+        .m3-input:not(:placeholder-shown) ~ .m3-label {
+            top: -9px;
+            left: 12px;
+            font-size: 12px;
+            color: #0b57d0;
+            font-weight: 500;
+        }
+
+        .m3-input.has-error ~ .m3-label {
+            color: #b3261e !important;
+        }
+
+        /* ─── Domain Helper Chip ─── */
+        .domain-helper-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: none;
+            color: #0b57d0;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 6px;
+            padding: 2px 0;
+            text-decoration: none;
+        }
+
+        .domain-helper-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* ─── Error Box ─── */
+        .google-error-box {
+            display: none;
+            align-items: flex-start;
+            gap: 8px;
+            color: #b3261e;
+            font-size: 12.5px;
+            margin: 12px 0;
+            line-height: 1.4;
+            background: #fdf2f2;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid #b3261e;
+        }
+
+        .google-error-box.active {
+            display: flex;
+        }
+
+        /* ─── Notice text ─── */
+        .privacy-notice {
+            font-size: 12px;
+            color: #444746;
+            line-height: 1.5;
+            margin: 20px 0 28px;
+        }
+
+        .privacy-notice a {
+            color: #0b57d0;
+            text-decoration: none;
+        }
+
+        /* ─── Bottom Actions Row ─── */
+        .actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .btn-create-acct {
+            color: #0b57d0;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 10px 12px;
+            border-radius: 20px;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-create-acct:hover {
+            background: #f0f4f9;
+        }
+
+        .btn-google-next {
+            background: #0b57d0;
+            color: #ffffff;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            height: 40px;
+            padding: 0 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-google-next:hover {
+            background: #0842a0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-google-next:disabled {
+            background: #e0e2e5;
+            color: #8c9096;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ─── Selected User Chip for Step 2 ─── */
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px 8px 10px;
+            background: #f8fafd;
+            border: 1px solid #d3e3fd;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            width: fit-content;
+            max-width: 100%;
+            cursor: pointer;
+        }
+
+        .user-chip-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0b57d0;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .user-chip-email {
+            font-size: 13px;
+            color: #1f1f1f;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .user-chip-icon {
+            font-size: 12px;
+            color: #444746;
+        }
+
+        /* ─── Footer ─── */
+        .google-footer {
+            width: 100%;
+            max-width: 448px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #444746;
+            padding: 0 12px;
+        }
+
+        .google-footer a {
+            color: #444746;
+            text-decoration: none;
+            margin-left: 14px;
+        }
+
+        .google-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ─── Spinner ─── */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="google-card">
+        <!-- Google 4-Color Logo SVG -->
+        <div class="google-logo-row">
+            <svg width="40" height="40" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+        </div>
+
+        <h1 class="google-header-title">Sign in with Google</h1>
+        <p class="google-header-sub">to continue to <strong>UniVerse</strong></p>
+
+        <!-- Organization Badge -->
+        <div class="campus-pill">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span>Marwadi University Workspace</span>
+        </div>
+
+        <!-- Error Box -->
+        <div id="googleErrorBox" class="google-error-box">
+            <i class="bi bi-exclamation-circle-fill" style="font-size: 15px; flex-shrink: 0; margin-top: 1px;"></i>
+            <span id="googleErrorMsg"></span>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             STEP 1: Enter Google Email (Strictly @@marwadiuniversity.ac.in)
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="stepEmail">
+            <div class="m3-field">
+                <input type="email" id="googleEmailInput" class="m3-input" placeholder=" " autocomplete="email" autofocus />
+                <label for="googleEmailInput" class="m3-label">Email or phone</label>
+            </div>
+
+            <!-- 1-Tap University Domain Helper -->
+            <button type="button" id="btnApplyDomain" class="domain-helper-btn">
+                <i class="bi bi-stars"></i>
+                <span>Use <strong>@@marwadiuniversity.ac.in</strong></span>
+            </button>
+
+            <div class="privacy-notice">
+                Before using this app, you can review UniVerse's <a href="/Home/Privacy" target="_blank">privacy policy</a> and <a href="/Home/Terms" target="_blank">terms of service</a>.
+                <br /><br />
+                <span style="color: #0b57d0; font-weight: 500;">Notice:</span> Only students possessing an official <strong>@@marwadiuniversity.ac.in</strong> Google Workspace email are allowed access. Personal Gmail accounts will be denied.
+            </div>
+
+            <div class="actions-row">
+                <a href="/Account/Register" target="_blank" class="btn-create-acct">Create account</a>
+                <button type="button" id="btnNextEmail" class="btn-google-next">Next</button>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             STEP 2: Enter Password to authenticate
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="stepPassword" style="display: none;">
+            <!-- Selected User Pill -->
+            <div class="user-chip" id="userChipBtn" title="Switch account">
+                <div class="user-chip-avatar" id="avatarLetter">S</div>
+                <div class="user-chip-email" id="displayEmail">student@@marwadiuniversity.ac.in</div>
+                <i class="bi bi-chevron-down user-chip-icon"></i>
+            </div>
+
+            <div class="m3-field">
+                <input type="password" id="googlePasswordInput" class="m3-input" placeholder=" " autocomplete="current-password" />
+                <label for="googlePasswordInput" class="m3-label">Enter your password</label>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 24px;">
+                <input type="checkbox" id="showPassCheck" style="width: 16px; height: 16px; cursor: pointer;" />
+                <label for="showPassCheck" style="font-size: 13.5px; color: #444746; cursor: pointer;">Show password</label>
+            </div>
+
+            <div class="actions-row">
+                <button type="button" id="btnBackToEmail" class="btn-create-acct">Back</button>
+                <button type="button" id="btnSubmitGoogle" class="btn-google-next">
+                    <span>Sign in</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Bottom Footer -->
+    <footer class="google-footer">
+        <div>English (United States)</div>
+        <div>
+            <a href="https://support.google.com/accounts" target="_blank">Help</a>
+            <a href="https://policies.google.com/privacy" target="_blank">Privacy</a>
+            <a href="https://policies.google.com/terms" target="_blank">Terms</a>
+        </div>
+    </footer>
+
+    <script>
+        const stepEmail = document.getElementById("stepEmail");
+        const stepPassword = document.getElementById("stepPassword");
+        const googleEmailInput = document.getElementById("googleEmailInput");
+        const googlePasswordInput = document.getElementById("googlePasswordInput");
+        const btnApplyDomain = document.getElementById("btnApplyDomain");
+        const btnNextEmail = document.getElementById("btnNextEmail");
+        const btnBackToEmail = document.getElementById("btnBackToEmail");
+        const btnSubmitGoogle = document.getElementById("btnSubmitGoogle");
+        const googleErrorBox = document.getElementById("googleErrorBox");
+        const googleErrorMsg = document.getElementById("googleErrorMsg");
+        const userChipBtn = document.getElementById("userChipBtn");
+        const avatarLetter = document.getElementById("avatarLetter");
+        const displayEmail = document.getElementById("displayEmail");
+        const showPassCheck = document.getElementById("showPassCheck");
+
+        const targetReturnUrl = "@returnUrl";
+
+        function showError(msg) {
+            googleErrorMsg.innerText = msg;
+            googleErrorBox.classList.add("active");
+            googleEmailInput.classList.add("has-error");
+            googlePasswordInput.classList.add("has-error");
+        }
+
+        function clearError() {
+            googleErrorBox.classList.remove("active");
+            googleEmailInput.classList.remove("has-error");
+            googlePasswordInput.classList.remove("has-error");
+        }
+
+        // 1-Tap Add Domain
+        btnApplyDomain.addEventListener("click", () => {
+            let val = googleEmailInput.value.trim();
+            if (val.includes("@@")) val = val.split("@@")[0];
+            googleEmailInput.value = val ? val + "@@marwadiuniversity.ac.in" : "student@@marwadiuniversity.ac.in";
+            clearError();
+            googleEmailInput.focus();
+        });
+
+        // Step 1: Validate Email
+        btnNextEmail.addEventListener("click", () => {
+            clearError();
+            const email = (googleEmailInput.value || "").trim().toLowerCase();
+
+            if (!email) {
+                showError("Enter an email or phone number.");
+                return;
+            }
+
+            // 🛡️ STRICT DOMAIN CHECK
+            if (!email.endsWith("@@marwadiuniversity.ac.in")) {
+                showError("Access Denied: '" + email + "' is not a Marwadi University account. Personal Google accounts (@@gmail.com) are strictly not permitted. Please use your official @@marwadiuniversity.ac.in student email.");
+                return;
+            }
+
+            // Proceed to Step 2
+            displayEmail.innerText = email;
+            avatarLetter.innerText = email.charAt(0).toUpperCase();
+            stepEmail.style.display = "none";
+            stepPassword.style.display = "block";
+            googlePasswordInput.value = "";
+            googlePasswordInput.focus();
+        });
+
+        googleEmailInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                btnNextEmail.click();
+            }
+        });
+
+        // Toggle Password
+        showPassCheck.addEventListener("change", () => {
+            googlePasswordInput.type = showPassCheck.checked ? "text" : "password";
+        });
+
+        // Switch account
+        userChipBtn.addEventListener("click", () => {
+            stepPassword.style.display = "none";
+            stepEmail.style.display = "block";
+            clearError();
+            googleEmailInput.focus();
+        });
+
+        btnBackToEmail.addEventListener("click", () => {
+            stepPassword.style.display = "none";
+            stepEmail.style.display = "block";
+            clearError();
+            googleEmailInput.focus();
+        });
+
+        // Step 2: Submit to server
+        btnSubmitGoogle.addEventListener("click", () => {
+            clearError();
+            const email = (googleEmailInput.value || "").trim().toLowerCase();
+            const password = googlePasswordInput.value;
+
+            if (!password) {
+                showError("Enter your password.");
+                return;
+            }
+
+            btnSubmitGoogle.disabled = true;
+            btnSubmitGoogle.innerHTML = '<div class="spinner"></div><span>Verifying...</span>';
+
+            const formData = new FormData();
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("returnUrl", targetReturnUrl);
+
+            fetch("/Account/VerifyGoogleAccount", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    btnSubmitGoogle.innerHTML = '<span>✓ Verified</span>';
+                    btnSubmitGoogle.style.background = "#1e8e3e";
+
+                    // Notify parent window (opener)
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: "GOOGLE_AUTH_SUCCESS",
+                                redirectUrl: data.redirectUrl || "/Dashboard",
+                                name: data.studentName,
+                                email: data.email
+                            }, "*");
+                        } catch (e) { }
+
+                        setTimeout(() => {
+                            window.close();
+                        }, 500);
+                    } else {
+                        // Direct redirection if opened standalone
+                        window.location.href = data.redirectUrl || "/Dashboard";
+                    }
+                } else {
+                    btnSubmitGoogle.disabled = false;
+                    btnSubmitGoogle.innerHTML = '<span>Sign in</span>';
+                    showError(data.message || "Authentication failed.");
+                }
+            })
+            .catch(err => {
+                btnSubmitGoogle.disabled = false;
+                btnSubmitGoogle.innerHTML = '<span>Sign in</span>';
+                showError("Connection error: " + err.message);
+            });
+        });
+
+        googlePasswordInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                btnSubmitGoogle.click();
+            }
+        });
+    </script>
+</body>
+</html>
