@@ -942,7 +942,7 @@
 
 
             <!-- ASP.NET Core MVC Form -->
-            <form asp-controller="Account" asp-action="Login" method="post" id="loginForm" noValidate>
+            <form asp-controller="Account" asp-action="Login" method="post" id="loginForm" noValidate autocomplete="off">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="ReturnUrl" />
 
@@ -957,6 +957,16 @@
                 <!-- Client Errors -->
                 <div id="clientErrorBox" class="alert-error-box" style="display: none;"></div>
 
+                <!-- Quick Demo Account Chips for Student & Runner -->
+                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 14px;">
+                    <button type="button" class="btn-demo-pill" id="demoStudentBtn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;">
+                        <i class="bi bi-mortarboard-fill me-1"></i> Student Demo
+                    </button>
+                    <button type="button" class="btn-demo-pill" id="demoRunnerBtn" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Runner Demo
+                    </button>
+                </div>
+
                 <!-- 1. Student Email -->
                 <div class="tech-field-wrap">
                     <div class="tech-field-header">
@@ -970,7 +980,7 @@
                         <span class="tech-left-icon">
                             <i class="bi bi-envelope"></i>
                         </span>
-                        <input asp-for="Email" id="emailInput" class="tech-input" type="email" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                        <input asp-for="Email" id="emailInput" class="tech-input" type="email" placeholder="student@marwadiuniversity.ac.in" autocomplete="off" required />
                         <div class="tech-right-node">
                             <button type="button" id="clearEmailBtn" class="btn-clear-input" style="display: none;" title="Clear email">
                                 <i class="bi bi-x"></i>
@@ -1003,7 +1013,7 @@
                         <span class="tech-left-icon">
                             <i class="bi bi-lock"></i>
                         </span>
-                        <input asp-for="Password" id="passInput" class="tech-input" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+                        <input asp-for="Password" id="passInput" class="tech-input" type="password" placeholder="Enter your password" autocomplete="new-password" required />
                         <div class="tech-right-node">
                             <button type="button" id="togglePassBtn" class="btn-eye-toggle" title="Toggle password visibility">
                                 <i class="bi bi-eye" id="eyeIcon"></i>
@@ -1518,6 +1528,47 @@
                 window.location.href = event.data.redirectUrl || '/Dashboard';
             }
         });
+
+        // ─── Enforce Student Credentials & Block Browser Admin Auto-Fill ───
+        function enforceStudentCredentials() {
+            if (emailInput) {
+                const cur = (emailInput.value || "").trim().toLowerCase();
+                if (!cur || cur.startsWith("admin@@")) {
+                    emailInput.value = "student@@marwadiuniversity.ac.in";
+                    if (passInput) passInput.value = "Student@123";
+                    if (emailVerifiedCheck) emailVerifiedCheck.style.display = "flex";
+                    if (clearEmailBtn) clearEmailBtn.style.display = "flex";
+                }
+            }
+        }
+
+        const demoStudentBtn = document.getElementById("demoStudentBtn");
+        const demoRunnerBtn = document.getElementById("demoRunnerBtn");
+
+        if (demoStudentBtn) {
+            demoStudentBtn.addEventListener("click", () => {
+                emailInput.value = "student@@marwadiuniversity.ac.in";
+                passInput.value = "Student@123";
+                emailVerifiedCheck.style.display = "flex";
+                clearEmailBtn.style.display = "flex";
+                autocompleteChip.style.display = "none";
+            });
+        }
+
+        if (demoRunnerBtn) {
+            demoRunnerBtn.addEventListener("click", () => {
+                emailInput.value = "runner@@marwadiuniversity.ac.in";
+                passInput.value = "Password123!";
+                emailVerifiedCheck.style.display = "flex";
+                clearEmailBtn.style.display = "flex";
+                autocompleteChip.style.display = "none";
+            });
+        }
+
+        enforceStudentCredentials();
+        window.addEventListener("DOMContentLoaded", enforceStudentCredentials);
+        setTimeout(enforceStudentCredentials, 150);
+        setTimeout(enforceStudentCredentials, 450);
     </script>
 </body>
 </html>
