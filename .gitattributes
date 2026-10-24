@@ -1,0 +1,19 @@
+# ==============================================================================
+# GitHub Linguist Overrides for UniVerse (.NET / C# Project)
+# ==============================================================================
+
+# Classify all ASP.NET Core Razor Views (.cshtml) as C#
+*.cshtml linguist-language=C#
+*.cshtml linguist-detectable=true
+
+# Mark documentation files and guides as documentation (excluded from code stats)
+docs/** linguist-documentation=true
+*.html linguist-documentation=true
+*.md linguist-documentation=true
+UniVerse.Server/wwwroot/index.html linguist-documentation=true
+
+# Mark client-side static web assets as vendored
+**/wwwroot/** linguist-vendored=true
+**/wwwroot/lib/** linguist-vendored=true
+**/wwwroot/css/** linguist-vendored=true
+**/wwwroot/js/** linguist-vendored=true
