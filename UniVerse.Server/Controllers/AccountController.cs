@@ -133,12 +133,13 @@ namespace UniVerse.Server.Controllers
             if (user == null)
             {
                 var prefix = cleanEmail.Split('@')[0];
-                var nameParts = prefix.Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
-                var formattedName = string.Join(" ", nameParts.Select(p => char.ToUpperInvariant(p[0]) + p.Substring(1)));
-                if (string.IsNullOrWhiteSpace(formattedName)) formattedName = "Student";
-
                 var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
                 var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
+
+                var nameOnlyPrefix = System.Text.RegularExpressions.Regex.Replace(prefix, @"\d+", "").Trim('.', '_', '-');
+                var nameParts = nameOnlyPrefix.Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+                var formattedName = string.Join(" ", nameParts.Select(p => char.ToUpperInvariant(p[0]) + (p.Length > 1 ? p.Substring(1) : "")));
+                if (string.IsNullOrWhiteSpace(formattedName)) formattedName = "Student";
 
                 user = new User
                 {
