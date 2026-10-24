@@ -164,6 +164,24 @@ WHERE id = @id;";
             return await _db.ExecuteNonQueryAsync(sql, parameters);
         }
 
+        public async Task<int> SetUserBalanceAsync(string userId, double balance)
+        {
+            const string sql = "UPDATE users SET reward_balance = @balance, updated_at = @now WHERE id = @id;";
+            return await _db.ExecuteNonQueryAsync(sql,
+                AdoNetDbHelper.CreateParameter("@balance", Math.Max(0.0, balance)),
+                AdoNetDbHelper.CreateParameter("@now", DateTime.UtcNow.ToString("o")),
+                AdoNetDbHelper.CreateParameter("@id", userId));
+        }
+
+        public async Task<int> UpdateUserRoleAsync(string userId, string role)
+        {
+            const string sql = "UPDATE users SET role = @role, updated_at = @now WHERE id = @id;";
+            return await _db.ExecuteNonQueryAsync(sql,
+                AdoNetDbHelper.CreateParameter("@role", role.ToLowerInvariant()),
+                AdoNetDbHelper.CreateParameter("@now", DateTime.UtcNow.ToString("o")),
+                AdoNetDbHelper.CreateParameter("@id", userId));
+        }
+
         private static User MapUserFromReader(SqliteDataReader reader)
         {
             return new User

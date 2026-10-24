@@ -1,0 +1,342 @@
+@model UniVerse.Server.Models.ViewModels.AdminLoginViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Campus Authority & Admin Portal — UniVerse";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg-base: #040810;
+            --surface: #0a101d;
+            --surface-border: rgba(255, 255, 255, 0.1);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.35);
+            --amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+
+        .admin-auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(10, 16, 29, 0.88);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 36px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(16, 185, 129, 0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--emerald);
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 20px;
+        }
+
+        .admin-badge-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--emerald);
+            animation: pulseDot 1.8s infinite;
+        }
+
+        @@keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .form-floating-custom {
+            margin-bottom: 18px;
+        }
+
+        .form-floating-custom label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .admin-input {
+            width: 100%;
+            height: 48px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 0 16px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .admin-input:focus {
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .admin-btn-primary {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 18px var(--emerald-glow);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .admin-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.5);
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        }
+
+        .demo-quick-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(245, 158, 11, 0.35);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .demo-quick-text {
+            font-size: 11px;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+
+        .demo-quick-btn {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .demo-quick-btn:hover {
+            background: rgba(245, 158, 11, 0.3);
+            color: #ffffff;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            font-size: 12px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-auth-card">
+        <div class="admin-badge">
+            <span class="admin-badge-dot"></span>
+            <span>Marwadi University • Authority Gate</span>
+        </div>
+
+        <h1 class="brand-title">
+            <i class="bi bi-shield-lock-fill text-success"></i>
+            <span>Admin Portal</span>
+        </h1>
+        <p class="brand-sub">
+            Campus dispatch oversight, student management, and marketplace security command.
+        </p>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger bg-danger bg-opacity-10 border border-danger text-danger d-flex align-items-center gap-2 py-2 px-3 mb-3 rounded-3" role="alert" style="font-size: 12px;">
+                <i class="bi bi-exclamation-triangle-fill fs-6 flex-shrink-0"></i>
+                <div>@Model.ErrorMessage</div>
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success bg-success bg-opacity-10 border border-success text-success d-flex align-items-center gap-2 py-2 px-3 mb-3 rounded-3" role="alert" style="font-size: 12px;">
+                <i class="bi bi-check-circle-fill fs-6 flex-shrink-0"></i>
+                <div>@TempData["SuccessMessage"]</div>
+            </div>
+        }
+
+        <form method="post" asp-action="Login" asp-controller="Admin">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="form-floating-custom">
+                <label asp-for="Email"><i class="bi bi-envelope me-1"></i> Admin Official Email</label>
+                <input asp-for="Email" id="adminEmailInput" class="admin-input" placeholder="admin@marwadiuniversity.ac.in" required />
+                <span asp-validation-for="Email" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="form-floating-custom">
+                <label asp-for="Password"><i class="bi bi-key me-1"></i> Security Password</label>
+                <div class="position-relative">
+                    <input asp-for="Password" id="adminPasswordInput" class="admin-input" type="password" placeholder="••••••••••••" required />
+                    <button type="button" id="togglePassBtn" class="btn btn-link text-secondary position-absolute end-0 top-50 translate-middle-y text-decoration-none pe-3" style="font-size: 13px;">
+                        <i class="bi bi-eye" id="togglePassIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mt-2" style="font-size: 12px; color: #94a3b8;">
+                <div class="form-check">
+                    <input asp-for="RememberMe" class="form-check-input" type="checkbox" id="rememberMeCheck" />
+                    <label class="form-check-label" for="rememberMeCheck">Keep session active</label>
+                </div>
+                <span>Role: <strong>Authority</strong></span>
+            </div>
+
+            <button type="submit" class="admin-btn-primary">
+                <i class="bi bi-shield-check"></i>
+                <span>Authenticate & Access Command Center</span>
+            </button>
+        </form>
+
+        <!-- Viva & College Evaluation Demo Helper -->
+        <div class="demo-quick-box">
+            <div class="demo-quick-text">
+                <strong class="text-warning"><i class="bi bi-lightning-fill"></i> Viva Quick-Fill:</strong><br />
+                Pre-load default college administrator credentials.
+            </div>
+            <button type="button" id="quickFillBtn" class="demo-quick-btn">
+                Auto-Fill
+            </button>
+        </div>
+
+        <div class="text-center">
+            <a href="/" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Campus Home</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const quickFillBtn = document.getElementById("quickFillBtn");
+        const emailInput = document.getElementById("adminEmailInput");
+        const passwordInput = document.getElementById("adminPasswordInput");
+        const togglePassBtn = document.getElementById("togglePassBtn");
+        const togglePassIcon = document.getElementById("togglePassIcon");
+
+        if (quickFillBtn) {
+            quickFillBtn.addEventListener("click", () => {
+                emailInput.value = "admin@marwadiuniversity.ac.in";
+                passwordInput.value = "AdminPassword123!";
+                quickFillBtn.innerText = "Filled ✓";
+                setTimeout(() => { quickFillBtn.innerText = "Auto-Fill"; }, 1500);
+            });
+        }
+
+        if (togglePassBtn) {
+            togglePassBtn.addEventListener("click", () => {
+                const isPass = passwordInput.type === "password";
+                passwordInput.type = isPass ? "text" : "password";
+                togglePassIcon.className = isPass ? "bi bi-eye-slash" : "bi bi-eye";
+            });
+        }
+    </script>
+</body>
+</html>

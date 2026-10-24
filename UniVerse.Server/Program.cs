@@ -14,6 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 // ASP.NET Core MVC with Razor View Engine (.cshtml)
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 // Swagger Documentation for College Viva Evaluation
 builder.Services.AddSwaggerGen(c =>
@@ -81,6 +86,7 @@ using (var scope = app.Services.CreateScope())
 
 // ─── 3. HTTP Request Pipeline ────────────────────────────────────────────────
 
+app.UseResponseCompression();
 app.UseCors("AllowAll");
 app.UseStaticFiles();
 

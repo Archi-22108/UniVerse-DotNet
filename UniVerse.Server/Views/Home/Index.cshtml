@@ -118,13 +118,12 @@
         .tower-flag { animation: flag-wave 2.2s ease-in-out infinite; transform-origin: 779px 116px; }
 
         /* ─── Floating Product Objects Keyframes ─── */
-        @@keyframes float-snack   { 0%, 100% { transform: translateY(0px) rotate(-15deg); } 50% { transform: translateY(-20px) rotate(-12deg); } }
-        @@keyframes float-choco   { 0%, 100% { transform: translateY(0px) rotate(-25deg); } 50% { transform: translateY(-15px) rotate(-20deg); } }
-        @@keyframes float-can     { 0%, 100% { transform: translateY(0px) rotate(15deg);  } 50% { transform: translateY(-25px) rotate(18deg); } }
-        @@keyframes float-coffee  { 0%, 100% { transform: translateY(0px) rotate(10deg);  } 50% { transform: translateY(-18px) rotate(6deg); } }
-        @@keyframes float-water   { 0%, 100% { transform: translateY(0px) rotate(-12deg); } 50% { transform: translateY(-22px) rotate(-8deg); } }
-        @@keyframes float-juice   { 0%, 100% { transform: translateY(0px) rotate(18deg);  } 50% { transform: translateY(-20px) rotate(22deg); } }
-        @@keyframes float-noodles { 0%, 100% { transform: translateY(0px) rotate(-8deg);  } 50% { transform: translateY(-16px) rotate(-4deg); } }
+        @@keyframes float-crunchex { 0%, 100% { transform: translateY(0px) rotate(-12deg); } 50% { transform: translateY(-16px) rotate(-8deg); } }
+        @@keyframes float-choco    { 0%, 100% { transform: translateY(0px) rotate(-22deg); } 50% { transform: translateY(-14px) rotate(-18deg); } }
+        @@keyframes float-lays     { 0%, 100% { transform: translateY(0px) rotate(-8deg);  } 50% { transform: translateY(-15px) rotate(-5deg); } }
+        @@keyframes float-can      { 0%, 100% { transform: translateY(0px) rotate(-12deg); } 50% { transform: translateY(-18px) rotate(-8deg); } }
+        @@keyframes float-amul     { 0%, 100% { transform: translateY(0px) rotate(-6deg);  } 50% { transform: translateY(-15px) rotate(-3deg); } }
+        @@keyframes float-cuppa    { 0%, 100% { transform: translateY(0px) rotate(4deg);   } 50% { transform: translateY(-16px) rotate(8deg); } }
 
         /* ─── Top Cosmic Navbar ─── */
         .uv-navbar {
@@ -134,8 +133,8 @@
             right: 0;
             z-index: 50;
             background: rgba(10, 16, 12, 0.85);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding: 12px 24px;
             display: flex;
@@ -236,10 +235,10 @@
             font-size: 13px;
             font-weight: 700;
             color: #022c22;
-            background: linear-gradient(90deg, #34D399 0%, #2DD4BF 100%);
-            border-radius: 12px;
+            background: #00D084;
+            border-radius: 9999px;
             text-decoration: none;
-            box-shadow: 0 4px 16px rgba(52, 211, 153, 0.3);
+            box-shadow: 0 4px 16px rgba(0, 208, 132, 0.35);
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
@@ -247,8 +246,8 @@
         }
 
         .uv-nav-signup:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 22px rgba(52, 211, 153, 0.45);
+            transform: scale(1.04);
+            box-shadow: 0 6px 22px rgba(0, 208, 132, 0.5);
             color: #022c22;
         }
 
@@ -270,6 +269,8 @@
             overflow: hidden;
             pointer-events: none;
             z-index: 0;
+            contain: strict;
+            transform: translateZ(0);
         }
 
         .uv-campus-bg-wrap svg {
@@ -287,34 +288,111 @@
                         linear-gradient(to bottom, rgba(5,15,10,0.55) 0%, rgba(5,15,10,0.30) 40%, rgba(5,15,10,0.70) 100%);
         }
 
-        /* Floating Objects Layer */
+        /* Floating Objects Layer - GPU Hardware Accelerated */
         .uv-float-layer {
             position: absolute;
             inset: 0;
             z-index: 2;
             pointer-events: none;
             overflow: hidden;
+            contain: layout paint;
         }
 
         .float-obj {
             position: absolute;
             will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            pointer-events: auto;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .float-obj-snack   { top: 12%; left: 5%;   animation: float-snack   5.2s ease-in-out infinite; }
-        .float-obj-choco   { top: 32%; left: 2%;   animation: float-choco   6.1s ease-in-out infinite 0.8s; }
-        .float-obj-can     { top: 15%; right: 6%;  animation: float-can     4.8s ease-in-out infinite 0.4s; }
-        .float-obj-coffee  { top: 35%; right: 3%;  animation: float-coffee  5.6s ease-in-out infinite 1.2s; }
-        .float-obj-water   { top: 58%; left: 3.5%; animation: float-water   6.5s ease-in-out infinite 0.6s; }
-        .float-obj-juice   { top: 60%; right: 4%;  animation: float-juice   5.8s ease-in-out infinite 1.5s; }
-        .float-obj-noodles { top: 75%; left: 6%;   animation: float-noodles 7.0s ease-in-out infinite 2.0s; }
+        .float-obj img {
+            display: block;
+            will-change: transform;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
 
-        @@media (max-width: 768px) {
+        .float-obj:hover {
+            transform: scale(1.12) translateZ(0) !important;
+            cursor: pointer;
+        }
+
+        .float-obj-crunchex {
+            top: 22%;
+            left: 4%;
+            animation: float-crunchex 5.4s ease-in-out infinite;
+        }
+        .float-obj-crunchex img {
+            width: 95px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(14, 165, 233, 0.45));
+        }
+
+        .float-obj-choco {
+            top: 50%;
+            left: 2.5%;
+            animation: float-choco 6.2s ease-in-out infinite 0.8s;
+        }
+        .float-obj-choco img {
+            width: 82px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(168, 85, 247, 0.45));
+        }
+
+        .float-obj-lays {
+            top: 78%;
+            left: 3.5%;
+            animation: float-lays 5.8s ease-in-out infinite 1.5s;
+        }
+        .float-obj-lays img {
+            width: 95px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(74, 222, 128, 0.45));
+        }
+
+        .float-obj-can {
+            top: 22%;
+            right: 5%;
+            animation: float-can 5.0s ease-in-out infinite 0.4s;
+        }
+        .float-obj-can img {
+            width: 70px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(239, 68, 68, 0.45));
+        }
+
+        .float-obj-amul {
+            top: 50%;
+            right: 3%;
+            animation: float-amul 6.0s ease-in-out infinite 1.2s;
+        }
+        .float-obj-amul img {
+            width: 74px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(217, 119, 6, 0.45));
+        }
+
+        .float-obj-cuppa {
+            top: 78%;
+            right: 4.5%;
+            animation: float-cuppa 5.6s ease-in-out infinite 1.8s;
+        }
+        .float-obj-cuppa img {
+            width: 86px;
+            height: auto;
+            filter: drop-shadow(0 10px 18px rgba(234, 179, 8, 0.45));
+        }
+
+        @@media (max-width: 992px) {
             .float-obj-choco,
-            .float-obj-coffee,
-            .float-obj-water,
-            .float-obj-juice,
-            .float-obj-noodles {
+            .float-obj-amul {
+                display: none;
+            }
+        }
+        @@media (max-width: 640px) {
+            .uv-float-layer {
                 display: none;
             }
         }
@@ -367,7 +445,7 @@
         }
 
         .uv-heading-gradient {
-            background: linear-gradient(90deg, #10B981 20%, #F59E0B 100%);
+            background: linear-gradient(90deg, #10B981 0%, #10B981 40%, #F59E0B 80%, #D97706 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -395,20 +473,25 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            padding: 16px 32px;
+            padding: 14px 30px;
             font-size: 15px;
             font-weight: 600;
             color: #ffffff;
-            border-radius: var(--radius-md);
+            border-radius: 9999px;
             font-family: var(--font-inter);
             text-decoration: none;
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3), 0 8px 32px rgba(16, 185, 129, 0.45);
+            background: rgba(6, 44, 32, 0.88);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             transition: all 0.3s ease;
         }
 
         .uv-btn-primary:hover {
-            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.5), 0 12px 40px rgba(16, 185, 129, 0.6);
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10B981;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.5);
             transform: translateY(-2px);
             color: #ffffff;
         }
@@ -417,44 +500,25 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 16px 32px;
+            padding: 14px 30px;
             font-size: 15px;
             font-weight: 600;
             color: #ffffff;
-            border-radius: var(--radius-md);
+            border-radius: 9999px;
             font-family: var(--font-inter);
             text-decoration: none;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.22);
             transition: all 0.3s ease;
         }
 
         .uv-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.18);
-            border-color: rgba(255, 255, 255, 0.38);
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.4);
             color: #ffffff;
             transform: translateY(-2px);
-        }
-
-        .uv-trust-badges {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-            margin-bottom: 36px;
-        }
-
-        .uv-trust-item {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.55);
-            font-weight: 500;
-            font-family: var(--font-inter);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
         /* Live Status Glass Strip */
@@ -462,15 +526,15 @@
             display: inline-flex;
             align-items: center;
             justify-content: space-around;
-            padding: 10px 24px;
-            border-radius: var(--radius-xl);
-            background: rgba(10, 20, 15, 0.52);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 10px 28px;
+            border-radius: 9999px;
+            background: rgba(10, 20, 15, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             gap: 24px;
-            margin: 0 auto;
+            margin: 0 auto 24px;
         }
 
         .uv-stat-box {
@@ -481,20 +545,20 @@
 
         .uv-stat-icon-wrap {
             position: relative;
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .uv-stat-val {
             font-size: 18px;
             font-weight: 700;
             color: #ffffff;
-            line-height: 1;
+            line-height: 1.1;
             font-family: var(--font-sans);
         }
 
@@ -503,12 +567,32 @@
             color: rgba(255, 255, 255, 0.55);
             font-family: var(--font-inter);
             margin-top: 2px;
+            white-space: nowrap;
         }
 
         .uv-stat-sep {
             width: 1px;
-            height: 32px;
+            height: 28px;
             background: rgba(255, 255, 255, 0.12);
+        }
+
+        .uv-trust-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
+
+        .uv-trust-item {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 500;
+            font-family: var(--font-inter);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* Scroll down button */
@@ -517,11 +601,11 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            margin-top: 36px;
-            color: rgba(255, 255, 255, 0.4);
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.45);
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.22em;
             text-decoration: none;
             transition: color 0.2s ease;
         }
@@ -991,20 +1075,21 @@
         </ul>
 
         <div class="uv-nav-ctas">
+            <a href="/Dashboard" class="uv-nav-signup">
+                <span>Dashboard</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
             @if (isAuthenticated)
             {
-                <a href="/Dashboard" class="uv-nav-signup">
-                    <span>Dashboard</span>
-                    <i class="bi bi-arrow-right"></i>
-                </a>
-                <a href="/Account/Logout" class="uv-nav-login" style="color: #f87171;">
+                <a href="/Account/Logout" class="uv-nav-login">
                     Sign out
                 </a>
             }
             else
             {
-                <a href="/Account/Login" class="uv-nav-login">Login</a>
-                <a href="/Account/Register" class="uv-nav-signup">Sign Up</a>
+                <a href="/Account/Login" class="uv-nav-login">
+                    Sign out
+                </a>
             }
         </div>
     </header>
@@ -1023,34 +1108,34 @@
                         <stop offset="100%" stop-color="#D9EDF6" />
                     </linearGradient>
                     <linearGradient id="uvGrassGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#4A9E62" />
-                        <stop offset="100%" stop-color="#2D6B3A" />
+                        <stop offset="0%" stop-color="#1E472A" />
+                        <stop offset="100%" stop-color="#0E2314" />
                     </linearGradient>
                     <linearGradient id="uvBuildGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#F6F4F0" />
-                        <stop offset="100%" stop-color="#EDEBE5" />
+                        <stop offset="0%" stop-color="#ECE8E0" />
+                        <stop offset="100%" stop-color="#D6D1C7" />
                     </linearGradient>
                     <linearGradient id="uvGlassGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#CBE6F4" stop-opacity="0.9" />
-                        <stop offset="100%" stop-color="#A8CEDE" stop-opacity="0.7" />
+                        <stop offset="0%" stop-color="#73A897" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#4A7566" stop-opacity="0.65" />
                     </linearGradient>
                     <linearGradient id="uvHostelGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#FFFFFF" />
-                        <stop offset="100%" stop-color="#F8F7F3" />
+                        <stop offset="0%" stop-color="#EDE9E1" />
+                        <stop offset="100%" stop-color="#DCD7CD" />
                     </linearGradient>
                     <linearGradient id="uvRoadGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#BFC5CF" />
-                        <stop offset="100%" stop-color="#AEB6C2" />
+                        <stop offset="0%" stop-color="#47525A" />
+                        <stop offset="100%" stop-color="#2F383E" />
                     </linearGradient>
-                    <!-- Soft drop shadow filters -->
-                    <filter id="uvShadow" x="-8%" y="-4%" width="120%" height="130%">
-                        <feDropShadow dx="3" dy="8" stdDeviation="10" floodColor="#0a1a0a" floodOpacity="0.18" />
+                    <!-- Soft drop shadow filters - Optimized stdDeviation for 60FPS -->
+                    <filter id="uvShadow" x="-4%" y="-2%" width="108%" height="110%">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" floodColor="#0a1a0a" floodOpacity="0.22" />
                     </filter>
-                    <filter id="uvTreeShadow">
-                        <feDropShadow dx="2" dy="5" stdDeviation="5" floodColor="#000000" floodOpacity="0.15" />
+                    <filter id="uvTreeShadow" x="-3%" y="-2%" width="106%" height="108%">
+                        <feDropShadow dx="1" dy="3" stdDeviation="2" floodColor="#000000" floodOpacity="0.18" />
                     </filter>
-                    <filter id="uvVendGlow">
-                        <feGaussianBlur stdDeviation="2" result="blur" />
+                    <filter id="uvVendGlow" x="-5%" y="-5%" width="110%" height="110%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur" />
                         <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
                     </filter>
                 </defs>
@@ -1143,8 +1228,8 @@
                 <!-- ── Hostel A (far left, amber accent) ── -->
                 <g filter="url(#uvShadow)">
                     <rect x="22" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
-                    <rect x="22" y="282" width="196" height="12" fill="#F59E0B" />
-                    <rect x="22" y="294" width="196" height="3" fill="#D97706" opacity="0.5" />
+                    <rect x="22" y="282" width="196" height="12" fill="#10B981" />
+                    <rect x="22" y="294" width="196" height="3" fill="#059669" opacity="0.5" />
 
                     @for (int f = 0; f < 4; f++)
                     {
@@ -1230,8 +1315,8 @@
                 <!-- ── Hostel D (far right, amber accent) ── -->
                 <g filter="url(#uvShadow)">
                     <rect x="1226" y="282" width="196" height="268" fill="url(#uvHostelGrad)" rx="2" />
-                    <rect x="1226" y="282" width="196" height="12" fill="#F59E0B" />
-                    <rect x="1226" y="294" width="196" height="3" fill="#D97706" opacity="0.5" />
+                    <rect x="1226" y="282" width="196" height="12" fill="#10B981" />
+                    <rect x="1226" y="294" width="196" height="3" fill="#059669" opacity="0.5" />
 
                     @for (int f = 0; f < 4; f++)
                     {
@@ -1426,85 +1511,36 @@
         <!-- Dark Radial Vignette Overlay -->
         <div class="uv-hero-overlay"></div>
 
-        <!-- 7 Floating Snack & Drink Items -->
+        <!-- 6 Floating Real Product Images (Matching Reference Screenshot) -->
         <div class="uv-float-layer">
-            <!-- 1. Snack Packet (LAYS) -->
-            <div class="float-obj float-obj-snack">
-                <svg width="60" height="74" viewBox="0 0 52 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <rect x="6" y="14" width="40" height="44" fill="#F59E0B" rx="6" stroke="#C09040" stroke-width="1.5"/>
-                    <path d="M 6 14 Q 26 8 46 14" fill="#E8B040" stroke="#B07030" stroke-width="1"/>
-                    <rect x="6" y="28" width="40" height="16" fill="#10B981" opacity="0.9"/>
-                    <rect x="12" y="32" width="28" height="8" fill="#059669" rx="4" />
-                    <text x="26" y="39.5" text-anchor="middle" fill="white" font-size="7" font-family="sans-serif" font-weight="800" letter-spacing="1">LAYS</text>
-                </svg>
+            <!-- 1. Balaji Crunchex Chilli Tadka (top left) -->
+            <div class="float-obj float-obj-crunchex">
+                <img src="/images/products/crunchex.png" alt="Balaji Crunchex" />
             </div>
 
-            <!-- 2. Chocolate Bar (CHOCO) -->
+            <!-- 2. Cadbury Dairy Milk Chocolate (middle left) -->
             <div class="float-obj float-obj-choco">
-                <svg width="64" height="50" viewBox="0 0 56 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <rect x="2" y="4" width="52" height="36" fill="#B05030" rx="5" stroke="#904020" stroke-width="1.5"/>
-                    <rect x="8" y="18" width="9" height="8" fill="#4A2511" rx="1.5"/>
-                    <rect x="19" y="18" width="9" height="8" fill="#4A2511" rx="1.5"/>
-                    <rect x="30" y="18" width="9" height="8" fill="#4A2511" rx="1.5"/>
-                    <rect x="41" y="18" width="9" height="8" fill="#4A2511" rx="1.5"/>
-                    <text x="28" y="11.5" text-anchor="middle" fill="white" font-size="6" font-family="sans-serif" font-weight="800" letter-spacing="1">CHOCO</text>
-                </svg>
+                <img src="/images/products/dairy-milk.png" alt="Dairy Milk" />
             </div>
 
-            <!-- 3. Soda Can (UV) -->
+            <!-- 3. Lay's American Style Cream & Onion (bottom left) -->
+            <div class="float-obj float-obj-lays">
+                <img src="/images/products/lays.png" alt="Lay's Cream & Onion" />
+            </div>
+
+            <!-- 4. Coca-Cola Classic Can (top right) -->
             <div class="float-obj float-obj-can">
-                <svg width="46" height="74" viewBox="0 0 38 62" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <rect x="4" y="10" width="30" height="46" fill="#10B981" rx="4"/>
-                    <ellipse cx="19" cy="10" rx="15" ry="5" fill="#C0C0C0"/>
-                    <ellipse cx="19" cy="56" rx="15" ry="5" fill="#C0C0C0"/>
-                    <rect x="4" y="22" width="30" height="22" fill="#064E3B" opacity="0.9"/>
-                    <text x="19" y="31" text-anchor="middle" fill="#6EE7B7" font-size="10" font-family="sans-serif" font-weight="900">UV</text>
-                    <text x="19" y="41" text-anchor="middle" fill="white" font-size="6" font-family="sans-serif" font-weight="700" opacity="0.9">REFRESH</text>
-                </svg>
+                <img src="/images/products/coca-cola.png" alt="Coca-Cola Can" />
             </div>
 
-            <!-- 4. Coffee Cup (COFFEE) -->
-            <div class="float-obj float-obj-coffee">
-                <svg width="60" height="70" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <path d="M 18 10 Q 20 5 18 0" fill="none" stroke="#FDE68A" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-                    <path d="M 26 12 Q 28 7 26 2"  fill="none" stroke="#FDE68A" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
-                    <path d="M 10 18 L 14 58 Q 14 60 26 60 Q 38 60 38 58 L 42 18 Z" fill="#FFF"/>
-                    <path d="M 8 22 L 12 58 Q 12 60 26 60 Q 40 60 40 58 L 44 22 Z" fill="#10B981"/>
-                    <path d="M 42 28 Q 52 28 52 36 Q 52 44 42 44" fill="none" stroke="#FFF" stroke-width="5" stroke-linecap="round"/>
-                    <text x="26" y="40" text-anchor="middle" fill="white" font-size="8" font-family="sans-serif" font-weight="900">COFFEE</text>
-                </svg>
+            <!-- 5. Amul Dark Chocolate 55% (middle right) -->
+            <div class="float-obj float-obj-amul">
+                <img src="/images/products/amul-dark-chocolate.png" alt="Amul Dark Chocolate" />
             </div>
 
-            <!-- 5. Water Bottle (H2O) -->
-            <div class="float-obj float-obj-water">
-                <svg width="40" height="84" viewBox="0 0 34 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.3));">
-                    <rect x="10" y="2" width="14" height="8" fill="#38BDF8" rx="3"/>
-                    <path d="M 8 20 Q 4 24 4 30 L 4 60 Q 4 66 17 66 Q 30 66 30 60 L 30 30 Q 30 24 26 20 Z" fill="#E0F2FE" stroke="#7DD3FC" stroke-width="1.5" opacity="0.7"/>
-                    <rect x="8" y="30" width="18" height="16" fill="white" opacity="0.9" rx="2"/>
-                    <text x="17" y="40.5" text-anchor="middle" fill="#0284C7" font-size="8" font-family="sans-serif" font-weight="800">H₂O</text>
-                </svg>
-            </div>
-
-            <!-- 6. Juice Box (JUICE) -->
-            <div class="float-obj float-obj-juice">
-                <svg width="56" height="68" viewBox="0 0 48 58" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <rect x="4" y="10" width="40" height="44" fill="#F59E0B" rx="4" stroke="#D97706" stroke-width="1.5"/>
-                    <rect x="8" y="24" width="32" height="22" fill="#7C2D12" rx="3" opacity="0.95"/>
-                    <circle cx="24" cy="32" r="7" fill="#F59E0B"/>
-                    <text x="24" y="43.5" text-anchor="middle" fill="white" font-size="7" font-family="sans-serif" font-weight="800">JUICE</text>
-                    <rect x="30" y="2" width="5" height="16" fill="#FFF" rx="2.5" stroke="#FDE68A" stroke-width="1"/>
-                </svg>
-            </div>
-
-            <!-- 7. Noodle Cup (RAMEN) -->
-            <div class="float-obj float-obj-noodles">
-                <svg width="62" height="70" viewBox="0 0 54 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 15px 20px rgba(0,0,0,0.4));">
-                    <path d="M 7 20 L 11 55 Q 11 57 27 57 Q 43 57 43 55 L 47 20 Z" fill="#FFF" stroke="#E2E8F0" stroke-width="1"/>
-                    <ellipse cx="27" cy="18" rx="22" ry="7" fill="#EF4444"/>
-                    <rect x="11" y="26" width="32" height="20" fill="#EF4444" rx="3"/>
-                    <text x="27" y="35" text-anchor="middle" fill="white" font-size="8" font-family="sans-serif" font-weight="900">RAMEN</text>
-                    <path d="M 16 16 Q 22 12 28 16 Q 34 12 40 16" fill="none" stroke="#F59E0B" stroke-width="2"/>
-                </svg>
+            <!-- 6. Maggi Masala Cuppa Noodles (bottom right) -->
+            <div class="float-obj float-obj-cuppa">
+                <img src="/images/products/cuppa-noodles.png" alt="Maggi Cuppa Noodles" />
             </div>
         </div>
 
@@ -1513,7 +1549,7 @@
             <!-- Overline Badge -->
             <div class="uv-badge-pill">
                 <span class="uv-badge-dot"></span>
-                <span>Exclusively for Marwadi University Students</span>
+                <span>EXCLUSIVELY FOR MARWADI UNIVERSITY STUDENTS</span>
             </div>
 
             <!-- Headline -->
@@ -1529,7 +1565,7 @@
 
             <!-- CTA Buttons -->
             <div class="uv-hero-actions">
-                <a href="/Account/Register" class="uv-btn-primary">
+                <a href="/Dashboard" class="uv-btn-primary">
                     <span>Get Started</span>
                     <i class="bi bi-arrow-right"></i>
                 </a>
@@ -1538,14 +1574,7 @@
                 </a>
             </div>
 
-            <!-- Trust Indicators -->
-            <div class="uv-trust-badges">
-                <span class="uv-trust-item"><i class="bi bi-shield-check text-success"></i> Verified Students Only</span>
-                <span class="uv-trust-item"><i class="bi bi-lightning-charge-fill text-warning"></i> 15-Min Delivery</span>
-                <span class="uv-trust-item"><i class="bi bi-geo-alt-fill text-info"></i> Campus-Exclusive</span>
-            </div>
-
-            <!-- Live Status Strip (ADO.NET Live Data) -->
+            <!-- Live Status Strip (Directly Below Buttons) -->
             <div class="uv-status-strip">
                 <div class="uv-stat-box">
                     <div class="uv-stat-icon-wrap" style="background: rgba(16, 185, 129, 0.25); color: #10B981;">
@@ -1553,7 +1582,7 @@
                     </div>
                     <div style="text-align: left;">
                         <div class="uv-stat-val">@studentCount</div>
-                        <div class="uv-stat-lbl">Verified Students</div>
+                        <div class="uv-stat-lbl">Students Onli...</div>
                     </div>
                 </div>
 
@@ -1577,14 +1606,21 @@
                     </div>
                     <div style="text-align: left;">
                         <div class="uv-stat-val">@requestCount</div>
-                        <div class="uv-stat-lbl">Active Requests</div>
+                        <div class="uv-stat-lbl">Active Reque...</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Trust Indicators (Directly Below Status Strip) -->
+            <div class="uv-trust-badges">
+                <span class="uv-trust-item"><i class="bi bi-check-square-fill text-success"></i> Verified Students Only</span>
+                <span class="uv-trust-item"><i class="bi bi-lightning-charge-fill text-warning"></i> 5-Minute Delivery</span>
+                <span class="uv-trust-item"><i class="bi bi-bank2 text-info"></i> Campus Exclusive</span>
+            </div>
+
             <!-- Scroll Indicator -->
             <a href="#why" class="uv-scroll-hint">
-                <span>Scroll</span>
+                <span>SCROLL</span>
                 <i class="bi bi-chevron-down"></i>
             </a>
         </div>

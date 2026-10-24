@@ -13,6 +13,8 @@ namespace UniVerse.Server.Data.Repositories
         Task<int> CreateUserAsync(User user);
         Task<int> ToggleRunnerDutyAsync(string runnerId, bool isActive);
         Task<int> AddRewardBalanceAsync(string userId, double amount);
+        Task<int> SetUserBalanceAsync(string userId, double balance);
+        Task<int> UpdateUserRoleAsync(string userId, string role);
         Task<int> UpdateUserAsync(User user);
     }
 }

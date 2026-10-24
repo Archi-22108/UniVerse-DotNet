@@ -350,4 +350,45 @@ namespace UniVerse.Server.Models.ViewModels
         public string ActivityVisibility { get; set; } = "public";
         public string DefaultInstructions { get; set; } = "";
     }
+
+    // ─── Admin Portal ViewModels ──────────────────────────────────────────────
+    public class AdminLoginViewModel
+    {
+        [Required(ErrorMessage = "Admin email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [Display(Name = "Admin Email")]
+        public string Email { get; set; } = "admin@marwadiuniversity.ac.in";
+
+        [Required(ErrorMessage = "Password is required.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Security Password")]
+        public string Password { get; set; } = string.Empty;
+
+        [Display(Name = "Keep session active")]
+        public bool RememberMe { get; set; } = true;
+
+        public string? ReturnUrl { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
+
+    public class AdminDashboardViewModel
+    {
+        public User CurrentAdmin { get; set; } = new();
+        public int TotalStudents { get; set; }
+        public int ActiveRunners { get; set; }
+        public int TotalDeliveries { get; set; }
+        public int PendingDeliveries { get; set; }
+        public int InTransitDeliveries { get; set; }
+        public int DeliveredCount { get; set; }
+        public int CancelledDeliveries { get; set; }
+        public int TotalListings { get; set; }
+        public double TotalEconomyVolume { get; set; }
+        public double TotalRewardsCirculated { get; set; }
+        public List<User> AllUsers { get; set; } = new();
+        public List<DeliveryRequestDetailDto> AllDeliveries { get; set; } = new();
+        public List<MarketplaceListingDetailDto> AllListings { get; set; } = new();
+        public string DbVersion { get; set; } = "SQLite 3 (Pure ADO.NET)";
+        public string DbFileSize { get; set; } = "124 KB";
+        public DateTime ServerTime { get; set; } = DateTime.UtcNow;
+    }
 }

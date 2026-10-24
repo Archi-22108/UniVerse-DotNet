@@ -116,7 +116,7 @@ namespace UniVerse.Server.Controllers
             // Auto-append domain if student entered just username/enrollment
             if (!string.IsNullOrWhiteSpace(cleanEmail) && !cleanEmail.Contains('@'))
             {
-                cleanEmail += "@" + UniversityDomain;
+                cleanEmail += UniversityDomain;
             }
 
             // Strict Marwadi University Domain Enforcement for Google SSO

@@ -649,6 +649,15 @@
                     <span>Settings</span>
                 </a>
             </li>
+            @if (User.IsInRole("admin"))
+            {
+                <li style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.08);">
+                    <a href="/Admin" class="uv-nav-link" style="color: #34d399; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25);">
+                        <i class="bi bi-shield-lock-fill text-success"></i>
+                        <span>Admin Portal</span>
+                    </a>
+                </li>
+            }
         </ul>
 
         <!-- Logout Bottom -->
@@ -770,6 +779,8 @@
                 </button>
             </div>
         }
+
+        @RenderBody()
     </main>
 
     <!-- ═══════════════════════════════════════════════════════════════════════

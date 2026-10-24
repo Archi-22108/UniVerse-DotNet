@@ -10,6 +10,7 @@ namespace UniVerse.Server.Data.Repositories
         Task<MarketplaceListingDetailDto?> GetListingByIdAsync(string id);
         Task<string> CreateListingAsync(MarketplaceListing listing);
         Task<bool> DeleteListingAsync(string id, string sellerId);
+        Task<bool> AdminDeleteListingAsync(string id);
         Task<string> CreateOfferAsync(MarketplaceOffer offer);
         Task<bool> UpdateOfferStatusAsync(string offerId, string status);
     }
