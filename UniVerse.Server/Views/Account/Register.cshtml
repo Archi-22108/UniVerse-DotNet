@@ -732,22 +732,13 @@
                 <p class="card-subtitle">Join UniVerse — exclusively for Marwadi University</p>
             </div>
 
-            <!-- Step Progress Indicator -->
-            <div class="step-progress-row">
-                <div class="step-item active" id="stepIndicator1">
-                    <div class="step-number">1</div>
-                    <span>STUDENT ID</span>
+            <!-- Institutional Notice Badge -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(0, 210, 255, 0.08); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 12px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-shield-check" style="color: #00d2ff; font-size: 16px;"></i>
+                    <span style="font-size: 11px; font-weight: 700; color: #e2e8f0; font-family: 'Space Mono', monospace;">MARWADI UNIVERSITY ENROLLMENT</span>
                 </div>
-                <div class="step-connector" id="connector1"></div>
-                <div class="step-item" id="stepIndicator2">
-                    <div class="step-number">2</div>
-                    <span>VERIFY OTP</span>
-                </div>
-                <div class="step-connector" id="connector2"></div>
-                <div class="step-item" id="stepIndicator3">
-                    <div class="step-number">3</div>
-                    <span>SECURITY</span>
-                </div>
+                <span style="font-size: 10px; color: #34d399; font-weight: 700; font-family: 'Space Mono', monospace;">@@marwadiuniversity.ac.in</span>
             </div>
 
             <!-- Server & Client Validation Errors -->
@@ -765,164 +756,56 @@
 
                 <!-- Hidden inputs -->
                 <input type="hidden" name="Role" value="student" />
-                <input type="hidden" name="verificationCode" id="hiddenVerificationCode" value="" />
 
-                <!-- ═════════════════════════════════════════════════════════════
-                     STEP 1: Student Information & Marwadi University Email
-                     ═════════════════════════════════════════════════════════════ -->
-                <div id="step1Content">
-                    <!-- 1. Full Name -->
-                    <div class="field-group">
-                        <label for="nameInput" class="field-label">Full Name</label>
-                        <div class="field-input-box" id="nameBox">
-                            <span class="field-left-icon">
-                                <i class="bi bi-person"></i>
-                            </span>
-                            <input asp-for="FullName" id="nameInput" class="scifi-input" type="text" placeholder="e.g. Avinash Kumar" autocomplete="name" required />
-                        </div>
+                <!-- 1. Full Name -->
+                <div class="field-group">
+                    <label for="nameInput" class="field-label">Full Name</label>
+                    <div class="field-input-box" id="nameBox">
+                        <span class="field-left-icon">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input asp-for="FullName" id="nameInput" class="scifi-input" type="text" placeholder="e.g. Avinash Kumar" autocomplete="name" required />
                     </div>
-
-                    <!-- 2. University Email -->
-                    <div class="field-group" style="margin-top: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label for="emailInput" class="field-label">University Email</label>
-                            <span style="font-size: 9.5px; color: #00d2ff; font-family: 'Space Mono', monospace;">@@marwadiuniversity.ac.in</span>
-                        </div>
-                        <div class="field-input-box" id="emailBox">
-                            <span class="field-left-icon">
-                                <i class="bi bi-envelope"></i>
-                            </span>
-                            <input asp-for="Email" id="emailInput" class="scifi-input" type="email" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
-                            <span id="emailCheck" class="field-right-node" style="display: none; color: #00d2ff;">
-                                <i class="bi bi-check-circle-fill"></i>
-                            </span>
-                        </div>
-                        <!-- Domain Restriction Notice -->
-                        <div id="emailDomainNotice" class="domain-notice" style="display: none;">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            <span>Only @@marwadiuniversity.ac.in is allowed. Personal Gmail accounts cannot register.</span>
-                        </div>
-                        <!-- 1-Tap Autocomplete Chip -->
-                        <div id="chipWrap" style="display: none;">
-                            <button type="button" id="chipAddDomain" class="chip-autocomplete">
-                                <i class="bi bi-magic"></i>
-                                <span>1-Tap Add: <strong>@@marwadiuniversity.ac.in</strong></span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Action: Send Verification Code -->
-                    <button type="button" id="btnSendOtp" class="scifi-btn" style="margin-top: 16px;">
-                        <span>Send Verification Code</span>
-                        <i class="bi bi-arrow-right"></i>
-                    </button>
-
-                    <!-- Divider -->
-                    <div style="display: flex; align-items: center; gap: 10px; margin: 16px 0 12px;">
-                        <span style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></span>
-                        <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #64748b; font-family: 'Space Mono', monospace;">OR REGISTER WITH</span>
-                        <span style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></span>
-                    </div>
-
-                    <!-- Real Google Sign-In Button -->
-                    <a href="/Account/GoogleLogin" id="googleSsoBtnReg" class="google-sso-btn" style="text-decoration: none; width: 100%; height: 44px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.18); color: #ffffff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.25s ease;" title="Register directly with Marwadi University Google Account">
-                        <svg width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
-                            <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
-                            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                        </svg>
-                        <span>Continue with Google</span>
-                        <span style="font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.35); color: #34d399; font-family: 'Space Mono', monospace; font-weight: 700;">@@marwadiuniversity.ac.in</span>
-                    </a>
-                    <div id="googleOfficialBtnWrapReg" style="display: none; margin-top: 8px;"></div>
-
-                    <!-- Sign in redirect -->
-                    <p class="signin-redirect" style="margin-top: 12px;">
-                        Already have an account? <a href="/Account/Login">Sign in &gt;</a>
-                    </p>
                 </div>
 
-                <!-- ═════════════════════════════════════════════════════════════
-                     STEP 2: Enter University Email Verification Code
-                     ═════════════════════════════════════════════════════════════ -->
-                <div id="step2Content" style="display: none;">
-                    <!-- University Mail Dispatch Notice -->
-                    <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; text-align: left;">
-                        <i class="bi bi-envelope-check-fill" style="font-size: 22px; color: #10b981; flex-shrink: 0; margin-top: 2px;"></i>
-                        <div>
-                            <div style="font-weight: 700; color: #6ee7b7; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;">
-                                VERIFICATION CODE DISPATCHED
-                            </div>
-                            <div style="font-size: 12px; color: #ecfdf5; margin-top: 3px; line-height: 1.4;">
-                                Official Marwadi University Student Email:
-                                <br /><strong id="step2TargetEmail" style="color: #38bdf8;"></strong>
-                            </div>
-                        </div>
+                <!-- 2. University Email -->
+                <div class="field-group" style="margin-top: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label for="emailInput" class="field-label">University Email</label>
+                        <span style="font-size: 9.5px; color: #00d2ff; font-family: 'Space Mono', monospace;">@@marwadiuniversity.ac.in</span>
                     </div>
-
-                    <!-- Secure Inbox Verification Notice -->
-                    <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.35); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; text-align: left;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <i class="bi bi-shield-lock-fill" style="color: #38bdf8; font-size: 16px;"></i>
-                            <span style="font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; color: #38bdf8; letter-spacing: 1px;">
-                                CONFIDENTIAL VERIFICATION CODE
-                            </span>
-                        </div>
-                        <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
-                            For student security, the 6-digit verification code has been dispatched directly to your official email inbox at <strong id="step2TargetEmail" style="color: #6ee7b7;"></strong>.
-                            <br /><br />
-                            <span style="color: #94a3b8; font-size: 11px;">🔒 Please open your official student Gmail / Outlook app and check your inbox (or spam/junk folder) for the verification code.</span>
-                        </div>
+                    <div class="field-input-box" id="emailBox">
+                        <span class="field-left-icon">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input asp-for="Email" id="emailInput" class="scifi-input" type="email" placeholder="you@marwadiuniversity.ac.in" autocomplete="email" required />
+                        <span id="emailCheck" class="field-right-node" style="display: none; color: #00d2ff;">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </span>
                     </div>
-
-                    <p style="font-size: 11.5px; color: rgba(255, 255, 255, 0.7); text-align: center; margin-bottom: 12px; line-height: 1.5;">
-                        Enter the 6-digit verification code from your email:
-                    </p>
-
-                    <div class="field-group">
-                        <label for="otpInput" class="field-label" style="text-align: center;">6-Digit Verification Code</label>
-                        <div class="field-input-box" id="otpBox">
-                            <input type="text" id="otpInput" maxlength="6" class="scifi-input otp-input-field" placeholder="000000" autocomplete="one-time-code" />
-                        </div>
+                    <!-- Domain Restriction Notice -->
+                    <div id="emailDomainNotice" class="domain-notice" style="display: none;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>Only @@marwadiuniversity.ac.in is allowed. Personal Gmail accounts cannot register.</span>
                     </div>
-
-                    <button type="button" id="btnVerifyOtp" class="scifi-btn" style="margin-top: 14px;">
-                        <span>Verify Code & Proceed</span>
-                        <i class="bi bi-shield-check"></i>
-                    </button>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 11px; font-family: 'Space Mono', monospace;">
-                        <button type="button" id="btnBackToStep1" style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; text-decoration: underline;">
-                            &larr; Change Email
-                        </button>
-                        <button type="button" id="btnResendOtp" style="background: none; border: none; color: #00d2ff; cursor: pointer; text-decoration: underline;">
-                            Resend Code
+                    <!-- 1-Tap Autocomplete Chip -->
+                    <div id="chipWrap" style="display: none;">
+                        <button type="button" id="chipAddDomain" class="chip-autocomplete">
+                            <i class="bi bi-magic"></i>
+                            <span>1-Tap Add: <strong>@@marwadiuniversity.ac.in</strong></span>
                         </button>
                     </div>
                 </div>
 
-                <!-- ═════════════════════════════════════════════════════════════
-                     STEP 3: Password & Campus Profile Creation
-                     ═════════════════════════════════════════════════════════════ -->
-                <div id="step3Content" style="display: none;">
-                    <!-- Verified University Student Banner -->
-                    <div class="verified-badge">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="bi bi-check-circle-fill" style="color: #34d399; font-size: 15px;"></i>
-                            <span id="verifiedStudentEmailText"></span>
-                        </div>
-                        <span style="font-size: 10px; font-weight: 700; color: #34d399; letter-spacing: 1px;">VERIFIED</span>
-                    </div>
-
-                    <!-- 3. Password -->
+                <!-- 3. Password & Confirm Password (2 Columns) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
                     <div class="field-group">
-                        <label for="passwordInput" class="field-label">Create Password</label>
+                        <label for="passwordInput" class="field-label">Password</label>
                         <div class="field-input-box" id="passBox">
                             <span class="field-left-icon">
                                 <i class="bi bi-lock"></i>
                             </span>
-                            <input asp-for="Password" id="passwordInput" class="scifi-input" type="password" placeholder="Min. 8 characters" autocomplete="new-password" required />
+                            <input asp-for="Password" id="passwordInput" class="scifi-input" type="password" placeholder="Min. 6 chars" autocomplete="new-password" required />
                             <span class="field-right-node">
                                 <button type="button" class="icon-btn" id="togglePassBtn" aria-label="Toggle password visibility">
                                     <i class="bi bi-eye" id="eyePassOpen"></i>
@@ -930,20 +813,14 @@
                                 </button>
                             </span>
                         </div>
-                        <!-- Gravitational Stability Meter -->
-                        <div class="stability-meter-bg">
-                            <div id="strengthBar" class="stability-meter-bar"></div>
-                        </div>
                     </div>
-
-                    <!-- 4. Confirm Password -->
-                    <div class="field-group" style="margin-top: 10px;">
+                    <div class="field-group">
                         <label for="confirmInput" class="field-label">Confirm Password</label>
                         <div class="field-input-box" id="confirmBox">
                             <span class="field-left-icon">
                                 <i class="bi bi-lock-fill"></i>
                             </span>
-                            <input asp-for="ConfirmPassword" id="confirmInput" class="scifi-input" type="password" placeholder="Re-enter your password" autocomplete="new-password" required />
+                            <input asp-for="ConfirmPassword" id="confirmInput" class="scifi-input" type="password" placeholder="Re-enter password" autocomplete="new-password" required />
                             <span class="field-right-node">
                                 <span id="confirmCheck" style="display: none; color: #00d2ff;">
                                     <i class="bi bi-check-circle-fill"></i>
@@ -955,52 +832,82 @@
                             </span>
                         </div>
                     </div>
-
-                    <!-- 5. Campus Hostel & Room -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                        <div class="field-group">
-                            <label class="field-label">Hostel</label>
-                            <div class="field-input-box">
-                                <span class="field-left-icon">
-                                    <i class="bi bi-building"></i>
-                                </span>
-                                <select asp-for="HostelName" class="scifi-input" style="padding-left: 38px; color: #ffffff; background: #0c0e14; border: none; outline: none;">
-                                    <option value="Hostel D" style="background: #111;">Hostel D (Boys)</option>
-                                    <option value="Hostel B" style="background: #111;">Hostel B (Boys)</option>
-                                    <option value="Hostel A" style="background: #111;">Hostel A (Girls)</option>
-                                    <option value="Hostel C" style="background: #111;">Hostel C (Girls)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field-group">
-                            <label class="field-label">Room Number</label>
-                            <div class="field-input-box">
-                                <span class="field-left-icon">
-                                    <i class="bi bi-door-closed"></i>
-                                </span>
-                                <input asp-for="RoomNumber" class="scifi-input" style="padding-left: 38px;" type="text" placeholder="e.g. 304" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Terms Checkbox -->
-                    <div class="terms-row" style="margin-top: 10px;">
-                        <div id="termsCheckbox" class="custom-checkbox" role="checkbox" aria-checked="false" tabindex="0">
-                            <svg id="checkboxSvg" viewBox="0 0 10 8" width="8" height="7" fill="none" style="display: none;">
-                                <path d="M1 4l2.5 2.5L9 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <span class="terms-text">
-                            I agree to the <a href="/" class="terms-link">Terms of Service</a> & <a href="/" class="terms-link">Privacy Policy</a>
-                        </span>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="submitBtn" class="scifi-btn" style="margin-top: 14px;">
-                        <span>Create Account & Launch</span>
-                        <i class="bi bi-rocket-takeoff-fill"></i>
-                    </button>
                 </div>
+
+                <!-- Gravitational Stability Meter -->
+                <div class="stability-meter-bg" style="margin-top: 6px;">
+                    <div id="strengthBar" class="stability-meter-bar"></div>
+                </div>
+
+                <!-- 4. Campus Hostel & Room (2 Columns) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+                    <div class="field-group">
+                        <label class="field-label">Hostel</label>
+                        <div class="field-input-box">
+                            <span class="field-left-icon">
+                                <i class="bi bi-building"></i>
+                            </span>
+                            <select asp-for="HostelName" class="scifi-input" style="padding-left: 38px; color: #ffffff; background: #0c0e14; border: none; outline: none;">
+                                <option value="Hostel D" style="background: #111;">Hostel D (Boys)</option>
+                                <option value="Hostel B" style="background: #111;">Hostel B (Boys)</option>
+                                <option value="Hostel A" style="background: #111;">Hostel A (Girls)</option>
+                                <option value="Hostel C" style="background: #111;">Hostel C (Girls)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Room Number</label>
+                        <div class="field-input-box">
+                            <span class="field-left-icon">
+                                <i class="bi bi-door-closed"></i>
+                            </span>
+                            <input asp-for="RoomNumber" class="scifi-input" style="padding-left: 38px;" type="text" placeholder="e.g. 304" value="304" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms Checkbox -->
+                <div class="terms-row" style="margin-top: 12px;">
+                    <div id="termsCheckbox" class="custom-checkbox checked" role="checkbox" aria-checked="true" tabindex="0">
+                        <svg id="checkboxSvg" viewBox="0 0 10 8" width="8" height="7" fill="none" style="display: block;">
+                            <path d="M1 4l2.5 2.5L9 1" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <span class="terms-text">
+                        I agree to the <a href="/" class="terms-link">Terms of Service</a> & <a href="/" class="terms-link">Privacy Policy</a>
+                    </span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="scifi-btn" style="margin-top: 16px;">
+                    <span>Create Account & Launch</span>
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                </button>
+
+                <!-- Divider -->
+                <div style="display: flex; align-items: center; gap: 10px; margin: 16px 0 12px;">
+                    <span style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></span>
+                    <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: #64748b; font-family: 'Space Mono', monospace;">OR REGISTER WITH</span>
+                    <span style="flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12);"></span>
+                </div>
+
+                <!-- Real Google Sign-In Button -->
+                <a href="/Account/GoogleLogin" id="googleSsoBtnReg" class="google-sso-btn" style="text-decoration: none; width: 100%; height: 44px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.18); color: #ffffff; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.25s ease;" title="Register directly with Marwadi University Google Account">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.35); color: #34d399; font-family: 'Space Mono', monospace; font-weight: 700;">@@marwadiuniversity.ac.in</span>
+                </a>
+                <div id="googleOfficialBtnWrapReg" style="display: none; margin-top: 8px;"></div>
+
+                <!-- Sign in redirect -->
+                <p class="signin-redirect" style="margin-top: 14px;">
+                    Already have an account? <a href="/Account/Login">Sign in &gt;</a>
+                </p>
             </form>
 
             <!-- Secure Connection Status -->
@@ -1307,33 +1214,14 @@
 
         animate();
 
-        // ─── Form Client-side Logic & Multi-Step Verification Wizard ────────
+        // ─── Form Client-side Logic & Direct Registration ────────
         const nameInput = document.getElementById('nameInput');
         const emailInput = document.getElementById('emailInput');
         const emailCheck = document.getElementById('emailCheck');
         const emailDomainNotice = document.getElementById('emailDomainNotice');
         const chipWrap = document.getElementById('chipWrap');
         const chipAddDomain = document.getElementById('chipAddDomain');
-        const btnSendOtp = document.getElementById('btnSendOtp');
 
-        const step1Content = document.getElementById('step1Content');
-        const step2Content = document.getElementById('step2Content');
-        const step3Content = document.getElementById('step3Content');
-
-        const stepIndicator1 = document.getElementById('stepIndicator1');
-        const stepIndicator2 = document.getElementById('stepIndicator2');
-        const stepIndicator3 = document.getElementById('stepIndicator3');
-        const connector1 = document.getElementById('connector1');
-        const connector2 = document.getElementById('connector2');
-
-        const step2TargetEmail = document.getElementById('step2TargetEmail');
-        const otpInput = document.getElementById('otpInput');
-        const btnVerifyOtp = document.getElementById('btnVerifyOtp');
-        const btnResendOtp = document.getElementById('btnResendOtp');
-        const btnBackToStep1 = document.getElementById('btnBackToStep1');
-        const hiddenVerificationCode = document.getElementById('hiddenVerificationCode');
-
-        const verifiedStudentEmailText = document.getElementById('verifiedStudentEmailText');
         const passInput = document.getElementById('passwordInput');
         const confirmInput = document.getElementById('confirmInput');
         const confirmCheck = document.getElementById('confirmCheck');
@@ -1344,16 +1232,13 @@
         const clientErrorBox = document.getElementById('clientErrorBox');
         const mainContainer = document.getElementById('mainContainer');
 
-        let agreedToTerms = false;
-        let resendCooldown = 0;
-        let currentTargetEmail = '';
+        let agreedToTerms = true;
         const MU_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@@marwadiuniversity\.ac\.in$/i;
 
         // Focus Handlers
         [
             { input: nameInput, box: document.getElementById('nameBox') },
             { input: emailInput, box: document.getElementById('emailBox') },
-            { input: otpInput, box: document.getElementById('otpBox') },
             { input: passInput, box: document.getElementById('passBox') },
             { input: confirmInput, box: document.getElementById('confirmBox') }
         ].forEach(pair => {
@@ -1364,287 +1249,162 @@
         });
 
         // Real-Time Email Validation & Domain Guard
-        emailInput.addEventListener('input', () => {
-            const val = emailInput.value.trim().toLowerCase();
-            const isValid = MU_EMAIL_REGEX.test(val);
-            emailCheck.style.display = isValid ? 'flex' : 'none';
+        if (emailInput) {
+            emailInput.addEventListener('input', () => {
+                const val = emailInput.value.trim().toLowerCase();
+                const isValid = MU_EMAIL_REGEX.test(val);
+                if (emailCheck) emailCheck.style.display = isValid ? 'flex' : 'none';
 
-            // Show rejection notice if external domain like @@gmail.com is typed
-            const isExternalDomain = val.includes('@@') && !val.includes('@@marwadiuniversity.ac.in');
-            emailDomainNotice.style.display = isExternalDomain ? 'flex' : 'none';
+                // Show rejection notice if external domain like @@gmail.com is typed
+                const isExternalDomain = val.includes('@@') && !val.includes('@@marwadiuniversity.ac.in');
+                if (emailDomainNotice) emailDomainNotice.style.display = isExternalDomain ? 'flex' : 'none';
 
-            // Suggest 1-tap completion chip
-            const showChip = val.length >= 2 && !isValid && (!val.includes('@@') || val.endsWith('@@') || val.endsWith('@@m'));
-            chipWrap.style.display = showChip ? 'block' : 'none';
-        });
-
-        chipAddDomain.addEventListener('click', () => {
-            let base = emailInput.value.trim();
-            if (base.includes('@@')) base = base.split('@@')[0];
-            emailInput.value = base + '@@marwadiuniversity.ac.in';
-            emailCheck.style.display = 'flex';
-            emailDomainNotice.style.display = 'none';
-            chipWrap.style.display = 'none';
-        });
-
-        // ─── STEP 1: Send Verification Code Action ───
-        btnSendOtp.addEventListener('click', async () => {
-            clientErrorBox.style.display = 'none';
-            const name = nameInput.value.trim();
-            const email = emailInput.value.trim().toLowerCase();
-
-            if (!name || name.length < 2) {
-                showError("Please enter your full name.");
-                return;
-            }
-
-            if (!email) {
-                showError("Please enter your Marwadi University student email.");
-                return;
-            }
-
-            if (!email.endsWith("@@marwadiuniversity.ac.in")) {
-                showError("Access Denied: Only @@marwadiuniversity.ac.in emails are allowed. Other domains (gmail.com, yahoo.com, etc.) cannot register.");
-                return;
-            }
-
-            btnSendOtp.disabled = true;
-            btnSendOtp.innerHTML = '<span>Dispatching Code...</span>';
-
-            try {
-                const response = await fetch('/Account/SendVerificationCode', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ email: email, fullName: name })
-                });
-                const data = await response.json();
-
-                if (!data.success) {
-                    showError(data.message || "Failed to dispatch verification code.");
-                    btnSendOtp.disabled = false;
-                    btnSendOtp.innerHTML = '<span>Send Verification Code</span><i class="bi bi-arrow-right"></i>';
-                    return;
-                }
-
-                currentTargetEmail = email;
-                step2TargetEmail.innerText = email;
-                otpInput.value = '';
-
-                // Transition to Step 2
-                step1Content.style.display = 'none';
-                step2Content.style.display = 'block';
-                stepIndicator1.classList.remove('active');
-                stepIndicator1.classList.add('completed');
-                connector1.classList.add('completed');
-                stepIndicator2.classList.add('active');
-
-                startResendTimer();
-                otpInput.focus();
-            } catch (err) {
-                showError("Network error connecting to university verification service.");
-            } finally {
-                btnSendOtp.disabled = false;
-                btnSendOtp.innerHTML = '<span>Send Verification Code</span><i class="bi bi-arrow-right"></i>';
-            }
-        });
-
-        // ─── STEP 2: Verify Code Action ───
-        btnVerifyOtp.addEventListener('click', async () => {
-            clientErrorBox.style.display = 'none';
-            const code = otpInput.value.trim();
-
-            if (!code || code.length < 4) {
-                showError("Please enter the 6-digit verification code sent to your email.");
-                return;
-            }
-
-            btnVerifyOtp.disabled = true;
-            btnVerifyOtp.innerHTML = '<span>Verifying Code...</span>';
-
-            try {
-                const response = await fetch('/Account/VerifyCode', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ email: currentTargetEmail, code: code })
-                });
-                const data = await response.json();
-
-                if (!data.success) {
-                    showError(data.message || "Invalid verification code.");
-                    btnVerifyOtp.disabled = false;
-                    btnVerifyOtp.innerHTML = '<span>Verify Code & Proceed</span><i class="bi bi-shield-check"></i>';
-                    return;
-                }
-
-                // Code successfully verified!
-                hiddenVerificationCode.value = code;
-                verifiedStudentEmailText.innerText = currentTargetEmail;
-
-                // Transition to Step 3
-                step2Content.style.display = 'none';
-                step3Content.style.display = 'block';
-                stepIndicator2.classList.remove('active');
-                stepIndicator2.classList.add('completed');
-                connector2.classList.add('completed');
-                stepIndicator3.classList.add('active');
-
-                passInput.focus();
-            } catch (err) {
-                showError("Network error validating verification code.");
-            } finally {
-                btnVerifyOtp.disabled = false;
-                btnVerifyOtp.innerHTML = '<span>Verify Code & Proceed</span><i class="bi bi-shield-check"></i>';
-            }
-        });
-
-        btnBackToStep1.addEventListener('click', () => {
-            clientErrorBox.style.display = 'none';
-            step2Content.style.display = 'none';
-            step1Content.style.display = 'block';
-            stepIndicator2.classList.remove('active');
-            stepIndicator1.classList.remove('completed');
-            stepIndicator1.classList.add('active');
-            connector1.classList.remove('completed');
-        });
-
-        btnResendOtp.addEventListener('click', async () => {
-            if (resendCooldown > 0) return;
-            clientErrorBox.style.display = 'none';
-            btnResendOtp.disabled = true;
-
-            try {
-                const response = await fetch('/Account/SendVerificationCode', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ email: currentTargetEmail, fullName: nameInput.value.trim() })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    otpInput.value = '';
-                    startResendTimer();
-                } else {
-                    showError(data.message || "Failed to resend code.");
-                }
-            } catch {
-                showError("Error resending verification code.");
-            } finally {
-                btnResendOtp.disabled = false;
-            }
-        });
-
-        function startResendTimer() {
-            resendCooldown = 60;
-            btnResendOtp.disabled = true;
-            btnResendOtp.innerText = `Resend in ${resendCooldown}s`;
-            const interval = setInterval(() => {
-                resendCooldown--;
-                if (resendCooldown <= 0) {
-                    clearInterval(interval);
-                    btnResendOtp.disabled = false;
-                    btnResendOtp.innerText = 'Resend Code';
-                } else {
-                    btnResendOtp.innerText = `Resend in ${resendCooldown}s`;
-                }
-            }, 1000);
+                // Suggest 1-tap completion chip
+                const showChip = val.length >= 2 && !isValid && (!val.includes('@@') || val.endsWith('@@') || val.endsWith('@@m'));
+                if (chipWrap) chipWrap.style.display = showChip ? 'block' : 'none';
+            });
         }
 
-        // ─── STEP 3: Password Strength & Match ───
-        passInput.addEventListener('input', () => {
-            const val = passInput.value;
-            if (val.length === 0) {
-                strengthBar.style.width = '0%';
-                return;
-            }
-            const strength = Math.min(100, (val.length * 8) + (/[A-Z]/.test(val) ? 15 : 0) + (/[0-9]/.test(val) ? 15 : 0) + (/[^A-Za-z0-9]/.test(val) ? 20 : 0));
-            strengthBar.style.width = strength + '%';
-            strengthBar.style.background = strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff';
-            strengthBar.style.boxShadow = '0 0 10px ' + (strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff');
-            checkPasswordsMatch();
-        });
+        if (chipAddDomain && emailInput) {
+            chipAddDomain.addEventListener('click', () => {
+                let base = emailInput.value.trim();
+                if (base.includes('@@')) base = base.split('@@')[0];
+                emailInput.value = base + '@@marwadiuniversity.ac.in';
+                if (emailCheck) emailCheck.style.display = 'flex';
+                if (emailDomainNotice) emailDomainNotice.style.display = 'none';
+                if (chipWrap) chipWrap.style.display = 'none';
+            });
+        }
 
-        confirmInput.addEventListener('input', checkPasswordsMatch);
+        // Password Strength & Match
+        if (passInput) {
+            passInput.addEventListener('input', () => {
+                const val = passInput.value;
+                if (!strengthBar) return;
+                if (val.length === 0) {
+                    strengthBar.style.width = '0%';
+                    return;
+                }
+                const strength = Math.min(100, (val.length * 8) + (/[A-Z]/.test(val) ? 15 : 0) + (/[0-9]/.test(val) ? 15 : 0) + (/[^A-Za-z0-9]/.test(val) ? 20 : 0));
+                strengthBar.style.width = strength + '%';
+                strengthBar.style.background = strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff';
+                strengthBar.style.boxShadow = '0 0 10px ' + (strength < 40 ? '#ff4444' : strength < 75 ? '#ff8c42' : '#00d2ff');
+                checkPasswordsMatch();
+            });
+        }
+
+        if (confirmInput) {
+            confirmInput.addEventListener('input', checkPasswordsMatch);
+        }
 
         function checkPasswordsMatch() {
-            confirmCheck.style.display = (passInput.value.length >= 8 && passInput.value === confirmInput.value) ? 'flex' : 'none';
+            if (confirmCheck && passInput && confirmInput) {
+                confirmCheck.style.display = (passInput.value.length >= 6 && passInput.value === confirmInput.value) ? 'flex' : 'none';
+            }
         }
 
         const togglePassBtn = document.getElementById('togglePassBtn');
         const eyePassOpen = document.getElementById('eyePassOpen');
         const eyePassClose = document.getElementById('eyePassClose');
-        togglePassBtn.addEventListener('click', () => {
-            const isPass = passInput.type === 'password';
-            passInput.type = isPass ? 'text' : 'password';
-            eyePassOpen.style.display = isPass ? 'none' : 'block';
-            eyePassClose.style.display = isPass ? 'block' : 'none';
-        });
+        if (togglePassBtn && passInput) {
+            togglePassBtn.addEventListener('click', () => {
+                const isPass = passInput.type === 'password';
+                passInput.type = isPass ? 'text' : 'password';
+                if (eyePassOpen) eyePassOpen.style.display = isPass ? 'none' : 'block';
+                if (eyePassClose) eyePassClose.style.display = isPass ? 'block' : 'none';
+            });
+        }
 
         const toggleConfirmBtn = document.getElementById('toggleConfirmBtn');
         const eyeConfirmOpen = document.getElementById('eyeConfirmOpen');
         const eyeConfirmClose = document.getElementById('eyeConfirmClose');
-        toggleConfirmBtn.addEventListener('click', () => {
-            const isPass = confirmInput.type === 'password';
-            confirmInput.type = isPass ? 'text' : 'password';
-            eyeConfirmOpen.style.display = isPass ? 'none' : 'block';
-            eyeConfirmClose.style.display = isPass ? 'block' : 'none';
-        });
+        if (toggleConfirmBtn && confirmInput) {
+            toggleConfirmBtn.addEventListener('click', () => {
+                const isPass = confirmInput.type === 'password';
+                confirmInput.type = isPass ? 'text' : 'password';
+                if (eyeConfirmOpen) eyeConfirmOpen.style.display = isPass ? 'none' : 'block';
+                if (eyeConfirmClose) eyeConfirmClose.style.display = isPass ? 'block' : 'none';
+            });
+        }
 
-        termsCheckbox.addEventListener('click', toggleTerms);
-        termsCheckbox.addEventListener('keydown', (e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                toggleTerms();
-            }
-        });
+        if (termsCheckbox) {
+            termsCheckbox.addEventListener('click', toggleTerms);
+            termsCheckbox.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    toggleTerms();
+                }
+            });
+        }
 
         function toggleTerms() {
             agreedToTerms = !agreedToTerms;
-            termsCheckbox.classList.toggle('checked', agreedToTerms);
-            checkboxSvg.style.display = agreedToTerms ? 'block' : 'none';
+            if (termsCheckbox) termsCheckbox.classList.toggle('checked', agreedToTerms);
+            if (checkboxSvg) checkboxSvg.style.display = agreedToTerms ? 'block' : 'none';
         }
 
         // ─── Registration Form Submit ───
-        registerForm.addEventListener('submit', (e) => {
-            clientErrorBox.style.display = 'none';
-            clientErrorBox.innerText = '';
+        if (registerForm) {
+            registerForm.addEventListener('submit', (e) => {
+                if (clientErrorBox) {
+                    clientErrorBox.style.display = 'none';
+                    clientErrorBox.innerText = '';
+                }
 
-            const pass = passInput.value;
-            const confirm = confirmInput.value;
+                const name = nameInput ? nameInput.value.trim() : '';
+                const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+                const pass = passInput ? passInput.value : '';
+                const confirm = confirmInput ? confirmInput.value : '';
 
-            if (!pass || pass.length < 8) {
-                e.preventDefault();
-                showError("Password must be at least 8 characters.");
-                return;
-            }
+                if (!name || name.length < 2) {
+                    e.preventDefault();
+                    showError("Please enter your full name.");
+                    return;
+                }
 
-            if (pass !== confirm) {
-                e.preventDefault();
-                showError("Passwords do not match.");
-                return;
-            }
+                if (!email || !email.endsWith("@@marwadiuniversity.ac.in")) {
+                    e.preventDefault();
+                    showError("Access Denied: Only @@marwadiuniversity.ac.in emails are allowed.");
+                    return;
+                }
 
-            if (!agreedToTerms) {
-                e.preventDefault();
-                showError("You must agree to the Terms & Privacy Policy to continue.");
-                return;
-            }
+                if (!pass || pass.length < 6) {
+                    e.preventDefault();
+                    showError("Password must be at least 6 characters.");
+                    return;
+                }
 
-            if (!hiddenVerificationCode.value) {
-                e.preventDefault();
-                showError("Please complete the email verification code step before registering.");
-                return;
-            }
+                if (pass !== confirm) {
+                    e.preventDefault();
+                    showError("Passwords do not match.");
+                    return;
+                }
 
-            // Trigger Warp Speed animation on valid registration
-            isWarping = true;
-            document.getElementById('submitBtn').innerHTML = '<span>LAUNCHING UNIVERSE…</span>';
-            mainContainer.style.transform = 'scale(0) rotate(-10deg)';
-            mainContainer.style.opacity = '0';
-            mainContainer.style.filter = 'blur(10px)';
-        });
+                if (!agreedToTerms) {
+                    e.preventDefault();
+                    showError("You must agree to the Terms & Privacy Policy to continue.");
+                    return;
+                }
+
+                // Trigger Warp Speed animation on valid registration
+                isWarping = true;
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<span>LAUNCHING UNIVERSE…</span>';
+                }
+                if (mainContainer) {
+                    mainContainer.style.transform = 'scale(0) rotate(-10deg)';
+                    mainContainer.style.opacity = '0';
+                    mainContainer.style.filter = 'blur(10px)';
+                }
+            });
+        }
 
         function showError(msg) {
-            clientErrorBox.innerText = msg;
-            clientErrorBox.style.display = 'block';
+            if (clientErrorBox) {
+                clientErrorBox.innerText = msg;
+                clientErrorBox.style.display = 'block';
+            }
         }
 
         // ─── Real Google Identity Services (GIS) Integration ───

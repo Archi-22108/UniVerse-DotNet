@@ -772,20 +772,7 @@ namespace UniVerse.Server.Controllers
                 return View(model);
             }
 
-            // Verify email OTP validation
-            var otpCode = verificationCode ?? string.Empty;
-            bool isVerified = _verificationService.IsEmailVerified(cleanEmail);
-            if (!isVerified && !string.IsNullOrEmpty(otpCode))
-            {
-                isVerified = _verificationService.ValidateCode(cleanEmail, otpCode);
-            }
-
-            if (!isVerified)
-            {
-                ModelState.AddModelError(string.Empty, "You must verify your university email address with the 6-digit code before creating an account.");
-                return View(model);
-            }
-
+            // Direct registration for official Marwadi University students
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -798,19 +785,27 @@ namespace UniVerse.Server.Controllers
                 return View(model);
             }
 
+            var prefix = cleanEmail.Split('@')[0];
+            var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+            var enr = !string.IsNullOrWhiteSpace(model.EnrollmentNumber)
+                ? model.EnrollmentNumber.Trim()
+                : (digitMatch.Success ? digitMatch.Value : "128" + new Random().Next(100, 999));
+
             var newUser = new User
             {
                 Id = Guid.NewGuid().ToString(),
                 Email = cleanEmail,
                 PasswordHash = DbInitializer.HashPassword(model.Password),
                 FullName = model.FullName.Trim(),
-                EnrollmentNumber = model.EnrollmentNumber?.Trim(),
+                EnrollmentNumber = enr,
                 Role = (model.Role ?? "student").ToLowerInvariant(),
                 HostelName = string.IsNullOrWhiteSpace(model.HostelName) ? "Hostel D" : model.HostelName,
                 RoomNumber = string.IsNullOrWhiteSpace(model.RoomNumber) ? "304" : model.RoomNumber.Trim(),
-                PhoneNumber = model.PhoneNumber?.Trim(),
+                PhoneNumber = !string.IsNullOrWhiteSpace(model.PhoneNumber) ? model.PhoneNumber.Trim() : "+91 98765 12820",
+                Department = "Computer Science & Engineering",
+                Semester = "Semester 6",
                 IsActiveRunner = model.Role?.Equals("runner", StringComparison.OrdinalIgnoreCase) == true,
-                RewardBalance = 0.0,
+                RewardBalance = 500.0,
                 CreatedAt = DateTime.UtcNow.ToString("o"),
                 UpdatedAt = DateTime.UtcNow.ToString("o")
             };
