@@ -1345,7 +1345,8 @@
 
         // ─── Registration Form Submit ───
         if (registerForm) {
-            registerForm.addEventListener('submit', (e) => {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
                 if (clientErrorBox) {
                     clientErrorBox.style.display = 'none';
                     clientErrorBox.innerText = '';
@@ -1357,45 +1358,96 @@
                 const confirm = confirmInput ? confirmInput.value : '';
 
                 if (!name || name.length < 2) {
-                    e.preventDefault();
                     showError("Please enter your full name.");
                     return;
                 }
 
                 if (!email || !email.endsWith("@@marwadiuniversity.ac.in")) {
-                    e.preventDefault();
                     showError("Access Denied: Only @@marwadiuniversity.ac.in emails are allowed.");
                     return;
                 }
 
                 if (!pass || pass.length < 6) {
-                    e.preventDefault();
                     showError("Password must be at least 6 characters.");
                     return;
                 }
 
                 if (pass !== confirm) {
-                    e.preventDefault();
                     showError("Passwords do not match.");
                     return;
                 }
 
                 if (!agreedToTerms) {
-                    e.preventDefault();
                     showError("You must agree to the Terms & Privacy Policy to continue.");
                     return;
                 }
 
-                // Trigger Warp Speed animation on valid registration
-                isWarping = true;
                 const submitBtn = document.getElementById('submitBtn');
                 if (submitBtn) {
-                    submitBtn.innerHTML = '<span>LAUNCHING UNIVERSE…</span>';
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span>CREATING ACCOUNT…</span>';
                 }
-                if (mainContainer) {
-                    mainContainer.style.transform = 'scale(0) rotate(-10deg)';
-                    mainContainer.style.opacity = '0';
-                    mainContainer.style.filter = 'blur(10px)';
+
+                try {
+                    const formData = new FormData(registerForm);
+                    const response = await fetch('/Account/Register', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (response.redirected) {
+                        isWarping = true;
+                        if (submitBtn) submitBtn.innerHTML = '<span>LAUNCHING UNIVERSE…</span>';
+                        if (mainContainer) {
+                            mainContainer.style.transform = 'scale(0) rotate(-10deg)';
+                            mainContainer.style.opacity = '0';
+                            mainContainer.style.filter = 'blur(10px)';
+                        }
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    const contentType = response.headers.get("content-type") || "";
+                    if (contentType.includes("application/json")) {
+                        const data = await response.json();
+                        if (data.success) {
+                            isWarping = true;
+                            if (submitBtn) submitBtn.innerHTML = '<span>LAUNCHING UNIVERSE…</span>';
+                            if (mainContainer) {
+                                mainContainer.style.transform = 'scale(0) rotate(-10deg)';
+                                mainContainer.style.opacity = '0';
+                                mainContainer.style.filter = 'blur(10px)';
+                            }
+                            window.location.href = data.redirectUrl || "/Dashboard";
+                            return;
+                        } else {
+                            showError(data.message || "Registration failed. Please check your details.");
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = '<span>Create Account & Launch</span><i class="bi bi-rocket-takeoff-fill"></i>';
+                            }
+                            return;
+                        }
+                    }
+
+                    if (response.ok) {
+                        window.location.href = "/Dashboard";
+                    } else {
+                        showError("Unable to create account. Please try again.");
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<span>Create Account & Launch</span><i class="bi bi-rocket-takeoff-fill"></i>';
+                        }
+                    }
+                } catch (err) {
+                    showError("Network error. Please try again.");
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<span>Create Account & Launch</span><i class="bi bi-rocket-takeoff-fill"></i>';
+                    }
                 }
             });
         }

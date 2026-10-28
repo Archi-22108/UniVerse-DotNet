@@ -54,7 +54,7 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             var cleanEmail = (model.Email ?? string.Empty).Trim().ToLowerInvariant();
@@ -62,12 +62,22 @@ namespace UniVerse.Server.Controllers
             // Strict Marwadi University Domain Enforcement
             if (string.IsNullOrWhiteSpace(cleanEmail) || !cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError("Email", "Only @marwadiuniversity.ac.in emails are allowed. Please use your official Marwadi University student email.");
+                var errorMsg = "Only @marwadiuniversity.ac.in emails are allowed. Please use your official Marwadi University student email.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = errorMsg });
+                }
+                ModelState.AddModelError("Email", errorMsg);
                 return View(model);
             }
 
             if (!ModelState.IsValid)
             {
+                var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Please verify your input.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = firstError });
+                }
                 return View(model);
             }
 
@@ -760,7 +770,7 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, [FromForm] string? verificationCode)
         {
             var cleanEmail = (model.Email ?? string.Empty).Trim().ToLowerInvariant();
@@ -768,20 +778,35 @@ namespace UniVerse.Server.Controllers
             // Strict Marwadi University Domain Enforcement
             if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError("Email", "Only @marwadiuniversity.ac.in emails are allowed. Please use your official Marwadi University student email.");
+                var errorMsg = "Only @marwadiuniversity.ac.in emails are allowed. Please use your official Marwadi University student email.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = errorMsg });
+                }
+                ModelState.AddModelError("Email", errorMsg);
                 return View(model);
             }
 
             // Direct registration for official Marwadi University students
             if (!ModelState.IsValid)
             {
+                var firstError = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Please verify all required fields.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = firstError });
+                }
                 return View(model);
             }
 
             var existing = await _userRepo.GetByEmailAsync(cleanEmail);
             if (existing != null)
             {
-                ModelState.AddModelError("Email", "An account with this email is already registered.");
+                var errorMsg = "An account with this email is already registered. Please sign in instead.";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = errorMsg });
+                }
+                ModelState.AddModelError("Email", errorMsg);
                 return View(model);
             }
 
