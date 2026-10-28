@@ -5,6 +5,15 @@
 
 ---
 
+### 🌐 Live Deployment & Interactive Demo
+> 🚀 **Official Vercel Live Link:**  
+> **[https://universe-dotnet.vercel.app](https://universe-dotnet.vercel.app)** *(Click to launch project live)*  
+>  
+> *Production Mirror:* **[https://uni-verse-dot-net.vercel.app](https://uni-verse-dot-net.vercel.app)**
+
+---
+
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live%20Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://universe-dotnet.vercel.app)
 [![C#](https://img.shields.io/badge/Language-C%23%2010.0-239120?style=for-the-badge&logo=csharp&logoColor=white)](https://dotnet.microsoft.com/)
 [![.NET 10](https://img.shields.io/badge/Framework-.NET%2010%20(Kestrel)-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![ASP.NET Core](https://img.shields.io/badge/Architecture-ASP.NET%20Core%20MVC-0284c7?style=for-the-badge&logo=dotnet)](https://learn.microsoft.com/aspnet/core)
