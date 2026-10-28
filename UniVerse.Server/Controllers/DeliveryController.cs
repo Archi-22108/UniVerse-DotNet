@@ -68,6 +68,7 @@ namespace UniVerse.Server.Controllers
             return currentUser;
         }
 
+        [Authorize]
         [HttpGet]
         [Route("Delivery/Create")]
         [Route("request/new")]
@@ -89,6 +90,7 @@ namespace UniVerse.Server.Controllers
             });
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Delivery/Create")]

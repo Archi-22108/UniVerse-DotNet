@@ -14,13 +14,13 @@ if (!Directory.Exists(serverDir))
 
 var serverProj = Path.Combine(serverDir, "UniVerse.Server.csproj");
 
-// Launch browser to http://localhost:5277/Dashboard in background after a brief delay
+// Launch browser to http://localhost:5277 (Landing Home Page) in background after a brief delay
 new Thread(() =>
 {
     Thread.Sleep(1200);
     try
     {
-        Process.Start(new ProcessStartInfo("cmd", "/c start http://localhost:5277/Dashboard")
+        Process.Start(new ProcessStartInfo("cmd", "/c start http://localhost:5277")
         {
             CreateNoWindow = true,
             UseShellExecute = false

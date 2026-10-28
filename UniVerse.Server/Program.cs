@@ -9,6 +9,13 @@ using UniVerse.Server.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Dynamically bind to Vercel/Cloud PORT if provided
+var envPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(envPort))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{envPort}");
+}
+
 // ─── 1. Configure Services (MVC & 3-Tier Layer) ──────────────────────────────
 
 // ASP.NET Core MVC with Razor View Engine (.cshtml)

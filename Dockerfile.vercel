@@ -1,0 +1,32 @@
+# Stage 1: Build .NET 10 Solution
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files
+COPY ["UniVerse.sln", "./"]
+COPY ["UniVerse.Server/UniVerse.Server.csproj", "UniVerse.Server/"]
+COPY ["UniVerse.Web/UniVerse.Web.csproj", "UniVerse.Web/"]
+
+# Restore NuGet dependencies
+RUN dotnet restore "UniVerse.Server/UniVerse.Server.csproj"
+
+# Copy entire source code
+COPY . .
+
+# Build & Publish Release Output
+WORKDIR "/src/UniVerse.Server"
+RUN dotnet publish "UniVerse.Server.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: ASP.NET Core Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Environment settings for Vercel Container Function
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
+# Expose Vercel standard container port
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "UniVerse.Server.dll"]

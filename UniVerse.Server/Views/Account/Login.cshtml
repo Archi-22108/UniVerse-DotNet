@@ -940,7 +940,7 @@
 
                 <!-- Authentic Google Sign-In Button -->
                 <div class="google-auth-wrapper">
-                    <button type="button" id="googleSsoBtn" class="google-sso-btn" title="Sign in with official Marwadi University Google Account">
+                    <a href="/Account/GoogleLogin" id="googleSsoBtn" class="google-sso-btn" style="text-decoration: none;" title="Sign in with official Marwadi University Google Account">
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
                             <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
@@ -949,7 +949,7 @@
                         </svg>
                         <span>Continue with Google</span>
                         <span class="google-domain-chip">@@marwadiuniversity.ac.in</span>
-                    </button>
+                    </a>
                     <!-- Fallback / Official GSI button container -->
                     <div id="googleOfficialBtnWrap" style="display: none; margin-top: 8px;"></div>
                 </div>
@@ -1448,34 +1448,63 @@
             return false;
         }
 
-        function openGoogleSignInWindow() {
+        function openGoogleSignInWindow(e) {
             const width = 500;
             const height = 640;
             const left = Math.round((window.screen.width - width) / 2);
             const top = Math.round((window.screen.height - height) / 2);
             const returnUrl = document.querySelector("input[name='ReturnUrl']")?.value || "/Dashboard";
-
-            const popup = window.open(
-                "/Account/GoogleSignInPopup?returnUrl=" + encodeURIComponent(returnUrl),
-                "GoogleSignInPopup",
-                `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no,location=yes,resizable=yes`
-            );
-
-            if (!popup || popup.closed || typeof popup.closed === "undefined") {
-                window.location.href = "/Account/GoogleSignInPopup?returnUrl=" + encodeURIComponent(returnUrl);
+            const typedEmail = (emailInput?.value || "").trim();
+            let targetUrl = "/Account/GoogleLogin?returnUrl=" + encodeURIComponent(returnUrl);
+            if (typedEmail && typedEmail.includes("@@")) {
+                targetUrl += "&email=" + encodeURIComponent(typedEmail);
             }
+
+            try {
+                const popup = window.open(
+                    targetUrl,
+                    "GoogleSignInPopup",
+                    `width=${width},height=${height},top=${top},left=${left},status=no,toolbar=no,menubar=no,location=yes,resizable=yes`
+                );
+
+                // If popup opened successfully without being blocked
+                if (popup && !popup.closed && typeof popup.closed !== "undefined") {
+                    if (e && typeof e.preventDefault === "function") {
+                        e.preventDefault();
+                    }
+                    popup.focus();
+                    return;
+                }
+            } catch (err) { }
+
+            // Fallback: If popup was blocked or prevented, navigate directly in the current window
+            if (e && typeof e.preventDefault === "function") {
+                e.preventDefault();
+            }
+            window.location.href = targetUrl;
         }
 
         if (googleSsoBtn) {
             googleSsoBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                openGoogleSignInWindow();
+                openGoogleSignInWindow(e);
             });
         }
 
         // Listen for Google Auth callback message from popup
         window.addEventListener("message", (event) => {
             if (event.data && event.data.type === "GOOGLE_AUTH_SUCCESS") {
+                if (event.data.email) {
+                    try {
+                        let accounts = JSON.parse(localStorage.getItem("universe_google_accounts") || "[]");
+                        const clean = event.data.email.toLowerCase();
+                        accounts = accounts.filter(a => a.email.toLowerCase() !== clean);
+                        accounts.unshift({
+                            email: clean,
+                            name: event.data.name || clean.split("@@")[0]
+                        });
+                        localStorage.setItem("universe_google_accounts", JSON.stringify(accounts.slice(0, 3)));
+                    } catch (e) { }
+                }
                 showError("✓ Verified with Marwadi University Google Account! Welcome " + (event.data.name || "") + "...");
                 clientErrorBox.style.color = "#34d399";
                 clientErrorBox.style.background = "rgba(52, 211, 153, 0.15)";

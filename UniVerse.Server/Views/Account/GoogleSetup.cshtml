@@ -1,0 +1,298 @@
+@{
+    Layout = null;
+    var returnUrl = ViewData["ReturnUrl"]?.ToString() ?? "/Dashboard";
+    var clientId = ViewData["ClientId"]?.ToString() ?? "";
+    var clientSecret = ViewData["ClientSecret"]?.ToString() ?? "";
+    var redirectUri = ViewData["RedirectUri"]?.ToString() ?? "http://localhost:5277/Account/GoogleCallback";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect Google Accounts – UniVerse</title>
+    <link rel="icon" type="image/x-icon" href="https://www.google.com/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: #03050c;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .setup-card {
+            background: rgba(10, 18, 28, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 540px;
+            padding: 36px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.15);
+            backdrop-filter: blur(20px);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 13px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #38bdf8;
+        }
+
+        .google-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .header-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .guide-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 12.5px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .guide-box ol {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .guide-box li {
+            margin-bottom: 6px;
+        }
+
+        .copy-uri-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: #38bdf8;
+        }
+
+        .copy-btn {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .copy-btn:hover {
+            background: #38bdf8;
+            color: #000;
+        }
+
+        .field-wrap {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 13.5px;
+            font-family: 'Space Mono', monospace;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #4285F4 0%, #34A853 50%, #4285F4 100%);
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(66, 133, 244, 0.4);
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            box-shadow: 0 0 35px rgba(66, 133, 244, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .simulator-link-box {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .simulator-link {
+            color: #34d399;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .simulator-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="setup-card">
+        <a href="/Account/Login" class="back-link">
+            <i class="bi bi-arrow-left"></i>
+            <span>Return to UniVerse Login</span>
+        </a>
+
+        <div class="google-header">
+            <svg width="34" height="34" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <div>
+                <h1 class="header-title">Connect accounts.google.com</h1>
+            </div>
+        </div>
+
+        <p class="header-sub">
+            To enable direct redirection to Google's official <strong>accounts.google.com</strong> login page, enter your free Google Cloud OAuth 2.0 Client credentials below.
+        </p>
+
+        <!-- Step-by-Step Instructions -->
+        <div class="guide-box">
+            <strong style="color: #38bdf8;">⚡ Quick 2-Minute Google Cloud Setup (100% Free):</strong>
+            <ol>
+                <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #38bdf8; text-decoration: underline;">Google Cloud Console &rarr; Credentials</a></li>
+                <li>Click <strong>+ Create Credentials</strong> &rarr; <strong>OAuth client ID</strong> &rarr; Application type: <strong>Web application</strong></li>
+                <li>Add this exact URL to <strong>Authorized redirect URIs</strong>:</li>
+            </ol>
+            <div class="copy-uri-box">
+                <span id="redirectUriText">@redirectUri</span>
+                <button type="button" class="copy-btn" id="btnCopyUri" title="Copy to clipboard">
+                    <i class="bi bi-clipboard"></i> Copy
+                </button>
+            </div>
+        </div>
+
+        <!-- Setup Form -->
+        <form asp-controller="Account" asp-action="GoogleSetup" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+            <div class="field-wrap">
+                <label class="field-label" for="clientIdInput">Google OAuth Client ID</label>
+                <input type="text" id="clientIdInput" name="clientId" class="field-input" value="@clientId" placeholder="123456789-xxxxxx.apps.googleusercontent.com" required autofocus />
+            </div>
+
+            <div class="field-wrap">
+                <label class="field-label" for="clientSecretInput">Google OAuth Client Secret</label>
+                <input type="password" id="clientSecretInput" name="clientSecret" class="field-input" value="@clientSecret" placeholder="GOCSPX-xxxxxxxxxxxxxxxx" />
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>Save & Launch accounts.google.com</span>
+            </button>
+        </form>
+
+        <!-- Fallback Instant Campus Simulator Option -->
+        <div class="simulator-link-box">
+            Don't have Google Cloud API keys ready right now?
+            <br />
+            <a href="/Account/GoogleSignInPopup?returnUrl=@Uri.EscapeDataString(returnUrl)" class="simulator-link">
+                Use Instant Built-in Campus Portal Instead &rarr;
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('btnCopyUri').addEventListener('click', () => {
+            const text = document.getElementById('redirectUriText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('btnCopyUri');
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

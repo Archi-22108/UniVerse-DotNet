@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -77,9 +79,9 @@ namespace UniVerse.Server.Controllers
             }
 
             var passwordHash = DbInitializer.HashPassword(model.Password);
-            if (user.PasswordHash != passwordHash && model.Password != "Password123!" && model.Password != "Student@123")
+            if (user.PasswordHash != passwordHash)
             {
-                ModelState.AddModelError(string.Empty, "Invalid email or password. Default student password is Student@123");
+                ModelState.AddModelError(string.Empty, "Incorrect email or password. Please verify your credentials and try again.");
                 return View(model);
             }
 
@@ -98,12 +100,311 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
 
+        /// <summary>
+        /// Initiates the Official Google Cloud OAuth 2.0 flow redirecting directly to accounts.google.com.
+        /// </summary>
+        [HttpGet]
+        [Route("Account/GoogleLogin")]
+        public IActionResult GoogleLogin(string? returnUrl = "/Dashboard", string? email = null)
+        {
+            var clientId = _configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                return RedirectToAction("GoogleSignInPopup", new { returnUrl, email });
+            }
+
+            var scheme = Request.Scheme;
+            var host = Request.Host.Value;
+            var redirectUri = $"{scheme}://{host}/Account/GoogleCallback";
+            var state = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(returnUrl ?? "/Dashboard"));
+
+            var authUrl = "https://accounts.google.com/o/oauth2/v2/auth" +
+                $"?client_id={Uri.EscapeDataString(clientId.Trim())}" +
+                $"&redirect_uri={Uri.EscapeDataString(redirectUri)}" +
+                "&response_type=code" +
+                "&scope=openid%20email%20profile" +
+                "&hd=marwadiuniversity.ac.in" +
+                "&prompt=select_account" +
+                (!string.IsNullOrWhiteSpace(email) ? $"&login_hint={Uri.EscapeDataString(email.Trim())}" : "") +
+                $"&state={Uri.EscapeDataString(state)}";
+
+            return Redirect(authUrl);
+        }
+
+        /// <summary>
+        /// Handles the OAuth 2.0 authorization callback from Google (accounts.google.com).
+        /// </summary>
+        [HttpGet]
+        [Route("Account/GoogleCallback")]
+        public async Task<IActionResult> GoogleCallback(string? code, string? state, string? error)
+        {
+            if (!string.IsNullOrEmpty(error))
+            {
+                TempData["ErrorMessage"] = $"Google Sign-In was canceled or denied: {error}";
+                return RedirectToAction("Login");
+            }
+
+            if (string.IsNullOrEmpty(code))
+            {
+                TempData["ErrorMessage"] = "Google authorization code was missing.";
+                return RedirectToAction("Login");
+            }
+
+            var returnUrl = "/Dashboard";
+            if (!string.IsNullOrEmpty(state))
+            {
+                try
+                {
+                    var bytes = Convert.FromBase64String(state);
+                    returnUrl = System.Text.Encoding.UTF8.GetString(bytes);
+                }
+                catch { }
+            }
+
+            var clientId = _configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+            var clientSecret = _configuration["Authentication:Google:ClientSecret"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+
+            try
+            {
+                var scheme = Request.Scheme;
+                var host = Request.Host.Value;
+                var redirectUri = $"{scheme}://{host}/Account/GoogleCallback";
+
+                using var http = new HttpClient();
+                var tokenReq = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
+                {
+                    Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        { "code", code },
+                        { "client_id", clientId?.Trim() ?? string.Empty },
+                        { "client_secret", clientSecret?.Trim() ?? string.Empty },
+                        { "redirect_uri", redirectUri },
+                        { "grant_type", "authorization_code" }
+                    })
+                };
+
+                var tokenRes = await http.SendAsync(tokenReq);
+                if (!tokenRes.IsSuccessStatusCode)
+                {
+                    TempData["ErrorMessage"] = "Failed to exchange authorization code with Google.";
+                    return RedirectToAction("Login");
+                }
+
+                var tokenJson = await tokenRes.Content.ReadAsStringAsync();
+                using var tokenDoc = System.Text.Json.JsonDocument.Parse(tokenJson);
+                var accessToken = tokenDoc.RootElement.GetProperty("access_token").GetString();
+
+                // Fetch student profile directly from Google
+                using var profileReq = new HttpRequestMessage(HttpMethod.Get, "https://www.googleapis.com/oauth2/v3/userinfo");
+                profileReq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                var profileRes = await http.SendAsync(profileReq);
+                if (!profileRes.IsSuccessStatusCode)
+                {
+                    TempData["ErrorMessage"] = "Failed to fetch student profile from Google.";
+                    return RedirectToAction("Login");
+                }
+
+                var profileJson = await profileRes.Content.ReadAsStringAsync();
+                using var profileDoc = System.Text.Json.JsonDocument.Parse(profileJson);
+                var root = profileDoc.RootElement;
+
+                var email = (root.GetProperty("email").GetString() ?? string.Empty).Trim().ToLowerInvariant();
+                var name = root.TryGetProperty("name", out var n) ? n.GetString() ?? "Student" : "Student";
+
+                // Strict Marwadi University Domain Enforcement
+                if (!email.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["ErrorMessage"] = $"Access Denied: The Google account '{email}' is not an official Marwadi University email. Only @marwadiuniversity.ac.in accounts are permitted.";
+                    return RedirectToAction("Login");
+                }
+
+                var user = await _userRepo.GetByEmailAsync(email);
+                if (user == null)
+                {
+                    var prefix = email.Split('@')[0];
+                    var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
+                    var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
+
+                    user = new User
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Email = email,
+                        FullName = name,
+                        EnrollmentNumber = enr,
+                        PasswordHash = DbInitializer.HashPassword(Guid.NewGuid().ToString("N")),
+                        Role = "student",
+                        HostelName = "Hostel D",
+                        RoomNumber = "304",
+                        RewardBalance = 0.0,
+                        CreatedAt = DateTime.UtcNow.ToString("o"),
+                        UpdatedAt = DateTime.UtcNow.ToString("o")
+                    };
+                    await _userRepo.CreateUserAsync(user);
+                }
+
+                await SignInUserAsync(user, true);
+
+                var target = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+                    ? returnUrl
+                    : (user.Role == "admin" ? "/Admin" : "/Dashboard");
+
+                return Redirect(target);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Google authentication error: " + ex.Message;
+                return RedirectToAction("Login");
+            }
+        }
+
+        [HttpGet]
+        [Route("Account/GoogleSetup")]
+        public IActionResult GoogleSetup(string? returnUrl = "/Dashboard")
+        {
+            var clientId = _configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? string.Empty;
+            var clientSecret = _configuration["Authentication:Google:ClientSecret"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ?? string.Empty;
+
+            var scheme = Request.Scheme;
+            var host = Request.Host.Value;
+            var redirectUri = $"{scheme}://{host}/Account/GoogleCallback";
+
+            ViewData["ReturnUrl"] = returnUrl ?? "/Dashboard";
+            ViewData["ClientId"] = clientId;
+            ViewData["ClientSecret"] = clientSecret;
+            ViewData["RedirectUri"] = redirectUri;
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Account/GoogleSetup")]
+        [ValidateAntiForgeryToken]
+        public IActionResult GoogleSetup([FromForm] string? clientId, [FromForm] string? clientSecret, [FromForm] string? returnUrl)
+        {
+            var cleanId = (clientId ?? string.Empty).Trim();
+            var cleanSecret = (clientSecret ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(cleanId))
+            {
+                ModelState.AddModelError("ClientId", "Google Client ID is required to connect accounts.google.com.");
+                var scheme = Request.Scheme;
+                var host = Request.Host.Value;
+                ViewData["RedirectUri"] = $"{scheme}://{host}/Account/GoogleCallback";
+                ViewData["ReturnUrl"] = returnUrl ?? "/Dashboard";
+                return View();
+            }
+
+            Environment.SetEnvironmentVariable("GOOGLE_CLIENT_ID", cleanId);
+            Environment.SetEnvironmentVariable("GOOGLE_CLIENT_SECRET", cleanSecret);
+
+            try
+            {
+                var appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                if (System.IO.File.Exists(appSettingsPath))
+                {
+                    var json = System.IO.File.ReadAllText(appSettingsPath);
+                    json = System.Text.RegularExpressions.Regex.Replace(
+                        json,
+                        @"""ClientId""\s*:\s*""[^""]*""",
+                        $"\"ClientId\": \"{cleanId}\""
+                    );
+                    json = System.Text.RegularExpressions.Regex.Replace(
+                        json,
+                        @"""ClientSecret""\s*:\s*""[^""]*""",
+                        $"\"ClientSecret\": \"{cleanSecret}\""
+                    );
+                    System.IO.File.WriteAllText(appSettingsPath, json);
+                }
+            }
+            catch { }
+
+            return RedirectToAction("GoogleLogin", new { returnUrl });
+        }
+
         [HttpGet]
         [Route("Account/GoogleSignInPopup")]
-        public IActionResult GoogleSignInPopup(string? returnUrl)
+        public async Task<IActionResult> GoogleSignInPopup(string? returnUrl, string? email)
         {
             ViewData["ReturnUrl"] = returnUrl ?? "/Dashboard";
-            return View();
+            ViewData["PrefilledEmail"] = email ?? string.Empty;
+
+            User? currentUser = null;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    currentUser = await _userRepo.GetByIdAsync(userId);
+                }
+            }
+
+            ViewData["IsAuthenticated"] = currentUser != null;
+            ViewData["CurrentEmail"] = currentUser?.Email ?? string.Empty;
+            ViewData["CurrentName"] = currentUser?.FullName ?? string.Empty;
+
+            // STRICT PRIVACY: Do NOT return database seed users (Rohit, Priya, etc.).
+            // Only return the currently logged-in student (if any) so no fake emails appear!
+            var userList = currentUser != null ? new List<User> { currentUser } : new List<User>();
+            return View(userList);
+        }
+
+        /// <summary>
+        /// Google Account Chooser verification.
+        /// If the chosen email matches the currently authenticated session, redirects directly.
+        /// If not actively authenticated in this session, requires password verification.
+        /// </summary>
+        [HttpPost]
+        [Route("Account/GoogleChooseAccount")]
+        public async Task<IActionResult> GoogleChooseAccount([FromForm] string? email, [FromForm] string? returnUrl)
+        {
+            var cleanEmail = (email ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(cleanEmail))
+            {
+                return Json(new { success = false, message = "Please select a university Google account." });
+            }
+
+            // 🛡️ STRICT MARWADI UNIVERSITY DOMAIN ENFORCEMENT
+            if (!cleanEmail.EndsWith(UniversityDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Access Denied: The Google account '{cleanEmail}' is not an official Marwadi University email. Only @marwadiuniversity.ac.in accounts are permitted to sign in."
+                });
+            }
+
+            var target = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+                ? returnUrl
+                : "/Dashboard";
+
+            // If user is already authenticated in this session with this email:
+            if (User.Identity?.IsAuthenticated == true &&
+                string.Equals(User.FindFirstValue(ClaimTypes.Email), cleanEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new
+                {
+                    success = true,
+                    redirectUrl = target,
+                    studentName = User.Identity?.Name ?? "Student",
+                    email = cleanEmail,
+                    alreadyAuthenticated = true
+                });
+            }
+
+            // If not currently authenticated in this session, require password verification
+            return Json(new
+            {
+                success = false,
+                requiresPassword = true,
+                email = cleanEmail,
+                message = "Please enter your password to sign in."
+            });
         }
 
         [HttpPost]
@@ -127,41 +428,29 @@ namespace UniVerse.Server.Controllers
                 });
             }
 
-            var safePassword = !string.IsNullOrWhiteSpace(password) ? password : "Password123!";
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return Json(new { success = false, message = "Please enter your account password." });
+            }
 
             var user = await _userRepo.GetByEmailAsync(cleanEmail);
             if (user == null)
             {
-                var prefix = cleanEmail.Split('@')[0];
-                var digitMatch = System.Text.RegularExpressions.Regex.Match(prefix, @"\d+");
-                var enr = digitMatch.Success ? digitMatch.Value : "92100" + new Random().Next(10000, 99999);
-
-                var nameOnlyPrefix = System.Text.RegularExpressions.Regex.Replace(prefix, @"\d+", "").Trim('.', '_', '-');
-                var nameParts = nameOnlyPrefix.Split(new[] { '.', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
-                var formattedName = string.Join(" ", nameParts.Select(p => char.ToUpperInvariant(p[0]) + (p.Length > 1 ? p.Substring(1) : "")));
-                if (string.IsNullOrWhiteSpace(formattedName)) formattedName = "Student";
-
-                user = new User
+                return Json(new
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Email = cleanEmail,
-                    FullName = formattedName,
-                    EnrollmentNumber = enr,
-                    PasswordHash = DbInitializer.HashPassword(safePassword),
-                    Role = "student",
-                    HostelName = "Hostel D",
-                    RoomNumber = "304",
-                    RewardBalance = 0.0,
-                    CreatedAt = DateTime.UtcNow.ToString("o"),
-                    UpdatedAt = DateTime.UtcNow.ToString("o")
-                };
-                await _userRepo.CreateUserAsync(user);
+                    success = false,
+                    message = "Account not found. No UniVerse account exists with this university email. Please register first."
+                });
             }
-            else
+
+            var passwordHash = DbInitializer.HashPassword(password);
+            if (user.PasswordHash != passwordHash)
             {
-                // Synchronize password hash with the user's active Google credentials
-                user.PasswordHash = DbInitializer.HashPassword(safePassword);
-                await _userRepo.UpdateUserAsync(user);
+                return Json(new
+                {
+                    success = false,
+                    message = "Incorrect password. Please enter the correct password for your university account."
+                });
             }
 
             await SignInUserAsync(user, true);
@@ -342,12 +631,21 @@ namespace UniVerse.Server.Controllers
             }
 
             var otp = _verificationService.GenerateAndStoreCode(cleanEmail, name);
-            await _emailService.SendVerificationOtpAsync(cleanEmail, name, otp);
+            var (emailSent, emailMessage) = await _emailService.SendVerificationOtpAsync(cleanEmail, name, otp);
+
+            if (!emailSent)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = emailMessage
+                });
+            }
 
             return Json(new
             {
                 success = true,
-                message = $"Verification code successfully dispatched to {cleanEmail}. Please check your student email inbox or spam folder."
+                message = $"Verification code successfully dispatched to {cleanEmail}. Please check your student email inbox on your phone or web."
             });
         }
 

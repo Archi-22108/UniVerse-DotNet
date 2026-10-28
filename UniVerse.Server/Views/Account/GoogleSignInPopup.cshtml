@@ -1,6 +1,11 @@
+@model List<UniVerse.Server.Models.User>
 @{
     Layout = null;
     var returnUrl = ViewData["ReturnUrl"]?.ToString() ?? "/Dashboard";
+    var prefilledEmail = ViewData["PrefilledEmail"]?.ToString() ?? "";
+    var currentEmail = ViewData["CurrentEmail"]?.ToString() ?? "";
+    var currentName = ViewData["CurrentName"]?.ToString() ?? "";
+    bool isAuthenticated = (bool)(ViewData["IsAuthenticated"] ?? false);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -10,10 +15,10 @@
     <title>Sign in – Google Accounts</title>
     <link rel="icon" type="image/x-icon" href="https://www.google.com/favicon.ico" />
     
-    <!-- Google Fonts: Roboto & Google Sans style -->
+    <!-- Google Fonts: Roboto & Google Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
     <style>
@@ -35,20 +40,47 @@
             padding: 24px 16px;
         }
 
-        /* ─── Google Accounts Material 3 Card ─── */
+        /* ─── Google Material 3 Card ─── */
         .google-card {
             background: #ffffff;
             border-radius: 28px;
             width: 100%;
-            max-width: 448px;
-            padding: 40px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 460px;
+            padding: 36px 36px 32px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
             position: relative;
         }
 
-        /* ─── Top Google Logo ─── */
+        .back-nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn-back-universe {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #444746;
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: #f0f4f9;
+            border: 1px solid #d3e3fd;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-back-universe:hover {
+            background: #e0e9f8;
+            color: #0b57d0;
+        }
+
         .google-logo-row {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .google-header-title {
@@ -57,14 +89,14 @@
             font-weight: 500;
             line-height: 1.33;
             color: #1f1f1f;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .google-header-sub {
             font-size: 14px;
             color: #444746;
             line-height: 1.42;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .google-header-sub strong {
@@ -83,10 +115,182 @@
             color: #0b57d0;
             font-size: 11.5px;
             font-weight: 500;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
-        /* ─── Material Outlined Input ─── */
+        /* ─── Account Chooser List ─── */
+        .accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-top: 1px solid #e0e2e5;
+            padding-top: 8px;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.15s;
+            user-select: none;
+            border: 1px solid transparent;
+        }
+
+        .account-item:hover {
+            background-color: #f8fafd;
+            border-color: #d3e3fd;
+            transform: translateY(-1px);
+        }
+
+        .account-item:active {
+            background-color: #e8f0fe;
+        }
+
+        .account-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+            flex-shrink: 0;
+            font-family: 'Google Sans', sans-serif;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .account-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .account-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f1f1f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-email {
+            font-size: 12px;
+            color: #444746;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
+        }
+
+        .account-status-chip {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .chip-signed-in {
+            background: #e6f4ea;
+            color: #137333;
+            border: 1px solid #ceead6;
+        }
+
+        .chip-device {
+            background: #f1f3f4;
+            color: #5f6368;
+        }
+
+        .btn-remove-account {
+            background: transparent;
+            border: none;
+            color: #747775;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: 4px;
+        }
+
+        .btn-remove-account:hover {
+            background-color: #fce8e6;
+            color: #c5221f;
+        }
+
+        .use-other-account {
+            border-top: 1px solid #e0e2e5;
+            margin-top: 6px;
+            padding-top: 10px;
+        }
+
+        .use-other-account .account-avatar {
+            background: #f0f4f9;
+            color: #444746;
+            font-size: 18px;
+            box-shadow: none;
+            border: 1px solid #d3e3fd;
+        }
+
+        /* ─── Loading Overlay ─── */
+        .signing-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .signing-overlay.active {
+            display: flex;
+        }
+
+        .google-spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #f0f4f9;
+            border-top-color: #0b57d0;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 18px;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .signing-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1f1f1f;
+            margin-bottom: 6px;
+        }
+
+        .signing-sub {
+            font-size: 12.5px;
+            color: #444746;
+        }
+
+        /* ─── Manual Form Styles ─── */
+        .manual-section {
+            display: none;
+        }
+
         .m3-field {
             position: relative;
             margin-bottom: 8px;
@@ -94,9 +298,9 @@
 
         .m3-input {
             width: 100%;
-            height: 56px;
+            height: 54px;
             padding: 16px;
-            font-size: 16px;
+            font-size: 15px;
             color: #1f1f1f;
             background: transparent;
             border: 1px solid #747775;
@@ -112,17 +316,12 @@
             padding: 15px;
         }
 
-        .m3-input.has-error {
-            border-color: #b3261e !important;
-            border-width: 2px;
-        }
-
         .m3-label {
             position: absolute;
             left: 16px;
-            top: 18px;
+            top: 17px;
             color: #444746;
-            font-size: 16px;
+            font-size: 15px;
             pointer-events: none;
             transition: all 0.2s ease;
             background: #ffffff;
@@ -138,31 +337,6 @@
             font-weight: 500;
         }
 
-        .m3-input.has-error ~ .m3-label {
-            color: #b3261e !important;
-        }
-
-        /* ─── Domain Helper Chip ─── */
-        .domain-helper-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: none;
-            color: #0b57d0;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 6px;
-            padding: 2px 0;
-            text-decoration: none;
-        }
-
-        .domain-helper-btn:hover {
-            text-decoration: underline;
-        }
-
-        /* ─── Error Box ─── */
         .google-error-box {
             display: none;
             align-items: flex-start;
@@ -181,126 +355,77 @@
             display: flex;
         }
 
-        /* ─── Notice text ─── */
-        .privacy-notice {
-            font-size: 12px;
-            color: #444746;
-            line-height: 1.5;
-            margin: 20px 0 28px;
-        }
-
-        .privacy-notice a {
-            color: #0b57d0;
-            text-decoration: none;
-        }
-
-        /* ─── Bottom Actions Row ─── */
         .actions-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 16px;
+            margin-top: 18px;
         }
 
-        .btn-create-acct {
+        .btn-text {
             color: #0b57d0;
             background: none;
             border: none;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
             cursor: pointer;
-            padding: 10px 12px;
-            border-radius: 20px;
-            transition: background 0.2s;
+            padding: 8px 12px;
+            border-radius: 18px;
             text-decoration: none;
+            transition: background 0.2s;
         }
 
-        .btn-create-acct:hover {
+        .btn-text:hover {
             background: #f0f4f9;
         }
 
-        .btn-google-next {
+        .btn-primary-google {
             background: #0b57d0;
             color: #ffffff;
             border: none;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
-            height: 40px;
-            padding: 0 24px;
-            border-radius: 20px;
+            height: 38px;
+            padding: 0 22px;
+            border-radius: 19px;
             cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            transition: background 0.2s, box-shadow 0.2s;
         }
 
-        .btn-google-next:hover {
+        .btn-primary-google:hover {
             background: #0842a0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-google-next:disabled {
+        .btn-primary-google:disabled {
             background: #e0e2e5;
             color: #8c9096;
             cursor: not-allowed;
             box-shadow: none;
         }
 
-        /* ─── Selected User Chip for Step 2 ─── */
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px 8px 10px;
-            background: #f8fafd;
-            border: 1px solid #d3e3fd;
-            border-radius: 24px;
-            margin-bottom: 24px;
-            width: fit-content;
-            max-width: 100%;
-            cursor: pointer;
-        }
-
-        .user-chip-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #0b57d0;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .user-chip-email {
-            font-size: 13px;
-            color: #1f1f1f;
-            font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .user-chip-icon {
+        .privacy-notice {
             font-size: 12px;
             color: #444746;
+            line-height: 1.5;
+            margin-top: 16px;
         }
 
         /* ─── Footer ─── */
         .google-footer {
             width: 100%;
-            max-width: 448px;
+            max-width: 460px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-top: 16px;
             font-size: 12px;
             color: #444746;
-            padding: 0 12px;
+            padding: 0 10px;
         }
 
         .google-footer a {
@@ -312,28 +437,24 @@
         .google-footer a:hover {
             text-decoration: underline;
         }
-
-        /* ─── Spinner ─── */
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @@keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
 
     <div class="google-card">
+        <div class="back-nav-row">
+            <button type="button" class="btn-back-universe" onclick="handleBackAction()">
+                <i class="bi bi-arrow-left"></i>
+                <span id="backNavText">Back to UniVerse</span>
+            </button>
+            <span style="font-size: 11px; font-family: 'Space Mono', monospace; color: #10b981; font-weight: 600;">
+                <i class="bi bi-shield-check"></i> SECURE SSO
+            </span>
+        </div>
+
         <!-- Google 4-Color Logo SVG -->
         <div class="google-logo-row">
-            <svg width="40" height="40" viewBox="0 0 24 24">
+            <svg width="38" height="38" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
                 <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z"/>
@@ -341,74 +462,115 @@
             </svg>
         </div>
 
-        <h1 class="google-header-title">Sign in with Google</h1>
-        <p class="google-header-sub">to continue to <strong>UniVerse</strong></p>
-
-        <!-- Organization Badge -->
-        <div class="campus-pill">
-            <i class="bi bi-mortarboard-fill"></i>
-            <span>Marwadi University Workspace</span>
-        </div>
-
-        <!-- Error Box -->
-        <div id="googleErrorBox" class="google-error-box">
-            <i class="bi bi-exclamation-circle-fill" style="font-size: 15px; flex-shrink: 0; margin-top: 1px;"></i>
-            <span id="googleErrorMsg"></span>
-        </div>
-
         <!-- ═══════════════════════════════════════════════════════════════════
-             STEP 1: Enter Google Email (Strictly @@marwadiuniversity.ac.in)
+             SECTION 1: Official Google Account Chooser
+             (Displayed ONLY for real logged-in or device-remembered accounts)
              ═══════════════════════════════════════════════════════════════════ -->
-        <div id="stepEmail">
-            <div class="m3-field">
-                <input type="email" id="googleEmailInput" class="m3-input" placeholder=" " autocomplete="email" autofocus />
-                <label for="googleEmailInput" class="m3-label">Email or phone</label>
+        <div id="sectionChooser" style="display: none;">
+            <h1 class="google-header-title">Choose an account</h1>
+            <p class="google-header-sub">to continue to <strong>UniVerse</strong></p>
+
+            <div class="campus-pill">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Marwadi University Workspace</span>
             </div>
 
-            <!-- 1-Tap University Domain Helper -->
-            <button type="button" id="btnApplyDomain" class="domain-helper-btn">
-                <i class="bi bi-stars"></i>
-                <span>Use <strong>@@marwadiuniversity.ac.in</strong></span>
-            </button>
+            <!-- List of Verified Accounts -->
+            <div class="accounts-list" id="accountsListContainer">
+                <!-- Dynamically populated from actual authenticated or remembered accounts -->
+            </div>
+
+            <!-- Use another university account option -->
+            <div class="account-item use-other-account" onclick="showManualLogin()">
+                <div class="account-avatar">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <div class="account-details">
+                    <div class="account-name">Use another student account</div>
+                    <div class="account-email">@@marwadiuniversity.ac.in</div>
+                </div>
+            </div>
 
             <div class="privacy-notice">
-                Before using this app, you can review UniVerse's <a href="/Home/Privacy" target="_blank">privacy policy</a> and <a href="/Home/Terms" target="_blank">terms of service</a>.
-                <br /><br />
-                <span style="color: #0b57d0; font-weight: 500;">Notice:</span> Only students possessing an official <strong>@@marwadiuniversity.ac.in</strong> Google Workspace email are allowed access. Personal Gmail accounts will be denied.
-            </div>
-
-            <div class="actions-row">
-                <a href="/Account/Register" target="_blank" class="btn-create-acct">Create account</a>
-                <button type="button" id="btnNextEmail" class="btn-google-next">Next</button>
+                To continue, Google will share your verified name, email address, language preference, and profile with UniVerse.
             </div>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════════
-             STEP 2: Enter Password to authenticate
+             SECTION 2: Signing In Progress Screen
              ═══════════════════════════════════════════════════════════════════ -->
-        <div id="stepPassword" style="display: none;">
-            <!-- Selected User Pill -->
-            <div class="user-chip" id="userChipBtn" title="Switch account">
-                <div class="user-chip-avatar" id="avatarLetter">S</div>
-                <div class="user-chip-email" id="displayEmail">student@@marwadiuniversity.ac.in</div>
-                <i class="bi bi-chevron-down user-chip-icon"></i>
+        <div id="sectionSigning" class="signing-overlay">
+            <div class="google-spinner"></div>
+            <div class="signing-text" id="signingText">Authenticating with Google...</div>
+            <div class="signing-sub" id="signingSub">Verifying Marwadi University student credentials</div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECTION 3: Manual University Email & Password Entry
+             ═══════════════════════════════════════════════════════════════════ -->
+        <div id="sectionManual" class="manual-section">
+            <h1 class="google-header-title" id="manualHeaderTitle">Sign in with Google</h1>
+            <p class="google-header-sub">to continue to <strong>UniVerse</strong></p>
+
+            <div class="campus-pill">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Marwadi University Workspace</span>
             </div>
 
-            <div class="m3-field">
-                <input type="password" id="googlePasswordInput" class="m3-input" placeholder=" " autocomplete="current-password" />
-                <label for="googlePasswordInput" class="m3-label">Enter your password</label>
+            <!-- Error Box -->
+            <div id="googleErrorBox" class="google-error-box">
+                <i class="bi bi-exclamation-circle-fill" style="font-size: 15px; flex-shrink: 0; margin-top: 1px;"></i>
+                <span id="googleErrorMsg"></span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 24px;">
-                <input type="checkbox" id="showPassCheck" style="width: 16px; height: 16px; cursor: pointer;" />
-                <label for="showPassCheck" style="font-size: 13.5px; color: #444746; cursor: pointer;">Show password</label>
+            <!-- Step 1: Email -->
+            <div id="manualStepEmail">
+                <div class="m3-field">
+                    <input type="email" id="googleEmailInput" class="m3-input" placeholder=" " autocomplete="email" />
+                    <label for="googleEmailInput" class="m3-label">Student Email (@@marwadiuniversity.ac.in)</label>
+                </div>
+
+                <div style="margin-top: 6px; margin-bottom: 16px;">
+                    <button type="button" id="btnQuickDomain" style="background: none; border: none; color: #0b57d0; font-size: 12px; font-weight: 500; cursor: pointer;">
+                        <i class="bi bi-stars"></i> 1-Tap Add <strong>@@marwadiuniversity.ac.in</strong>
+                    </button>
+                </div>
+
+                <div class="privacy-notice">
+                    <span style="color: #0b57d0; font-weight: 500;">Notice:</span> Only students possessing an official <strong>@@marwadiuniversity.ac.in</strong> account are permitted. Personal @@gmail.com accounts are strictly denied.
+                </div>
+
+                <div class="actions-row">
+                    <button type="button" id="btnBackToChooser" class="btn-text" style="display: none;" onclick="showChooser()">Back to Accounts</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" id="btnNextManualEmail" class="btn-primary-google">Next</button>
+                </div>
             </div>
 
-            <div class="actions-row">
-                <button type="button" id="btnBackToEmail" class="btn-create-acct">Back</button>
-                <button type="button" id="btnSubmitGoogle" class="btn-google-next">
-                    <span>Sign in</span>
-                </button>
+            <!-- Step 2: Password -->
+            <div id="manualStepPassword" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: #f8fafd; border: 1px solid #d3e3fd; border-radius: 24px; width: fit-content; margin-bottom: 16px;">
+                    <div id="manualDisplayAvatar" style="width: 24px; height: 24px; border-radius: 50%; background: #0b57d0; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600;"></div>
+                    <div>
+                        <div id="manualDisplayName" style="font-size: 13px; font-weight: 600; color: #1f1f1f; line-height: 1.2;"></div>
+                        <div id="manualDisplayEmail" style="font-size: 11.5px; color: #444746;"></div>
+                    </div>
+                </div>
+
+                <div class="m3-field">
+                    <input type="password" id="googlePasswordInput" class="m3-input" placeholder=" " autocomplete="current-password" />
+                    <label for="googlePasswordInput" class="m3-label">Enter your password</label>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; margin-bottom: 20px;">
+                    <input type="checkbox" id="showPassCheck" style="cursor: pointer;" />
+                    <label for="showPassCheck" style="font-size: 13px; color: #444746; cursor: pointer;">Show password</label>
+                </div>
+
+                <div class="actions-row">
+                    <button type="button" class="btn-text" onclick="backToManualEmail()">Back</button>
+                    <button type="button" id="btnSubmitManualGoogle" class="btn-primary-google">Sign in</button>
+                </div>
             </div>
         </div>
     </div>
@@ -424,38 +586,243 @@
     </footer>
 
     <script>
-        const stepEmail = document.getElementById("stepEmail");
-        const stepPassword = document.getElementById("stepPassword");
+        const targetReturnUrl = "@returnUrl";
+        const serverCurrentEmail = "@currentEmail".trim().toLowerCase();
+        const serverCurrentName = "@currentName".trim();
+        const serverIsAuthenticated = @(isAuthenticated ? "true" : "false");
+        const initialPrefilledEmail = "@prefilledEmail".trim().toLowerCase();
+
+        const avatarColors = ["#0b57d0", "#00875a", "#6554c0", "#d9381e", "#00838f", "#e65100"];
+
+        const sectionChooser = document.getElementById("sectionChooser");
+        const sectionSigning = document.getElementById("sectionSigning");
+        const sectionManual = document.getElementById("sectionManual");
+        const accountsListContainer = document.getElementById("accountsListContainer");
+        const btnBackToChooser = document.getElementById("btnBackToChooser");
+        const signingText = document.getElementById("signingText");
+        const signingSub = document.getElementById("signingSub");
+        const backNavText = document.getElementById("backNavText");
+
+        const manualStepEmail = document.getElementById("manualStepEmail");
+        const manualStepPassword = document.getElementById("manualStepPassword");
         const googleEmailInput = document.getElementById("googleEmailInput");
         const googlePasswordInput = document.getElementById("googlePasswordInput");
-        const btnApplyDomain = document.getElementById("btnApplyDomain");
-        const btnNextEmail = document.getElementById("btnNextEmail");
-        const btnBackToEmail = document.getElementById("btnBackToEmail");
-        const btnSubmitGoogle = document.getElementById("btnSubmitGoogle");
+        const manualDisplayEmail = document.getElementById("manualDisplayEmail");
+        const manualDisplayName = document.getElementById("manualDisplayName");
+        const manualDisplayAvatar = document.getElementById("manualDisplayAvatar");
+        const showPassCheck = document.getElementById("showPassCheck");
+        const btnQuickDomain = document.getElementById("btnQuickDomain");
+        const btnNextManualEmail = document.getElementById("btnNextManualEmail");
+        const btnSubmitManualGoogle = document.getElementById("btnSubmitManualGoogle");
         const googleErrorBox = document.getElementById("googleErrorBox");
         const googleErrorMsg = document.getElementById("googleErrorMsg");
-        const userChipBtn = document.getElementById("userChipBtn");
-        const avatarLetter = document.getElementById("avatarLetter");
-        const displayEmail = document.getElementById("displayEmail");
-        const showPassCheck = document.getElementById("showPassCheck");
 
-        const targetReturnUrl = "@returnUrl";
+        // Helper: Get remembered accounts from localStorage
+        function getDeviceAccounts() {
+            try {
+                const raw = localStorage.getItem("universe_google_accounts");
+                if (!raw) return [];
+                const arr = JSON.parse(raw);
+                return Array.isArray(arr) ? arr : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Helper: Save account to localStorage
+        function saveDeviceAccount(email, name) {
+            if (!email) return;
+            try {
+                let accounts = getDeviceAccounts();
+                const cleanEmail = email.trim().toLowerCase();
+                accounts = accounts.filter(a => a.email.toLowerCase() !== cleanEmail);
+                accounts.unshift({
+                    email: cleanEmail,
+                    name: name || cleanEmail.split("@@")[0]
+                });
+                accounts = accounts.slice(0, 3); // Keep up to 3 accounts on this browser
+                localStorage.setItem("universe_google_accounts", JSON.stringify(accounts));
+            } catch (e) { }
+        }
+
+        // Helper: Remove an account from this device
+        function removeDeviceAccount(event, emailToRemove) {
+            if (event) {
+                event.stopPropagation();
+            }
+            try {
+                let accounts = getDeviceAccounts();
+                accounts = accounts.filter(a => a.email.toLowerCase() !== emailToRemove.toLowerCase());
+                localStorage.setItem("universe_google_accounts", JSON.stringify(accounts));
+                initAccountsView();
+            } catch (e) { }
+        }
+
+        // Initialize and render accounts
+        function initAccountsView() {
+            let accounts = getDeviceAccounts();
+
+            // If user is currently authenticated on server, ensure their account is included at the top
+            if (serverIsAuthenticated && serverCurrentEmail) {
+                const exists = accounts.find(a => a.email.toLowerCase() === serverCurrentEmail);
+                if (!exists) {
+                    accounts.unshift({
+                        email: serverCurrentEmail,
+                        name: serverCurrentName || "Student"
+                    });
+                    localStorage.setItem("universe_google_accounts", JSON.stringify(accounts));
+                }
+            }
+
+            // Only display accounts ending with @@marwadiuniversity.ac.in
+            accounts = accounts.filter(a => a.email && a.email.toLowerCase().endsWith("marwadiuniversity.ac.in"));
+
+            if (accounts.length > 0) {
+                // RENDER CHOOSER: Only show verified, remembered accounts
+                accountsListContainer.innerHTML = "";
+                accounts.forEach((acc, idx) => {
+                    const color = avatarColors[idx % avatarColors.Length];
+                    const initial = (acc.name && acc.name.length > 0) ? acc.name.charAt(0).toUpperCase() : acc.email.charAt(0).toUpperCase();
+                    const isCurrent = serverIsAuthenticated && acc.email.toLowerCase() === serverCurrentEmail;
+
+                    const itemDiv = document.createElement("div");
+                    itemDiv.className = "account-item";
+                    itemDiv.onclick = () => onAccountSelected(acc.email, acc.name, isCurrent);
+
+                    itemDiv.innerHTML = `
+                        <div class="account-avatar" style="background-color: ${color};">
+                            ${initial}
+                        </div>
+                        <div class="account-details">
+                            <div class="account-name">${acc.name}</div>
+                            <div class="account-email">${acc.email}</div>
+                        </div>
+                        ${isCurrent ? '<span class="account-status-chip chip-signed-in"><i class="bi bi-check-circle-fill"></i> Logged In</span>' : '<span class="account-status-chip chip-device">Saved</span>'}
+                        <button type="button" class="btn-remove-account" title="Remove account from this device" onclick="removeDeviceAccount(event, '${acc.email}')">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    `;
+                    accountsListContainer.appendChild(itemDiv);
+                });
+
+                btnBackToChooser.style.display = "inline-block";
+                showChooser();
+            } else {
+                // NO SAVED ACCOUNTS: Directly show the clean Google sign-in form! No fake emails!
+                btnBackToChooser.style.display = "none";
+                showManualLogin();
+            }
+        }
+
+        // When student clicks on their account in the chooser
+        function onAccountSelected(email, name, isCurrent) {
+            if (isCurrent) {
+                // 1-Click Fast Resume for active session!
+                sectionChooser.style.display = "none";
+                sectionManual.style.display = "none";
+                sectionSigning.classList.add("active");
+                signingText.innerText = "Signing in as " + name + "...";
+                signingSub.innerText = "Redirecting to UniVerse Campus Dashboard";
+
+                finishAuthAndRedirect({
+                    success: true,
+                    redirectUrl: targetReturnUrl,
+                    studentName: name,
+                    email: email
+                });
+            } else {
+                // Account remembered on device, but session not active: prompt for password
+                googleEmailInput.value = email;
+                manualDisplayEmail.innerText = email;
+                manualDisplayName.innerText = name || email.split("@@")[0];
+                manualDisplayAvatar.innerText = (name || email).charAt(0).toUpperCase();
+
+                sectionChooser.style.display = "none";
+                sectionSigning.classList.remove("active");
+                sectionManual.style.display = "block";
+                manualStepEmail.style.display = "none";
+                manualStepPassword.style.display = "block";
+                backNavText.innerText = "Back to Accounts";
+                clearError();
+                googlePasswordInput.value = "";
+                googlePasswordInput.focus();
+            }
+        }
+
+        function handleBackAction() {
+            if (sectionManual.style.display === "block" && getDeviceAccounts().length > 0) {
+                showChooser();
+                return;
+            }
+            if (window.opener && !window.opener.closed) {
+                window.close();
+            } else {
+                window.location.href = "/";
+            }
+        }
+
+        function showManualLogin() {
+            sectionChooser.style.display = "none";
+            sectionSigning.classList.remove("active");
+            sectionManual.style.display = "block";
+            manualStepEmail.style.display = "block";
+            manualStepPassword.style.display = "none";
+            backNavText.innerText = getDeviceAccounts().length > 0 ? "Back to Accounts" : "Back to UniVerse";
+            clearError();
+
+            if (initialPrefilledEmail && !googleEmailInput.value) {
+                googleEmailInput.value = initialPrefilledEmail;
+            }
+            googleEmailInput.focus();
+        }
+
+        function showChooser() {
+            sectionManual.style.display = "none";
+            sectionSigning.classList.remove("active");
+            sectionChooser.style.display = "block";
+            backNavText.innerText = "Back to UniVerse";
+            clearError();
+        }
+
+        function backToManualEmail() {
+            manualStepPassword.style.display = "none";
+            manualStepEmail.style.display = "block";
+            clearError();
+            googleEmailInput.focus();
+        }
 
         function showError(msg) {
             googleErrorMsg.innerText = msg;
             googleErrorBox.classList.add("active");
-            googleEmailInput.classList.add("has-error");
-            googlePasswordInput.classList.add("has-error");
         }
 
         function clearError() {
             googleErrorBox.classList.remove("active");
-            googleEmailInput.classList.remove("has-error");
-            googlePasswordInput.classList.remove("has-error");
+            googleErrorMsg.innerText = "";
         }
 
-        // 1-Tap Add Domain
-        btnApplyDomain.addEventListener("click", () => {
+        function finishAuthAndRedirect(data) {
+            // Save to device storage
+            saveDeviceAccount(data.email, data.studentName);
+
+            // Notify opener window if opened in popup
+            if (window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({
+                        type: "GOOGLE_AUTH_SUCCESS",
+                        redirectUrl: data.redirectUrl || "/Dashboard",
+                        name: data.studentName,
+                        email: data.email
+                    }, "*");
+                } catch (e) { }
+
+                setTimeout(() => window.close(), 450);
+            } else {
+                window.location.href = data.redirectUrl || "/Dashboard";
+            }
+        }
+
+        btnQuickDomain.addEventListener("click", () => {
             let val = googleEmailInput.value.trim();
             if (val.includes("@@")) val = val.split("@@")[0];
             googleEmailInput.value = val ? val + "@@marwadiuniversity.ac.in" : "student@@marwadiuniversity.ac.in";
@@ -463,27 +830,32 @@
             googleEmailInput.focus();
         });
 
-        // Step 1: Validate Email
-        btnNextEmail.addEventListener("click", () => {
+        btnNextManualEmail.addEventListener("click", () => {
             clearError();
             const email = (googleEmailInput.value || "").trim().toLowerCase();
 
             if (!email) {
-                showError("Enter an email or phone number.");
+                showError("Enter your Marwadi University student email.");
                 return;
             }
 
-            // 🛡️ STRICT DOMAIN CHECK
             if (!email.endsWith("@@marwadiuniversity.ac.in")) {
-                showError("Access Denied: '" + email + "' is not a Marwadi University account. Personal Google accounts (@@gmail.com) are strictly not permitted. Please use your official @@marwadiuniversity.ac.in student email.");
+                showError("Access Denied: '" + email + "' is not a Marwadi University email. Only @@marwadiuniversity.ac.in accounts are permitted.");
                 return;
             }
 
-            // Proceed to Step 2
-            displayEmail.innerText = email;
-            avatarLetter.innerText = email.charAt(0).toUpperCase();
-            stepEmail.style.display = "none";
-            stepPassword.style.display = "block";
+            manualDisplayEmail.innerText = email;
+            const prefix = email.split("@@")[0];
+            const parts = prefix.split(".");
+            const formattedName = parts.length > 1
+                ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + " " + parts[1].charAt(0).toUpperCase() + parts[1].slice(1)
+                : prefix.charAt(0).toUpperCase() + prefix.slice(1);
+
+            manualDisplayName.innerText = formattedName;
+            manualDisplayAvatar.innerText = formattedName.charAt(0).toUpperCase();
+
+            manualStepEmail.style.display = "none";
+            manualStepPassword.style.display = "block";
             googlePasswordInput.value = "";
             googlePasswordInput.focus();
         });
@@ -491,32 +863,15 @@
         googleEmailInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                btnNextEmail.click();
+                btnNextManualEmail.click();
             }
         });
 
-        // Toggle Password
         showPassCheck.addEventListener("change", () => {
             googlePasswordInput.type = showPassCheck.checked ? "text" : "password";
         });
 
-        // Switch account
-        userChipBtn.addEventListener("click", () => {
-            stepPassword.style.display = "none";
-            stepEmail.style.display = "block";
-            clearError();
-            googleEmailInput.focus();
-        });
-
-        btnBackToEmail.addEventListener("click", () => {
-            stepPassword.style.display = "none";
-            stepEmail.style.display = "block";
-            clearError();
-            googleEmailInput.focus();
-        });
-
-        // Step 2: Submit to server
-        btnSubmitGoogle.addEventListener("click", () => {
+        btnSubmitManualGoogle.addEventListener("click", () => {
             clearError();
             const email = (googleEmailInput.value || "").trim().toLowerCase();
             const password = googlePasswordInput.value;
@@ -526,8 +881,8 @@
                 return;
             }
 
-            btnSubmitGoogle.disabled = true;
-            btnSubmitGoogle.innerHTML = '<div class="spinner"></div><span>Verifying...</span>';
+            btnSubmitManualGoogle.disabled = true;
+            btnSubmitManualGoogle.innerText = "Signing in...";
 
             const formData = new FormData();
             formData.append("email", email);
@@ -541,36 +896,16 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    btnSubmitGoogle.innerHTML = '<span>✓ Verified</span>';
-                    btnSubmitGoogle.style.background = "#1e8e3e";
-
-                    // Notify parent window (opener)
-                    if (window.opener && !window.opener.closed) {
-                        try {
-                            window.opener.postMessage({
-                                type: "GOOGLE_AUTH_SUCCESS",
-                                redirectUrl: data.redirectUrl || "/Dashboard",
-                                name: data.studentName,
-                                email: data.email
-                            }, "*");
-                        } catch (e) { }
-
-                        setTimeout(() => {
-                            window.close();
-                        }, 500);
-                    } else {
-                        // Direct redirection if opened standalone
-                        window.location.href = data.redirectUrl || "/Dashboard";
-                    }
+                    finishAuthAndRedirect(data);
                 } else {
-                    btnSubmitGoogle.disabled = false;
-                    btnSubmitGoogle.innerHTML = '<span>Sign in</span>';
+                    btnSubmitManualGoogle.disabled = false;
+                    btnSubmitManualGoogle.innerText = "Sign in";
                     showError(data.message || "Authentication failed.");
                 }
             })
             .catch(err => {
-                btnSubmitGoogle.disabled = false;
-                btnSubmitGoogle.innerHTML = '<span>Sign in</span>';
+                btnSubmitManualGoogle.disabled = false;
+                btnSubmitManualGoogle.innerText = "Sign in";
                 showError("Connection error: " + err.message);
             });
         });
@@ -578,8 +913,13 @@
         googlePasswordInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                btnSubmitGoogle.click();
+                btnSubmitManualGoogle.click();
             }
+        });
+
+        // Initialize on load
+        window.addEventListener("DOMContentLoaded", () => {
+            initAccountsView();
         });
     </script>
 </body>
