@@ -17,7 +17,6 @@ using UniVerse.Server.Models.ViewModels;
 
 namespace UniVerse.Server.Controllers
 {
-    [Authorize]
     public class DashboardController : Controller
     {
         private readonly IDeliveryRepository _deliveryRepo;

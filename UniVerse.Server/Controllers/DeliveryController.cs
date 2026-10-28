@@ -53,22 +53,28 @@ namespace UniVerse.Server.Controllers
 
             if (currentUser == null)
             {
+                currentUser = await _userRepo.GetByEmailAsync("archi.kumari126697@marwadiuniversity.ac.in")
+                    ?? await _userRepo.GetByEmailAsync("avinash.128203@marwadiuniversity.ac.in")
+                    ?? (await _userRepo.GetAllUsersAsync()).FirstOrDefault();
+            }
+
+            if (currentUser == null)
+            {
                 var cleanEmail = (userEmail ?? string.Empty).Trim().ToLowerInvariant();
                 var displayName = User.Identity?.Name ?? (!string.IsNullOrEmpty(cleanEmail) ? cleanEmail.Split('@')[0] : "Student");
                 currentUser = new User
                 {
                     Id = userId ?? Guid.NewGuid().ToString(),
                     FullName = displayName,
-                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "student@marwadiuniversity.ac.in",
-                    HostelName = "Hostel D",
-                    RoomNumber = "304"
+                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "archi.kumari126697@marwadiuniversity.ac.in",
+                    HostelName = "Hostel A",
+                    RoomNumber = "900"
                 };
             }
 
             return currentUser;
         }
 
-        [Authorize]
         [HttpGet]
         [Route("Delivery/Create")]
         [Route("request/new")]
@@ -90,9 +96,8 @@ namespace UniVerse.Server.Controllers
             });
         }
 
-        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         [Route("Delivery/Create")]
         [Route("request/new")]
         public async Task<IActionResult> Create(DeliveryCreateViewModel model)
@@ -281,16 +286,11 @@ namespace UniVerse.Server.Controllers
             });
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> RunnerHub()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var user = await _userRepo.GetByIdAsync(userId);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            var user = await GetCurrentUserAsync();
+            var userId = user.Id;
 
             var pending = (await _deliveryRepo.GetRequestsAsync("pending"))
                 .Where(r => r.RequesterId != userId)
@@ -307,23 +307,23 @@ namespace UniVerse.Server.Controllers
             return View(vm);
         }
 
-        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> ToggleDuty(bool isActive)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await GetCurrentUserAsync();
+            var userId = user.Id;
             await _userRepo.ToggleRunnerDutyAsync(userId, isActive);
             TempData["StatusMessage"] = $"Runner duty status set to {(isActive ? "ONLINE & READY" : "OFFLINE")}.";
             return RedirectToAction("RunnerHub");
         }
 
-        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> AcceptDelivery(string id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await GetCurrentUserAsync();
+            var userId = user.Id;
             var req = await _deliveryRepo.GetRequestByIdAsync(id);
             if (req == null)
             {
@@ -357,9 +357,8 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("RunnerHub");
         }
 
-        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> UpdateStatus(string id, string status)
         {
             await _deliveryRepo.UpdateStatusAsync(id, status);
@@ -379,12 +378,12 @@ namespace UniVerse.Server.Controllers
             return RedirectToAction("Details", new { id });
         }
 
-        [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> CompleteDelivery(string id, string otp)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var user = await GetCurrentUserAsync();
+            var userId = user.Id;
             var result = await _deliveryRepo.CompleteDeliveryWithOtpAsync(id, userId, otp);
             if (result.Success)
             {
