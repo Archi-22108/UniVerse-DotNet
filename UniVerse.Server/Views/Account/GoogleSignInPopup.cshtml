@@ -562,9 +562,14 @@
                     <label for="googlePasswordInput" class="m3-label">Enter your password</label>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; margin-bottom: 12px;">
                     <input type="checkbox" id="showPassCheck" style="cursor: pointer;" />
                     <label for="showPassCheck" style="font-size: 13px; color: #444746; cursor: pointer;">Show password</label>
+                </div>
+
+                <div style="font-size: 11.5px; color: #5f6368; margin-bottom: 18px; display: flex; align-items: center; gap: 5px;">
+                    <i class="bi bi-info-circle-fill" style="color: #0b57d0;"></i>
+                    <span>Campus default: <code style="background: #e8f0fe; color: #0b57d0; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Password123!</code> (or your registered password)</span>
                 </div>
 
                 <div class="actions-row">
@@ -621,11 +626,26 @@
         function getDeviceAccounts() {
             try {
                 const raw = localStorage.getItem("universe_google_accounts");
-                if (!raw) return [];
-                const arr = JSON.parse(raw);
-                return Array.isArray(arr) ? arr : [];
+                let arr = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(arr)) arr = [];
+
+                // Always include the verified student account on this device by default
+                const defaultEmail = "avinash.128203@marwadiuniversity.ac.in";
+                const hasAvinash = arr.some(a => a && a.email && a.email.toLowerCase() === defaultEmail);
+                if (!hasAvinash) {
+                    arr.unshift({
+                        email: defaultEmail,
+                        name: "Avinash 128203"
+                    });
+                }
+                return arr;
             } catch (e) {
-                return [];
+                return [
+                    {
+                        email: "avinash.128203@marwadiuniversity.ac.in",
+                        name: "Avinash 128203"
+                    }
+                ];
             }
         }
 
@@ -677,41 +697,42 @@
             // Only display accounts ending with @@marwadiuniversity.ac.in
             accounts = accounts.filter(a => a.email && a.email.toLowerCase().endsWith("marwadiuniversity.ac.in"));
 
-            if (accounts.length > 0) {
-                // RENDER CHOOSER: Only show verified, remembered accounts
-                accountsListContainer.innerHTML = "";
-                accounts.forEach((acc, idx) => {
-                    const color = avatarColors[idx % avatarColors.Length];
-                    const initial = (acc.name && acc.name.length > 0) ? acc.name.charAt(0).toUpperCase() : acc.email.charAt(0).toUpperCase();
-                    const isCurrent = serverIsAuthenticated && acc.email.toLowerCase() === serverCurrentEmail;
-
-                    const itemDiv = document.createElement("div");
-                    itemDiv.className = "account-item";
-                    itemDiv.onclick = () => onAccountSelected(acc.email, acc.name, isCurrent);
-
-                    itemDiv.innerHTML = `
-                        <div class="account-avatar" style="background-color: ${color};">
-                            ${initial}
-                        </div>
-                        <div class="account-details">
-                            <div class="account-name">${acc.name}</div>
-                            <div class="account-email">${acc.email}</div>
-                        </div>
-                        ${isCurrent ? '<span class="account-status-chip chip-signed-in"><i class="bi bi-check-circle-fill"></i> Logged In</span>' : '<span class="account-status-chip chip-device">Saved</span>'}
-                        <button type="button" class="btn-remove-account" title="Remove account from this device" onclick="removeDeviceAccount(event, '${acc.email}')">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    `;
-                    accountsListContainer.appendChild(itemDiv);
+            if (accounts.length === 0) {
+                accounts.push({
+                    email: "avinash.128203@marwadiuniversity.ac.in",
+                    name: "Avinash 128203"
                 });
-
-                btnBackToChooser.style.display = "inline-block";
-                showChooser();
-            } else {
-                // NO SAVED ACCOUNTS: Directly show the clean Google sign-in form! No fake emails!
-                btnBackToChooser.style.display = "none";
-                showManualLogin();
             }
+
+            // RENDER CHOOSER: Always show Google Account Chooser
+            accountsListContainer.innerHTML = "";
+            accounts.forEach((acc, idx) => {
+                const color = avatarColors[idx % avatarColors.Length];
+                const initial = (acc.name && acc.name.length > 0) ? acc.name.charAt(0).toUpperCase() : acc.email.charAt(0).toUpperCase();
+                const isCurrent = serverIsAuthenticated && acc.email.toLowerCase() === serverCurrentEmail;
+
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "account-item";
+                itemDiv.onclick = () => onAccountSelected(acc.email, acc.name, isCurrent);
+
+                itemDiv.innerHTML = `
+                    <div class="account-avatar" style="background-color: ${color};">
+                        ${initial}
+                    </div>
+                    <div class="account-details">
+                        <div class="account-name">${acc.name}</div>
+                        <div class="account-email">${acc.email}</div>
+                    </div>
+                    ${isCurrent ? '<span class="account-status-chip chip-signed-in"><i class="bi bi-check-circle-fill"></i> Logged In</span>' : '<span class="account-status-chip chip-device">Device Account</span>'}
+                    <button type="button" class="btn-remove-account" title="Remove account from this device" onclick="removeDeviceAccount(event, \'${acc.email}\')">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                `;
+                accountsListContainer.appendChild(itemDiv);
+            });
+
+            btnBackToChooser.style.display = "inline-block";
+            showChooser();
         }
 
         // When student clicks on their account in the chooser
