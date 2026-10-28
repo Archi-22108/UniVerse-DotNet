@@ -1,0 +1,10 @@
+cloudflared.exe
+.git
+.vscode
+bin/
+obj/
+UniVerse.Server/bin/
+UniVerse.Server/obj/
+UniVerse.Web/bin/
+UniVerse.Web/obj/
+*.log

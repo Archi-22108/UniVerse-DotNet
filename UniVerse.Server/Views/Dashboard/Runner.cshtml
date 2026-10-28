@@ -678,6 +678,64 @@
     let isRunnerDutyOn = @(Model.IsOnDuty ? "true" : "false");
     let isTogglingDuty = false;
 
+    function updateDutyUI(online) {
+        const btn = document.getElementById('runnerDutyBtn');
+        const ping = btn ? btn.querySelector('.uv-tactile-beacon-ping') : null;
+        const title = btn ? btn.querySelector('.uv-tactile-status-title') : null;
+        const sub = btn ? btn.querySelector('.uv-tactile-status-sub') : null;
+        const offlineSec = document.getElementById('runnerOfflineSection');
+        const radarSec = document.getElementById('runnerRadarSection');
+
+        if (btn) {
+            if (online) {
+                btn.classList.remove('duty-offline');
+                btn.classList.add('duty-online');
+                btn.setAttribute('title', 'Runner Mode Active · Click to Pause');
+                if (ping) ping.style.display = 'inline-block';
+                if (title) title.textContent = 'Online';
+                if (sub) sub.textContent = '· Accepting Orders';
+                if (offlineSec) offlineSec.style.display = 'none';
+                if (radarSec) radarSec.style.display = 'block';
+            } else {
+                btn.classList.remove('duty-online');
+                btn.classList.add('duty-offline');
+                btn.setAttribute('title', 'Runner Mode Paused · Click to go Online');
+                if (ping) ping.style.display = 'none';
+                if (title) title.textContent = 'Offline';
+                if (sub) sub.textContent = '· Mode Paused';
+                if (offlineSec) offlineSec.style.display = 'block';
+                if (radarSec) radarSec.style.display = 'none';
+            }
+        }
+    }
+
+    // Immediately restore runner duty preference from browser storage
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const savedDuty = localStorage.getItem('universe_runner_online');
+            if (savedDuty !== null) {
+                const shouldBeOnline = savedDuty === 'true';
+                if (shouldBeOnline !== isRunnerDutyOn) {
+                    isRunnerDutyOn = shouldBeOnline;
+                    updateDutyUI(shouldBeOnline);
+
+                    // Sync cookie and server in background
+                    document.cookie = "universe_runner_online=" + shouldBeOnline + "; path=/; max-age=604800";
+                    const formData = new URLSearchParams();
+                    formData.append('active', String(shouldBeOnline));
+                    fetch('/Dashboard/ToggleDuty', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData.toString()
+                    }).catch(() => {});
+                }
+            }
+        } catch (e) {}
+    });
+
     // Pleasant Apple-style haptic synth click
     function playDutySound(turnOn) {
         try {
@@ -719,36 +777,11 @@
         playDutySound(targetState);
 
         // Instant 60fps tactile UI update
-        const btn = document.getElementById('runnerDutyBtn');
-        const ping = btn ? btn.querySelector('.uv-tactile-beacon-ping') : null;
-        const title = btn ? btn.querySelector('.uv-tactile-status-title') : null;
-        const sub = btn ? btn.querySelector('.uv-tactile-status-sub') : null;
-        const offlineSec = document.getElementById('runnerOfflineSection');
-        const radarSec = document.getElementById('runnerRadarSection');
+        updateDutyUI(targetState);
 
-        if (btn) {
-            if (targetState) {
-                btn.classList.remove('duty-offline');
-                btn.classList.add('duty-online');
-                btn.setAttribute('title', 'Runner Mode Active · Click to Pause');
-                if (ping) ping.style.display = 'inline-block';
-                if (title) title.textContent = 'Online';
-                if (sub) sub.textContent = '· Accepting Orders';
-                if (offlineSec) offlineSec.style.display = 'none';
-                if (radarSec) radarSec.style.display = 'block';
-            } else {
-                btn.classList.remove('duty-online');
-                btn.classList.add('duty-offline');
-                btn.setAttribute('title', 'Runner Mode Paused · Click to go Online');
-                if (ping) ping.style.display = 'none';
-                if (title) title.textContent = 'Offline';
-                if (sub) sub.textContent = '· Mode Paused';
-                if (offlineSec) offlineSec.style.display = 'block';
-                if (radarSec) radarSec.style.display = 'none';
-            }
-        }
-
+        // Persist to cookie and localStorage
         try {
+            document.cookie = "universe_runner_online=" + targetState + "; path=/; max-age=604800";
             localStorage.setItem('universe_runner_online', String(targetState));
         } catch (e) {}
 

@@ -52,6 +52,18 @@ namespace UniVerse.Server.Controllers
                 currentUser = await _userRepo.GetByEmailAsync(userEmail);
             }
 
+            if (currentUser == null && Request.Cookies.TryGetValue("UniVerse_Student_Email", out var cookieEmail) && !string.IsNullOrWhiteSpace(cookieEmail))
+            {
+                currentUser = await _userRepo.GetByEmailAsync(cookieEmail.Trim());
+            }
+
+            if (currentUser == null)
+            {
+                currentUser = await _userRepo.GetByEmailAsync("archi.kumari126697@marwadiuniversity.ac.in")
+                    ?? await _userRepo.GetByEmailAsync("avinash.128203@marwadiuniversity.ac.in")
+                    ?? (await _userRepo.GetAllUsersAsync()).FirstOrDefault();
+            }
+
             if (currentUser == null)
             {
                 var cleanEmail = (userEmail ?? string.Empty).Trim().ToLowerInvariant();
@@ -60,7 +72,7 @@ namespace UniVerse.Server.Controllers
                 {
                     Id = userId ?? Guid.NewGuid().ToString(),
                     FullName = displayName,
-                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "student@marwadiuniversity.ac.in",
+                    Email = !string.IsNullOrEmpty(cleanEmail) ? cleanEmail : "archi.kumari126697@marwadiuniversity.ac.in",
                     Role = "student",
                     HostelName = "Hostel D",
                     RoomNumber = "304",
@@ -68,6 +80,7 @@ namespace UniVerse.Server.Controllers
                     Department = "Computer Science & Engineering",
                     Semester = "Semester 4"
                 };
+                await _userRepo.CreateUserAsync(currentUser);
             }
 
             return currentUser;
@@ -185,6 +198,17 @@ namespace UniVerse.Server.Controllers
         public async Task<IActionResult> Runner()
         {
             var user = await GetCurrentUserAsync();
+
+            // Resilient duty sync: check if runner duty was toggled in browser cookie
+            if (Request.Cookies.TryGetValue("universe_runner_online", out var cookieDuty) && bool.TryParse(cookieDuty, out var isCookieOnline))
+            {
+                if (user.IsActiveRunner != isCookieOnline)
+                {
+                    user.IsActiveRunner = isCookieOnline;
+                    await _userRepo.ToggleRunnerDutyAsync(user.Id, isCookieOnline);
+                }
+            }
+
             var allRequests = await _deliveryRepo.GetRequestsAsync();
 
             // Campus Radar: Show all active pending campus requests (latest first)
@@ -260,12 +284,22 @@ namespace UniVerse.Server.Controllers
 
         [HttpPost]
         [HttpGet]
+        [IgnoreAntiforgeryToken]
         public async Task<IActionResult> ToggleDuty(bool? active)
         {
             var user = await GetCurrentUserAsync();
             bool newStatus = active.HasValue ? active.Value : !user.IsActiveRunner;
             await _userRepo.ToggleRunnerDutyAsync(user.Id, newStatus);
             user.IsActiveRunner = newStatus;
+
+            // Persist resilient runner online cookie
+            Response.Cookies.Append("universe_runner_online", newStatus ? "true" : "false", new CookieOptions
+            {
+                HttpOnly = false,
+                SameSite = SameSiteMode.Lax,
+                Secure = true,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
 
             bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" ||
                           Request.Headers.Accept.ToString().Contains("application/json") ||

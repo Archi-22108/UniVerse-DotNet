@@ -884,6 +884,8 @@ namespace UniVerse.Server.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.Session.Clear();
+            Response.Cookies.Delete("UniVerse_Student_Email");
+            Response.Cookies.Delete("universe_runner_online");
             return RedirectToAction("Login", "Account");
         }
 
@@ -912,6 +914,15 @@ namespace UniVerse.Server.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
+
+            // Resilient multi-container student identification cookie
+            Response.Cookies.Append("UniVerse_Student_Email", user.Email, new CookieOptions
+            {
+                HttpOnly = false,
+                SameSite = SameSiteMode.Lax,
+                Secure = true,
+                Expires = DateTimeOffset.UtcNow.AddDays(14)
+            });
         }
     }
 }

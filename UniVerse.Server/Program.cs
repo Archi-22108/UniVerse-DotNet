@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using UniVerse.Server.Data;
 using UniVerse.Server.Data.Repositories;
+using UniVerse.Server.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,18 +135,30 @@ app.Use(async (context, next) =>
         if (!path.StartsWith("/account/login") && !path.StartsWith("/account/register") && !path.StartsWith("/account/logout") && !path.StartsWith("/account/googlesigninpopup"))
         {
             var userRepo = context.RequestServices.GetRequiredService<IUserRepository>();
-            var defaultUser = await userRepo.GetByEmailAsync("archi.kumari126697@marwadiuniversity.ac.in")
-                ?? await userRepo.GetByEmailAsync("avinash.128203@marwadiuniversity.ac.in")
-                ?? (await userRepo.GetAllUsersAsync()).FirstOrDefault();
 
-            if (defaultUser != null)
+            // 1. Honor whichever student is authenticated on this browser (Avinash, Archi, or any student)
+            User? targetUser = null;
+            if (context.Request.Cookies.TryGetValue("UniVerse_Student_Email", out var clientEmail) && !string.IsNullOrWhiteSpace(clientEmail))
+            {
+                targetUser = await userRepo.GetByEmailAsync(clientEmail.Trim());
+            }
+
+            // 2. Default fallback if cookie isn't present
+            if (targetUser == null)
+            {
+                targetUser = await userRepo.GetByEmailAsync("archi.kumari126697@marwadiuniversity.ac.in")
+                    ?? await userRepo.GetByEmailAsync("avinash.128203@marwadiuniversity.ac.in")
+                    ?? (await userRepo.GetAllUsersAsync()).FirstOrDefault();
+            }
+
+            if (targetUser != null)
             {
                 var claims = new System.Collections.Generic.List<System.Security.Claims.Claim>
                 {
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, defaultUser.Id),
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, defaultUser.FullName),
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, defaultUser.Email),
-                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, defaultUser.Role ?? "student")
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, targetUser.Id),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, targetUser.FullName),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, targetUser.Email),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, targetUser.Role ?? "student")
                 };
                 var identity = new System.Security.Claims.ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
                 context.User = new System.Security.Claims.ClaimsPrincipal(identity);
