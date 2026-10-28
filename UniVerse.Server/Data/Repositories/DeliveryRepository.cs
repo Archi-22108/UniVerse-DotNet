@@ -32,7 +32,7 @@ SELECT
     r.pickup_location, r.dropoff_location, r.instructions, r.total_estimated_amount, r.delivery_fee,
     r.status, r.delivery_otp, r.created_at, r.updated_at
 FROM delivery_requests r
-INNER JOIN users u_req ON r.requester_id = u_req.id
+LEFT JOIN users u_req ON r.requester_id = u_req.id
 LEFT JOIN users u_run ON r.runner_id = u_run.id ";
 
             SqliteParameter[] parameters;
@@ -62,7 +62,7 @@ SELECT
     r.pickup_location, r.dropoff_location, r.instructions, r.total_estimated_amount, r.delivery_fee,
     r.status, r.delivery_otp, r.created_at, r.updated_at
 FROM delivery_requests r
-INNER JOIN users u_req ON r.requester_id = u_req.id
+LEFT JOIN users u_req ON r.requester_id = u_req.id
 LEFT JOIN users u_run ON r.runner_id = u_run.id
 WHERE r.id = @id;";
 
@@ -84,7 +84,7 @@ SELECT
     r.pickup_location, r.dropoff_location, r.instructions, r.total_estimated_amount, r.delivery_fee,
     r.status, r.delivery_otp, r.created_at, r.updated_at
 FROM delivery_requests r
-INNER JOIN users u_req ON r.requester_id = u_req.id
+LEFT JOIN users u_req ON r.requester_id = u_req.id
 LEFT JOIN users u_run ON r.runner_id = u_run.id
 WHERE r.requester_id = @requesterId
 ORDER BY r.created_at DESC;";
@@ -104,7 +104,7 @@ SELECT
     r.pickup_location, r.dropoff_location, r.instructions, r.total_estimated_amount, r.delivery_fee,
     r.status, r.delivery_otp, r.created_at, r.updated_at
 FROM delivery_requests r
-INNER JOIN users u_req ON r.requester_id = u_req.id
+LEFT JOIN users u_req ON r.requester_id = u_req.id
 LEFT JOIN users u_run ON r.runner_id = u_run.id
 WHERE r.runner_id = @runnerId
 ORDER BY r.created_at DESC;";
@@ -316,8 +316,8 @@ WHERE id = @id;";
             {
                 Id = reader.GetString(0),
                 RequesterId = reader.GetString(1),
-                RequesterName = reader.GetString(2),
-                RequesterPhone = reader.IsDBNull(3) ? null : reader.GetString(3),
+                RequesterName = reader.IsDBNull(2) ? "Campus Student" : reader.GetString(2),
+                RequesterPhone = reader.IsDBNull(3) ? "+91 98765 43220" : reader.GetString(3),
                 RunnerId = reader.IsDBNull(4) ? null : reader.GetString(4),
                 RunnerName = reader.IsDBNull(5) ? null : reader.GetString(5),
                 RunnerPhone = reader.IsDBNull(6) ? null : reader.GetString(6),

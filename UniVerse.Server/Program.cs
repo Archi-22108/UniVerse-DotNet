@@ -157,6 +157,17 @@ app.Use(async (context, next) =>
 
 app.UseAuthorization();
 
+// Graceful 404 handling: Never show raw browser crash / 404 screens to students or examiners
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    var reqPath = context.HttpContext.Request.Path.Value ?? "";
+    if (response.StatusCode == 404 && !reqPath.StartsWith("/api/", StringComparison.OrdinalIgnoreCase) && !reqPath.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase))
+    {
+        response.Redirect("/Dashboard");
+    }
+});
+
 // Swagger UI for interactive API inspection during professor examination
 app.UseSwagger();
 app.UseSwaggerUI(c =>

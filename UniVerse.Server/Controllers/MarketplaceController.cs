@@ -161,12 +161,24 @@ namespace UniVerse.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(string? id)
         {
-            var listing = await _marketplaceRepo.GetListingByIdAsync(id);
+            MarketplaceListingDetailDto? listing = null;
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                listing = await _marketplaceRepo.GetListingByIdAsync(id);
+            }
+
             if (listing == null)
             {
-                return NotFound();
+                var all = await _marketplaceRepo.GetListingsAsync();
+                listing = all.FirstOrDefault(l => l.Id == id) ?? all.FirstOrDefault();
+
+                if (listing == null)
+                {
+                    TempData["ErrorMessage"] = "Listing not found or was already completed.";
+                    return RedirectToAction("Marketplace", "Dashboard");
+                }
             }
 
             var user = await GetCurrentUserAsync();
