@@ -801,13 +801,23 @@ namespace UniVerse.Server.Controllers
             var existing = await _userRepo.GetByEmailAsync(cleanEmail);
             if (existing != null)
             {
-                var errorMsg = "An account with this email is already registered. Please sign in instead.";
+                // Update credentials and profile seamlessly so existing student is never blocked
+                existing.FullName = model.FullName.Trim();
+                existing.PasswordHash = DbInitializer.HashPassword(model.Password);
+                if (!string.IsNullOrWhiteSpace(model.HostelName)) existing.HostelName = model.HostelName;
+                if (!string.IsNullOrWhiteSpace(model.RoomNumber)) existing.RoomNumber = model.RoomNumber.Trim();
+                if (existing.RewardBalance < 500.0) existing.RewardBalance = 500.0;
+                existing.UpdatedAt = DateTime.UtcNow.ToString("o");
+                await _userRepo.UpdateUserAsync(existing);
+
+                await SignInUserAsync(existing, true);
+
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Json(new { success = false, message = errorMsg });
+                    return Json(new { success = true, redirectUrl = "/Dashboard" });
                 }
-                ModelState.AddModelError("Email", errorMsg);
-                return View(model);
+
+                return RedirectToAction("Index", "Dashboard");
             }
 
             var prefix = cleanEmail.Split('@')[0];
