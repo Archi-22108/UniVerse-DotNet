@@ -47,6 +47,11 @@ namespace UniVerse.Server.Data
                     _logger.LogInformation("Database already contains {Count} users. Skipping seed.", userCount);
                 }
 
+                // Ensure Avinash and Archi university student accounts always exist
+                var defaultPasswordHash = HashPassword("Password123!");
+                await EnsureStudentAccountAsync("avinash.128203@marwadiuniversity.ac.in", "Avinash 128203", "128203", "Hostel D", "304", "+91 98765 43219", defaultPasswordHash);
+                await EnsureStudentAccountAsync("archi.kumari126697@marwadiuniversity.ac.in", "Archi Kumari", "126697", "Hostel B", "201", "+91 98765 43220", defaultPasswordHash);
+
                 // 3. Ensure Realistic 7-Day Campus Order Distribution for Live Analytics
                 await EnsureRealisticRequestDatesAsync();
 
@@ -336,6 +341,8 @@ VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, @role, @hos
                     new { Id = student1Id, Email = "aarav.patel@marwadiuniversity.ac.in", Pass = defaultPasswordHash, Name = "Aarav Patel", Enr = "92100103001", Role = "student", Hostel = "Hostel D", Room = "304", Phone = "+91 98765 43210", IsRunner = 0, Balance = 250.0 },
                     new { Id = runner1Id, Email = "rohit.sharma@marwadiuniversity.ac.in", Pass = defaultPasswordHash, Name = "Rohit Sharma", Enr = "92100103045", Role = "runner", Hostel = "Hostel D", Room = "212", Phone = "+91 98765 43211", IsRunner = 1, Balance = 580.0 },
                     new { Id = student2Id, Email = "priya.deshmukh@marwadiuniversity.ac.in", Pass = defaultPasswordHash, Name = "Priya Deshmukh", Enr = "92100103088", Role = "student", Hostel = "Hostel B", Room = "108", Phone = "+91 98765 43212", IsRunner = 0, Balance = 120.0 },
+                    new { Id = "55555555-5555-5555-5555-555555555555", Email = "avinash.128203@marwadiuniversity.ac.in", Pass = defaultPasswordHash, Name = "Avinash 128203", Enr = "128203", Role = "student", Hostel = "Hostel D", Room = "304", Phone = "+91 98765 43219", IsRunner = 0, Balance = 500.0 },
+                    new { Id = "66666666-6666-6666-6666-666666666666", Email = "archi.kumari126697@marwadiuniversity.ac.in", Pass = defaultPasswordHash, Name = "Archi Kumari", Enr = "126697", Role = "student", Hostel = "Hostel B", Room = "201", Phone = "+91 98765 43220", IsRunner = 0, Balance = 500.0 },
                     new { Id = adminId, Email = "admin@marwadiuniversity.ac.in", Pass = adminPasswordHash, Name = "Campus Admin Office", Enr = "MU-ADM-001", Role = "admin", Hostel = "Staff Quarters", Room = "S-12", Phone = "+91 98765 43200", IsRunner = 0, Balance = 0.0 }
                 };
 
@@ -415,6 +422,41 @@ VALUES (@id, @request_id, @name, @quantity, @notes, @estimated_price);";
                     await cmd.ExecuteNonQueryAsync();
                 }
             });
+        }
+
+        private async Task EnsureStudentAccountAsync(string email, string fullName, string enrollmentNumber, string hostel, string room, string phone, string passwordHash)
+        {
+            try
+            {
+                var cleanEmail = email.Trim().ToLowerInvariant();
+                var count = await _dbHelper.ExecuteScalarAsync<long>(
+                    "SELECT COUNT(*) FROM users WHERE email = @email;",
+                    AdoNetDbHelper.CreateParameter("@email", cleanEmail));
+
+                if (count == 0)
+                {
+                    var id = Guid.NewGuid().ToString();
+                    var now = DateTime.UtcNow.ToString("o");
+                    await _dbHelper.ExecuteNonQueryAsync(@"
+INSERT INTO users (id, email, password_hash, full_name, enrollment_number, role, hostel_name, room_number, phone_number, department, semester, is_active_runner, reward_balance, created_at, updated_at)
+VALUES (@id, @email, @password_hash, @full_name, @enrollment_number, 'student', @hostel_name, @room_number, @phone_number, 'Computer Science & Engineering', 'Semester 6', 0, 500.0, @now, @now);",
+                        AdoNetDbHelper.CreateParameter("@id", id),
+                        AdoNetDbHelper.CreateParameter("@email", cleanEmail),
+                        AdoNetDbHelper.CreateParameter("@password_hash", passwordHash),
+                        AdoNetDbHelper.CreateParameter("@full_name", fullName),
+                        AdoNetDbHelper.CreateParameter("@enrollment_number", enrollmentNumber),
+                        AdoNetDbHelper.CreateParameter("@hostel_name", hostel),
+                        AdoNetDbHelper.CreateParameter("@room_number", room),
+                        AdoNetDbHelper.CreateParameter("@phone_number", phone),
+                        AdoNetDbHelper.CreateParameter("@now", now));
+
+                    _logger.LogInformation("Ensured student account {Email} in UniVerse database.", cleanEmail);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Notice: EnsureStudentAccountAsync completed for {Email}.", email);
+            }
         }
     }
 }
